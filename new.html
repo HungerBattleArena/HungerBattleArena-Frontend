@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunger Battle Arena v3.0 - Ultimate Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff0055;
+            --neon-purple: #bc13fe;
+            --neon-gold: #ffd700;
+            --bg-dark: #050510;
+            --panel-bg: rgba(10, 10, 25, 0.92);
+            --rarity-common: #a0a0a0;
+            --rarity-rare: #00f3ff;
+            --rarity-legendary: #ffd700;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: url('https://images.stockcake.com/public/a/e/3/ae345db0-8915-45fd-9ec4-4603887ed8ae_large/neon-stadium-future-stockcake.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            margin: 0;
+            user-select: none;
+        }
+
+        h1, h2, h3, .font-tech { font-family: 'Orbitron', sans-serif; }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7);
+            transition: all 0.4s ease;
+        }
+        .glass-panel:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0, 243, 255, 0.3); }
+
+        .glitch-text {
+            position: relative;
+            font-weight: 900;
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark);
+        }
+        .glitch-text::before { animation: glitch1 2s infinite; color: var(--neon-pink); clip: rect(0, 999px, 50px, 0); }
+        .glitch-text::after { animation: glitch2 3s infinite; color: var(--neon-blue); clip: rect(60px, 999px, 120px, 0); }
+
+        @keyframes glitch1 { 0%,100% { clip: rect(20px,999px,60px,0); } 30% { clip: rect(90px,999px,130px,0); } }
+        @keyframes glitch2 { 0%,100% { clip: rect(70px,999px,110px,0); } 40% { clip: rect(30px,999px,80px,0); } }
+
+        .btn-cyber {
+            background: linear-gradient(145deg, rgba(0,243,255,0.2), rgba(0,100,150,0.1));
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 30px rgba(0,243,255,0.5);
+            transition: all 0.4s;
+        }
+        .btn-cyber:hover { background: var(--neon-blue); color: black; transform: scale(1.05); box-shadow: 0 0 50px var(--neon-blue); }
+
+        .weapon-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .weapon-card:hover { transform: scale(1.05); box-shadow: 0 0 40px var(--neon-blue); }
+        .weapon-card.selected {
+            border: 3px solid var(--neon-blue);
+            box-shadow: 0 0 50px var(--neon-blue);
+            transform: scale(1.08);
+            background: rgba(0,243,255,0.15);
+        }
+        .weapon-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px; right: 8px;
+            font-size: 24px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+        /* Weapon Locked State */
+        .weapon-card.locked {
+            filter: grayscale(1);
+            opacity: 0.7;
+        }
+        .weapon-card.locked::before {
+            content: '🔒';
+            position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%,-50%);
+            font-size: 3rem;
+            z-index: 10;
+        }
+
+        .mode-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .mode-card.locked::before {
+            content: 'COMING SOON';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            color: var(--neon-pink);
+            text-shadow: 0 0 20px var(--neon-pink);
+            pointer-events: none;
+        }
+
+        /* NEW STYLES FOR ROOM CARD */
+        .room-card {
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .room-card:hover {
+            border-color: var(--neon-gold);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        }
+        .room-card.disabled {
+            filter: grayscale(1);
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .room-card.disabled:hover { transform: none; box-shadow: none; }
+        
+        .timer-badge {
+            font-family: 'Orbitron', monospace;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--neon-blue);
+        }
+        .timer-badge.urgent {
+            color: var(--neon-pink);
+            border-color: var(--neon-pink);
+            animation: pulse-red 1s infinite;
+        }
+        @keyframes pulse-red { 0%,100% { box-shadow: 0 0 5px var(--neon-pink); } 50% { box-shadow: 0 0 15px var(--neon-pink); } }
+        
+        /* RESULT STYLES */
+        .win-glow-savior { box-shadow: 0 0 100px rgba(0, 243, 255, 0.4) inset; }
+        .win-glow-doomer { box-shadow: 0 0 100px rgba(255, 0, 85, 0.4) inset; }
+
+        /* SHOP STYLES */
+        .shop-tab {
+            border-bottom: 2px solid transparent;
+            color: #888;
+            transition: all 0.3s;
+        }
+        .shop-tab:hover { color: #fff; }
+        .shop-tab.active {
+            border-bottom: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+        
+        .shop-item {
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .shop-item:hover { transform: translateY(-5px); }
+        
+        .rarity-common { border-color: var(--rarity-common); box-shadow: 0 0 10px rgba(160,160,160,0.1); }
+        .rarity-rare { border-color: var(--rarity-rare); box-shadow: 0 0 15px rgba(0,243,255,0.2); }
+        .rarity-legendary { border-color: var(--rarity-legendary); box-shadow: 0 0 20px rgba(255,215,0,0.3); }
+
+        .shop-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid white;
+        }
+        .shop-btn:hover { background: white; color: black; }
+        .shop-btn.purchased { background: #333; color: #666; border-color: #333; cursor: not-allowed; }
+
+        /* VIEWER DECK STYLES */
+        .viewer-card-btn {
+            position: relative;
+            transition: all 0.2s;
+        }
+        .viewer-card-btn:active { transform: scale(0.95); }
+        .viewer-card-btn:disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; }
+        .cooldown-overlay {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(0,0,0,0.8);
+            transition: height 0.1s linear;
+            pointer-events: none;
+        }
+
+        #reticle {
+            position: absolute;
+            width: 40px; height: 40px;
+            pointer-events: none;
+            z-index: 100;
+            left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #reticle::before, #reticle::after {
+            content: ''; position: absolute;
+            background: var(--neon-blue);
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+        #reticle::before { width: 2px; height: 20px; left: 19px; top: 4px; }
+        #reticle::after { width: 20px; height: 2px; left: 10px; top: 19px; }
+
+        .fade-in { animation: fadeIn 1s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .zone-warning {
+            animation: pulse-screen 1s infinite;
+            box-shadow: inset 0 0 50px red;
+        }
+        @keyframes pulse-screen { 0% { opacity: 0.2; } 50% { opacity: 0.5; } 100% { opacity: 0.2; } }
+
+        /* INSTRUCTION STYLES */
+        .key-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            border: 2px solid var(--neon-blue);
+            border-radius: 4px;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            background: rgba(0, 243, 255, 0.1);
+            color: white;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            margin: 0 4px;
+            padding: 0 8px;
+        }
+        
+        .hint-overlay {
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+        }
+        
+        .help-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--neon-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--neon-blue);
+            font-family: 'Orbitron', monospace;
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: 100;
+            background: rgba(0,0,0,0.5);
+        }
+        .help-btn:hover {
+            background: var(--neon-blue);
+            color: black;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .input-cyber {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 14px;
+            color: #ffffff;
+            outline: none;
+        }
+        .input-cyber:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .status-pill.open {
+            color: #6ee7b7;
+            border-color: rgba(110, 231, 183, 0.6);
+        }
+        .status-pill.closed {
+            color: #fca5a5;
+            border-color: rgba(252, 165, 165, 0.6);
+        }
+
+        .bet-side-card {
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .bet-side-card:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.2);
+            transform: translateY(-4px);
+        }
+        .bet-side-card.selected {
+            border-color: var(--neon-gold);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="damage-overlay" class="absolute inset-0 pointer-events-none z-40 bg-radial-gradient from-red-600/30 to-transparent opacity-0 transition-opacity duration-300"></div>
+    <div id="zone-warning-overlay" class="absolute inset-0 pointer-events-none z-30 hidden zone-warning"></div>
+    <div id="reticle" class="hidden"></div>
+
+    <div id="game-container"><canvas id="gameCanvas"></canvas></div>
+
+    <div id="ui-layer" class="absolute inset-0 pointer-events-none">
+
+        <!-- MAIN MENU -->
+        <div id="screen-main-menu" class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl pointer-events-auto z-50 fade-in">
+            <h1 class="text-7xl md:text-9xl font-black mb-4 glitch-text" data-text="HUNGER BATTLE">HUNGER BATTLE</h1>
+            <h2 class="text-2xl md:text-3xl text-gray-300 tracking-[0.6em] mb-14 uppercase">Arena Prototype</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl w-full px-6">
+                <div class="glass-panel p-8 flex flex-col items-center relative mode-card cursor-pointer" onclick="goToFighterRoom()">
+                    <div class="text-6xl mb-4">F</div>
+                    <h3 class="text-3xl text-cyan-400">Fighter</h3>
+                    <p class="text-sm text-gray-400 mt-2">Solo Survival Room</p>
+                </div>
+
+                <div class="glass-panel p-8 flex flex-col items-center relative mode-card cursor-pointer" onclick="goToViewerRooms()">
+                    <div class="text-6xl mb-4">V</div>
+                    <h3 class="text-3xl text-pink-500">Viewer Mode</h3>
+                    <p class="text-sm text-gray-400 mt-2">Bet on Win / Lose</p>
+                </div>
+            </div>
+
+            <div class="mt-14 text-xs uppercase tracking-[0.4em] text-gray-500">Solo survival + betting flow</div>
+        </div>
+
+        <!-- FIGHTER ROOM SCREEN -->
+        <div id="screen-fighter-room" class="hidden absolute inset-0 bg-black/90 pointer-events-auto z-50 flex items-center justify-center">
+            <div class="glass-panel w-full max-w-5xl p-10 relative fade-in">
+                <button class="absolute top-6 right-6 text-3xl text-gray-400 hover:text-white z-50" onclick="goBackToMenu()">✕</button>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-3xl text-cyan-400 mb-2">Create Room</h3>
+                            <p class="text-sm text-gray-400">Name your room and open betting.</p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-xs uppercase tracking-widest text-gray-500">Room name</label>
+                            <input id="fighter-room-name" class="input-cyber w-full rounded" placeholder="Enter room name" />
+                        </div>
+
+                        <div class="bg-black/40 border border-gray-800 rounded p-4 text-sm text-gray-300">
+                            <div class="flex justify-between"><span>Default Fighter</span><span class="text-white">Neon Ronin</span></div>
+                            <div class="flex justify-between mt-2"><span>Default Weapon</span><span class="text-white">Combat Knife</span></div>
+                        </div>
+
+                        <button class="btn-cyber px-8 py-3 text-lg font-bold w-full" onclick="openFighterRoom()">Open Room</button>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-3xl text-white mb-2">Room Status</h3>
+                            <p class="text-sm text-gray-400">Track bettors before starting.</p>
+                        </div>
+
+                        <div class="glass-panel p-6 space-y-4 border border-gray-800">
+                            <div class="flex justify-between items-center">
+                                <div class="text-sm text-gray-500">Room</div>
+                                <div class="text-lg text-white font-bold" id="fighter-room-display">Not opened</div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="text-sm text-gray-500">Status</div>
+                                <div id="fighter-betting-status" class="status-pill closed">BETTING CLOSED</div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div class="bg-black/40 p-3 rounded border border-gray-800">
+                                    <div class="text-gray-500">Total bettors</div>
+                                    <div class="text-xl text-white font-bold" id="fighter-total-bettors">0</div>
+                                </div>
+                                <div class="bg-black/40 p-3 rounded border border-gray-800">
+                                    <div class="text-gray-500">Total bet</div>
+                                    <div class="text-xl text-gold-400 font-bold" id="fighter-total-bet">0</div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div class="bg-black/40 p-3 rounded border border-cyan-500/30">
+                                    <div class="text-cyan-400">WIN side</div>
+                                    <div class="text-white font-bold" id="fighter-win-bet">0</div>
+                                    <div class="text-xs text-gray-500" id="fighter-win-count">0 bettors</div>
+                                </div>
+                                <div class="bg-black/40 p-3 rounded border border-pink-500/30">
+                                    <div class="text-pink-400">LOSE side</div>
+                                    <div class="text-white font-bold" id="fighter-lose-bet">0</div>
+                                    <div class="text-xs text-gray-500" id="fighter-lose-count">0 bettors</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="btn-start-match" class="btn-cyber px-8 py-3 text-lg font-bold w-full" onclick="startMatchAsFighter()">Start Match</button>
+                        <p class="text-xs text-gray-500">Start when you feel there are enough bettors.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEWER ROOM SELECTION SCREEN -->
+        <div id="screen-viewer-rooms" class="hidden absolute inset-0 bg-black/95 pointer-events-auto z-50 flex flex-col items-center justify-center fade-in">
+            <div class="w-full max-w-7xl px-8 mb-4 flex justify-between items-end border-b border-gray-800 pb-4">
+                <div>
+                    <h1 class="text-4xl md:text-6xl font-black glitch-text text-white" data-text="VIEWER ROOMS">VIEWER ROOMS</h1>
+                    <p class="text-gray-400 tracking-widest uppercase text-sm mt-2">Pick a room to lock your bet</p>
+                </div>
+            </div>
+
+            <div class="w-full max-w-7xl h-[65vh] overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="room-list-container">
+                <!-- Rooms injected via JS -->
+            </div>
+
+            <button class="absolute top-6 left-6 text-xl text-gray-400 hover:text-white z-50 flex items-center gap-2 font-tech" onclick="goBackToMenu()">
+                <span>‹</span> RETURN TO MENU
+            </button>
+        </div>
+
+        <!-- VIEWER FACTION SELECT -->
+        <div id="screen-viewer-bet" class="hidden absolute inset-0 flex items-center justify-center pointer-events-auto z-50 bg-black/95">
+            <div class="glass-panel w-full max-w-4xl p-10 relative fade-in">
+                <button class="absolute top-6 left-6 text-white z-50 hover:text-cyan-400 transition" onclick="goBackToRooms()">← Change room</button>
+
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-800 pb-6 mb-8">
+                    <div>
+                        <h2 class="text-4xl font-black text-white" id="viewer-room-title">ROOM</h2>
+                        <p class="text-gray-400 mt-1">Lock your bet before the fighter starts.</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs uppercase tracking-widest text-gray-500">Total bet</div>
+                        <div class="text-3xl text-gold-400 font-mono" id="viewer-room-total">0</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bet-side-card p-6 rounded-lg" id="bet-side-win" onclick="selectBetSide('WIN')">
+                        <h3 class="text-3xl text-cyan-400 font-bold">WIN</h3>
+                        <p class="text-sm text-gray-400 mt-2">Fighter survives</p>
+                        <div class="text-xs text-gray-500 mt-4">Bet pool</div>
+                        <div class="text-xl text-white font-bold" id="viewer-room-win-bet">0</div>
+                    </div>
+                    <div class="bet-side-card p-6 rounded-lg" id="bet-side-lose" onclick="selectBetSide('LOSE')">
+                        <h3 class="text-3xl text-pink-400 font-bold">LOSE</h3>
+                        <p class="text-sm text-gray-400 mt-2">Fighter is eliminated</p>
+                        <div class="text-xs text-gray-500 mt-4">Bet pool</div>
+                        <div class="text-xl text-white font-bold" id="viewer-room-lose-bet">0</div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex flex-col md:flex-row gap-4 items-center">
+                    <input id="viewer-bet-amount" class="input-cyber w-full rounded" placeholder="Enter bet amount" />
+                    <button id="btn-lock-bet" class="btn-cyber px-10 py-3 text-lg font-bold w-full md:w-auto" onclick="lockBetAndEnter()">Lock Bet</button>
+                </div>
+                <div class="mt-3 text-xs text-gray-500">Betting closes when the fighter starts the match.</div>
+            </div>
+        </div>
+
+        <!-- 4. IN-GAME HUD (Fighter) -->
+        <div id="hud-fighter" class="hidden pointer-events-none absolute inset-0">
+            <!-- Top Info -->
+            <div class="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                <div class="text-3xl font-tech text-white drop-shadow-md" id="game-timer">00:00</div>
+                <div class="text-xs text-gray-400 tracking-widest uppercase" id="game-phase">Phase 1: Warm Up</div>
+            </div>
+
+            <!-- Contextual Hints Container -->
+            <div id="hud-hints" class="absolute top-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 hint-overlay opacity-0">
+                <div class="flex items-center gap-2 bg-black/50 px-4 py-2 rounded border border-cyan-500/30">
+                    <span class="key-icon text-xs h-6 min-w-[24px]">W</span>
+                    <span class="key-icon text-xs h-6 min-w-[24px]">A</span>
+                    <span class="key-icon text-xs h-6 min-w-[24px]">S</span>
+                    <span class="key-icon text-xs h-6 min-w-[24px]">D</span>
+                    <span class="text-cyan-400 text-sm font-bold ml-2">MOVE</span>
+                </div>
+                <div class="flex items-center gap-2 bg-black/50 px-4 py-2 rounded border border-pink-500/30">
+                    <span class="key-icon text-xs h-6 min-w-[24px]">↑</span>
+                    <span class="key-icon text-xs h-6 min-w-[24px]">↓</span>
+                    <span class="key-icon text-xs h-6 min-w-[24px]">←</span>
+                    <span class="key-icon text-xs h-6 min-w-[24px]">→</span>
+                    <span class="text-pink-400 text-sm font-bold ml-2">AIM</span>
+                </div>
+                <div class="flex items-center gap-2 bg-black/50 px-4 py-2 rounded border border-gold-500/30">
+                    <span class="key-icon text-xs h-6 px-2">SPACE</span>
+                    <span class="text-white text-xs font-bold px-1">OR</span>
+                    <span class="key-icon text-xs h-6 px-2">CLICK</span>
+                    <span class="text-yellow-400 text-sm font-bold ml-2">ATTACK</span>
+                </div>
+            </div>
+
+            <!-- Interaction Prompt -->
+            <div id="interaction-prompt" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-16 text-center hidden">
+                <div class="text-black font-bold text-sm bg-cyan-400 px-4 py-1 rounded shadow-[0_0_15px_#00f3ff] animate-pulse">
+                    [E] PICK UP <span id="prompt-item-name">ITEM</span>
+                </div>
+            </div>
+
+            <!-- Drop Prompt (Bottom Center) -->
+            <div class="absolute bottom-24 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 uppercase tracking-widest bg-black/50 px-2 py-1 rounded">
+                [G] DROP CURRENT WEAPON
+            </div>
+
+            <!-- Health & Ammo (Bottom Left) -->
+            <div class="absolute bottom-8 left-8">
+                <div class="flex items-end gap-2 mb-2">
+                    <span class="text-4xl font-bold text-white" id="hud-hp">100</span>
+                    <span class="text-sm text-gray-400 mb-1">HP</span>
+                </div>
+                <div class="w-64 h-3 bg-gray-800 skew-x-[-12deg] border border-gray-600">
+                    <div id="bar-hp" class="w-full h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-200"></div>
+                </div>
+                <div class="mt-2 flex items-center gap-2">
+                    <div class="w-48 h-2 bg-gray-800 skew-x-[-12deg] border border-gray-600">
+                        <div id="bar-armor" class="w-1/2 h-full bg-cyan-400 transition-all duration-200"></div>
+                    </div>
+                    <span class="text-xs text-cyan-400">SHIELD</span>
+                </div>
+            </div>
+
+            <!-- Weapon Info (Bottom Right) -->
+            <div class="absolute bottom-8 right-8 text-right">
+                <h3 class="text-2xl font-tech text-yellow-400 uppercase" id="hud-weapon">Combat Knife</h3>
+                <p class="text-sm text-gray-400" id="hud-ammo">Melee / ∞</p>
+                <div class="flex justify-end gap-1 mt-2" id="hud-ammo-bar">
+                    <!-- Ammo pips generated js -->
+                </div>
+            </div>
+            
+            <!-- Reticle is drawn on canvas -->
+        </div>
+
+        <!-- 5. IN-GAME HUD (Viewer) -->
+        <div id="hud-viewer" class="hidden pointer-events-none absolute inset-0 flex flex-col">
+            <div class="w-full bg-black/50 backdrop-blur px-4 py-2 flex justify-between items-center border-b border-white/10 z-50 pointer-events-auto">
+                <div class="flex items-center gap-3">
+                    <div class="text-xs uppercase text-gray-400">Viewer Mode</div>
+                    <div class="text-sm font-bold text-white" id="viewer-room-name">ROOM</div>
+                </div>
+                <div class="flex items-center gap-3 text-xs">
+                    <div id="viewer-betting-status" class="status-pill closed">BETTING CLOSED</div>
+                    <div class="text-gray-400">Total bet: <span id="viewer-total-bet" class="text-white">0</span></div>
+                    <div class="text-purple-300">IP: <span id="viewer-ip" class="text-white">0</span></div>
+                </div>
+                <div class="hidden md:flex items-center gap-2">
+                    <span class="text-[10px] text-gray-400 uppercase tracking-widest">Fighter HP</span>
+                    <div class="w-36 h-2 bg-gray-800 border border-gray-600 skew-x-[-12deg]">
+                        <div id="viewer-hp-bar" class="w-full h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-200"></div>
+                    </div>
+                    <span class="text-xs text-white font-bold" id="viewer-hp">100</span>
+                </div>
+            </div>
+
+            <div class="flex-grow"></div>
+
+            <div class="w-full bg-black/40 border-t border-gray-800 px-4 py-2 pointer-events-auto">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px] mb-2">
+                    <div class="text-gray-400">Win bet<br><span class="text-white font-bold" id="viewer-win-bet">0</span></div>
+                    <div class="text-gray-400">Lose bet<br><span class="text-white font-bold" id="viewer-lose-bet">0</span></div>
+                    <div class="text-gray-400">Your bet<br><span class="text-white font-bold" id="viewer-user-bet">0</span></div>
+                    <div class="text-gray-400">Side<br><span class="text-white font-bold" id="viewer-side">-</span></div>
+                </div>
+                <div class="flex gap-3 overflow-x-auto pb-1" id="viewer-deck">
+                    <!-- Cards generated via JS -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Game Over Screen (FIGHTER) -->
+        <div id="screen-gameover" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-black/95 z-[60] pointer-events-auto">
+            <h1 class="text-6xl font-black text-white mb-4" id="go-title">VICTORY</h1>
+            <p class="text-gray-400 mb-6" id="go-desc">The fighter survived the arena.</p>
+
+            <div id="fighter-reward-panel" class="glass-panel p-6 mb-8 w-full max-w-md text-center hidden">
+                <div class="text-xs uppercase tracking-widest text-gray-500">Fighter reward (15%)</div>
+                <div class="text-4xl text-gold-400 font-black mt-2" id="fighter-reward-amount">0</div>
+                <button id="btn-fighter-claim" class="btn-cyber px-8 py-3 mt-4">Claim Reward</button>
+            </div>
+
+            <button class="btn-cyber px-8 py-3" onclick="location.reload()">Return to Lobby</button>
+        </div>
+
+        <!-- VIEWER RESULT SCREEN -->
+        <div id="screen-viewer-results" class="hidden absolute inset-0 bg-black/95 pointer-events-auto z-[60] flex flex-col items-center justify-center fade-in">
+            <h1 class="text-6xl md:text-8xl font-black mb-2 glitch-text tracking-wider" id="vr-title" data-text="OUTCOME">OUTCOME</h1>
+            <p class="text-xl text-gray-400 mb-12 tracking-[0.5em] uppercase" id="vr-subtitle">Outcome confirmed</p>
+
+            <div class="flex flex-col md:flex-row gap-12 w-full max-w-5xl">
+                <div class="w-full md:w-1/2 glass-panel p-8 border-l-4 border-cyan-500" id="vr-panel-stats">
+                    <h3 class="text-2xl text-cyan-400 mb-6 border-b border-gray-700 pb-2">POOL SUMMARY</h3>
+                    <div class="space-y-4 font-mono text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">TOTAL POOL</span>
+                            <span class="text-white text-lg" id="vr-total-pool">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">FIGHTER REWARD (15%)</span>
+                            <span class="text-yellow-400" id="vr-fighter-reward">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">WINNING SIDE POOL</span>
+                            <span class="text-green-400 text-xl font-bold" id="vr-viewer-pool">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-1/2 glass-panel p-8 border-l-4 border-gold-400 relative overflow-hidden">
+                    <h3 class="text-2xl text-gold-400 mb-6 border-b border-gray-700 pb-2">YOUR PAYOUT</h3>
+                    <div class="space-y-5">
+                        <div class="flex justify-between items-end">
+                            <span class="text-gray-400 text-sm">INITIAL BET</span>
+                            <span class="text-white font-mono" id="vr-user-bet">0</span>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <span class="text-gray-400 text-sm">SHARE</span>
+                            <span class="text-cyan-400 font-mono text-xl" id="vr-share">0%</span>
+                        </div>
+                        <div class="bg-black/40 p-4 border border-gray-700 rounded text-center">
+                            <div class="text-xs text-gray-500 uppercase tracking-widest mb-1">Total reward</div>
+                            <div class="text-5xl font-black text-white" id="vr-total-payout">0</div>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <span class="text-gray-400 text-sm">PNL</span>
+                            <span class="font-mono text-xl" id="vr-pnl">0</span>
+                        </div>
+                        <button id="vr-claim-btn" class="btn-cyber px-10 py-3 text-lg font-bold hidden">Claim</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-cyber px-12 py-4 mt-16 text-xl font-bold" onclick="location.reload()">Return to Lobby</button>
+        </div>
+
+    </div>
+
+<script>
+/**
+ * HUNGER BATTLE ARENA v3.5 - Instructions & Hints
+ */
+
+// --- CONFIGURATION & ASSETS ---
+const CONFIG = {
+    canvasId: 'gameCanvas',
+    targetFPS: 60,
+    hexSize: 40,
+    matchDuration: 180, // 3 Minutes to survive
+    minArenaRadius: 150,
+    initialArenaRadius: 800,
+    colors: {
+        bg: '#050510',
+        grid: '#1a1a2e',
+        gridHighlight: '#00f3ff',
+        gridDanger: '#ff0055',
+        player: '#ffffff',
+        enemy: '#ff0055',
+        text: '#ffffff'
+    }
+};
+
+const WEAPONS = {
+    // Tier 0 (Free)
+    fists: { name: "Fists", tier: 0, type: 'melee', damage: 5, rate: 0.4, range: 40, color: '#aaaaaa', ammo: -1 },
+    knife: { name: "Combat Knife", tier: 1, type: 'melee', damage: 15, rate: 0.3, range: 60, color: '#ffffff', ammo: -1 },
+    // Tier 1 (Free)
+    pistol: { name: "Pistol", tier: 1, type: 'projectile', damage: 12, rate: 0.4, speed: 15, color: '#ffd700', ammo: 12, reload: 1.5 },
+    bow: { name: "Auto-Bow", tier: 1, type: 'projectile', damage: 8, rate: 0.2, speed: 18, color: '#00ff00', ammo: 30, reload: 2.0 },
+    // Tier 2 (Unlockable)
+    shotgun: { name: "Scatter Shotgun", tier: 2, type: 'spread', damage: 8, count: 5, spread: 0.5, rate: 1.0, speed: 14, color: '#ff8800', ammo: 6, reload: 2.5, price: 2000 },
+    pulseblade: { name: "Pulse Blade", tier: 2, type: 'melee', damage: 35, rate: 0.5, range: 90, color: '#00f3ff', ammo: -1, price: 2500 },
+    // Tier 3 (Unlockable)
+    railgun: { name: "Railgun Sniper", tier: 3, type: 'ray', damage: 100, rate: 2.0, range: 1000, color: '#ffffff', width: 4, ammo: 3, reload: 3.0, price: 5000 },
+    plasma: { name: "Plasma Greatsword", tier: 3, type: 'melee', damage: 80, rate: 1.2, range: 120, color: '#ff0055', ammo: -1, price: 4500 }
+};
+
+const SHOP_ITEMS = {
+    skins: [
+        { id: 'skin_default', name: 'Standard Issue', rarity: 'common', price: 0, icon: '👤' },
+        { id: 'skin_chrome', name: 'Chrome Ops', rarity: 'rare', price: 1000, icon: '🤖' },
+        { id: 'skin_oni', name: 'Cyber Oni', rarity: 'legendary', price: 5000, icon: '👺' }
+    ],
+    characters: [
+        { id: 'char_assault', name: 'Ronin (Assault)', rarity: 'common', price: 0, icon: '⚔️' },
+        { id: 'char_heavy', name: 'Titan (Tank)', rarity: 'rare', price: 2500, icon: '🛡️' },
+        { id: 'char_tech', name: 'Wraith (Speed)', rarity: 'legendary', price: 4000, icon: '⚡' }
+    ],
+    weapons: [] // Populated dynamically from WEAPONS
+};
+
+// Populate Shop Weapons
+Object.keys(WEAPONS).forEach(key => {
+    const w = WEAPONS[key];
+    if (w.tier >= 2) {
+        SHOP_ITEMS.weapons.push({
+            id: key,
+            name: w.name,
+            rarity: w.tier === 2 ? 'rare' : 'legendary',
+            price: w.price,
+            icon: '🔫' // Simplified icon
+        });
+    }
+});
+
+
+const ITEMS = {
+    medkit: { name: "Medi-Stim", color: '#00ff00', type: 'consumable', effect: (p) => p.heal(30) }
+};
+
+const MOBS = {
+    goblin: { name: "Goblin Runner", hp: 30, speed: 3.5, damage: 15, color: '#00ff00', radius: 10, score: 10, type: 'melee' },
+    spider: { name: "Nano-Spider", hp: 45, speed: 2.5, damage: 20, color: '#aa00ff', radius: 12, score: 15, type: 'melee' },
+    ogre: { name: "Iron Ogre", hp: 200, speed: 1.2, damage: 35, color: '#ff4400', radius: 25, score: 50, type: 'tank' },
+    archer: { name: "Plasma Archer", hp: 40, speed: 1.8, damage: 12, color: '#ffff00', radius: 14, score: 30, type: 'ranged', range: 300 }
+};
+
+const VIEWER_CARDS = {
+    WIN: [
+        { id: 'drop_medkit', name: 'Medi-Pod', cost: 150, cooldown: 15, icon: '✚', color: 'text-green-400', desc: 'Heals 30 HP' },
+        { id: 'buff_speed', name: 'Adrenaline', cost: 100, cooldown: 10, icon: '⏩', color: 'text-yellow-400', desc: '+50% Speed (10s)' },
+        { id: 'drop_weapon', name: 'Weapon Drop', cost: 300, cooldown: 30, icon: '⚔️', color: 'text-cyan-400', desc: 'Random Tier 2+' },
+        { id: 'buff_invuln', name: 'Nano-Shield', cost: 500, cooldown: 60, icon: '🛡️', color: 'text-purple-400', desc: 'Invincible (5s)' }
+    ],
+    LOSE: [
+        { id: 'spawn_horde', name: 'Goblin Horde', cost: 150, cooldown: 20, icon: '👺', color: 'text-green-600', desc: 'Spawns 3 Goblins' },
+        { id: 'spawn_sniper', name: 'Viper Unit', cost: 250, cooldown: 25, icon: '🏹', color: 'text-yellow-600', desc: 'Spawns Sniper' },
+        { id: 'env_strike', name: 'Orbital Strike', cost: 400, cooldown: 45, icon: '🔥', color: 'text-red-500', desc: 'Area Damage' },
+        { id: 'env_shrink', name: 'Zone Constrict', cost: 600, cooldown: 90, icon: '⭕', color: 'text-orange-500', desc: 'Shrinks Arena' }
+    ]
+};
+
+// --- MOCK ROOM DATA ---
+let activeRooms = [
+    { id: 'ROOM-109', name: 'Neon Ronin', totalBet: 12540, winBet: 7540, loseBet: 5000, winCount: 42, loseCount: 28, state: 'OPEN' },
+    { id: 'ROOM-202', name: 'Heavy Titan', totalBet: 45200, winBet: 38500, loseBet: 6700, winCount: 210, loseCount: 38, state: 'OPEN' },
+    { id: 'ROOM-315', name: 'Viper Sniper', totalBet: 8900, winBet: 1900, loseBet: 7000, winCount: 12, loseCount: 65, state: 'CLOSED' },
+    { id: 'ROOM-404', name: 'Cyber Monk', totalBet: 22100, winBet: 10900, loseBet: 11200, winCount: 95, loseCount: 98, state: 'OPEN' },
+    { id: 'ROOM-555', name: 'Tech Wizard', totalBet: 5000, winBet: 4200, loseBet: 800, winCount: 31, loseCount: 6, state: 'OPEN' }
+];
+let selectedRoom = null;
+
+let fighterRoom = {
+    name: 'Not opened',
+    totalBet: 0,
+    winBet: 0,
+    loseBet: 0,
+    winCount: 0,
+    loseCount: 0,
+    state: 'CLOSED'
+};
+
+// --- USER DATA & INVENTORY ---
+let userData = {
+    credits: 5000,
+    inventory: ['skin_default', 'char_assault', 'fists', 'knife', 'pistol', 'bow'], // Default unlocks
+    skipInstructions: false
+};
+
+function loadUserData() {
+    const saved = localStorage.getItem('hba_user_data_v1');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        // Merge to ensure new keys exist
+        userData = { ...userData, ...parsed };
+    }
+}
+
+function saveUserData() {
+    localStorage.setItem('hba_user_data_v1', JSON.stringify(userData));
+}
+
+// --- GAME STATE ---
+const STATE = {
+    screen: 'MENU',
+    role: 'FIGHTER',
+    faction: null,
+    time: 0,
+    phase: 1,
+    gameOver: false,
+    inputMode: 'MOUSE',
+
+    // Entities
+    player: null,
+    mobs: [],
+    projectiles: [],
+    particles: [],
+    loot: [],
+    floatingTexts: [],
+    camera: { x: 0, y: 0, zoom: 1 },
+
+    // Inputs
+    keys: {},
+    mouse: { x: 0, y: 0, worldX: 0, worldY: 0, down: false },
+
+    // Viewer
+    userBetAmount: 0,
+    viewerIP: 0,
+    viewerCooldowns: {},
+
+    // Map & Zone
+    hexes: [],
+    arenaRadius: CONFIG.initialArenaRadius,
+    zoneDamageTicker: 0
+};
+
+// --- CLASSES (Physics & Entities) ---
+
+class Vector {
+    constructor(x, y) { this.x = x; this.y = y; }
+    add(v) { return new Vector(this.x + v.x, this.y + v.y); }
+    sub(v) { return new Vector(this.x - v.x, this.y - v.y); }
+    mult(n) { return new Vector(this.x * n, this.y * n); }
+    mag() { return Math.sqrt(this.x*this.x + this.y*this.y); }
+    norm() { const m = this.mag(); return m===0 ? new Vector(0,0) : new Vector(this.x/m, this.y/m); }
+    dist(v) { return Math.sqrt((this.x-v.x)**2 + (this.y-v.y)**2); }
+}
+
+class Loot {
+    constructor(key, x, y, isWeapon = true) {
+        this.key = key;
+        this.pos = new Vector(x, y);
+        this.isWeapon = isWeapon;
+        
+        // Data
+        this.data = isWeapon ? WEAPONS[key] : ITEMS[key];
+        
+        // Physics
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2 + Math.random() * 3;
+        this.vel = new Vector(Math.cos(angle)*speed, Math.sin(angle)*speed);
+        this.life = 30; // 30s despawn
+        this.radius = 12;
+    }
+
+    update(dt) {
+        // Friction
+        this.vel = this.vel.mult(0.95);
+        this.pos = this.pos.add(this.vel);
+        
+        this.life -= dt;
+    }
+
+    draw(ctx) {
+        // Float anim
+        const floatY = Math.sin(Date.now() / 200) * 3;
+        
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y + floatY);
+        
+        // Draw Pod
+        ctx.fillStyle = this.data.color || '#fff';
+        ctx.shadowColor = this.data.color || '#fff';
+        ctx.shadowBlur = 10;
+        
+        // Diamond shape
+        ctx.beginPath();
+        ctx.moveTo(0, -10);
+        ctx.lineTo(10, 0);
+        ctx.lineTo(0, 10);
+        ctx.lineTo(-10, 0);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Label
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px Rajdhani';
+        ctx.textAlign = 'center';
+        ctx.shadowBlur = 0;
+        ctx.fillText(this.data.name.toUpperCase(), 0, -15);
+        
+        ctx.restore();
+    }
+}
+
+class Player {
+    constructor(loadoutWeaponKey) {
+        this.pos = new Vector(0, 0);
+        this.vel = new Vector(0, 0);
+        this.hp = 100;
+        this.maxHp = 100;
+        this.armor = 50;
+        this.speed = 4;
+        this.radius = 15;
+        this.angle = 0;
+        
+        this.weaponKey = loadoutWeaponKey;
+        this.weapon = { ...WEAPONS[loadoutWeaponKey] };
+        this.ammo = this.weapon.ammo;
+        
+        this.cooldown = 0;
+        this.reloadTimer = 0;
+        this.invuln = 0;
+        
+        // Buffs
+        this.speedBuffTimer = 0;
+    }
+    
+    update(dt) {
+        // Buff timers
+        if (this.speedBuffTimer > 0) {
+            this.speedBuffTimer -= dt;
+        }
+
+        // --- INPUT HANDLING ---
+        
+        // 1. Drop Weapon (G)
+        if (STATE.keys['g']) {
+            this.dropWeapon();
+            STATE.keys['g'] = false; // Prevent rapid drop
+        }
+
+        // 2. Pickup (E)
+        // Handled in main loop for checking overlap, but logic here
+        if (STATE.keys['e']) {
+            this.tryPickup();
+            STATE.keys['e'] = false;
+        }
+
+        // Movement
+        let inputDir = new Vector(0, 0);
+        // FIX: Case sensitivity fix for Movement keys
+        if (STATE.keys['w']) inputDir.y -= 1;
+        if (STATE.keys['s']) inputDir.y += 1;
+        if (STATE.keys['a']) inputDir.x -= 1;
+        if (STATE.keys['d']) inputDir.x += 1;
+        
+        if (inputDir.mag() > 0) {
+            inputDir = inputDir.norm();
+        }
+        
+        // Apply acceleration
+        this.vel = this.vel.mult(0.9); // Friction
+        
+        let currentSpeed = this.speed;
+        if (this.speedBuffTimer > 0) currentSpeed *= 1.5;
+        
+        this.vel = this.vel.add(inputDir.mult(currentSpeed * 0.2)); 
+        
+        this.pos = this.pos.add(this.vel);
+        
+        // Invulnerability Tick
+        if (this.invuln > 0) this.invuln -= dt;
+
+        // Boundaries - Physics against World Edge (Max possible size 800)
+        // Note: Player can walk outside Safe Zone, but not outside World
+        if (this.pos.mag() > CONFIG.initialArenaRadius) {
+            this.pos = this.pos.norm().mult(CONFIG.initialArenaRadius);
+        }
+
+        // --- AIMING LOGIC ---
+        
+        // Check for active Arrow Key input (Twin Stick)
+        let arrowAimDir = new Vector(0, 0);
+        if (STATE.keys['arrowup']) arrowAimDir.y -= 1;
+        if (STATE.keys['arrowdown']) arrowAimDir.y += 1;
+        if (STATE.keys['arrowleft']) arrowAimDir.x -= 1;
+        if (STATE.keys['arrowright']) arrowAimDir.x += 1;
+
+        if (arrowAimDir.mag() > 0) {
+            // Prioritize Arrow Keys
+            this.angle = Math.atan2(arrowAimDir.y, arrowAimDir.x);
+            STATE.inputMode = 'KEYBOARD';
+        } else if (STATE.inputMode === 'MOUSE') {
+            // Mouse Aim
+            const dx = STATE.mouse.worldX - this.pos.x;
+            const dy = STATE.mouse.worldY - this.pos.y;
+            this.angle = Math.atan2(dy, dx);
+        } else if (STATE.inputMode === 'KEYBOARD') {
+            // Fallback: If no arrows pressed, use movement direction ONLY if moving
+            // Otherwise, keep last angle (persistence)
+            if (inputDir.mag() > 0) {
+                this.angle = Math.atan2(inputDir.y, inputDir.x);
+            }
+        }
+        
+        // Weapons
+        if (this.cooldown > 0) this.cooldown -= dt;
+        if (this.reloadTimer > 0) {
+            this.reloadTimer -= dt;
+            if (this.reloadTimer <= 0) this.ammo = this.weapon.ammo; 
+        }
+        
+        // Fire Logic: Mouse Click OR Keyboard Space
+        const isFiring = STATE.mouse.down || STATE.keys[' '];
+        if (isFiring && this.cooldown <= 0 && this.reloadTimer <= 0) {
+            this.fire();
+        }
+    }
+
+    dropWeapon() {
+        if (this.weaponKey === 'fists') {
+             createFloatingText("BARE HANDS", this.pos, '#ffaa00');
+             return; 
+        }
+        
+        // Create Loot at player position
+        const loot = new Loot(this.weaponKey, this.pos.x, this.pos.y, true);
+        // Throw it forward
+        const throwDir = new Vector(Math.cos(this.angle), Math.sin(this.angle));
+        loot.vel = throwDir.mult(5);
+        STATE.loot.push(loot);
+        
+        // Revert to Fists
+        this.equipWeapon('fists');
+        createFloatingText("DROPPED", this.pos, '#ffff00');
+    }
+
+    tryPickup() {
+        // Find nearest loot
+        let nearest = null;
+        let dist = 50; // Pickup range
+        
+        STATE.loot.forEach(l => {
+            const d = this.pos.dist(l.pos);
+            if (d < dist) {
+                dist = d;
+                nearest = l;
+            }
+        });
+
+        if (nearest) {
+            // Equip or Consume
+            if (nearest.isWeapon) {
+                // Drop current if not fists
+                if (this.weaponKey !== 'fists') this.dropWeapon();
+                this.equipWeapon(nearest.key);
+            } else {
+                // Consumable
+                if (nearest.data.effect) nearest.data.effect(this);
+            }
+            
+            // Remove from world
+            STATE.loot = STATE.loot.filter(l => l !== nearest);
+            createFloatingText("EQUIPPED", this.pos, '#00ff00');
+        }
+    }
+
+    equipWeapon(key) {
+        this.weaponKey = key;
+        this.weapon = { ...WEAPONS[key] };
+        this.ammo = this.weapon.ammo;
+        updateHUD();
+    }
+    
+    fire() {
+        if (this.weapon.ammo !== -1) {
+            if (this.ammo <= 0) {
+                this.reloadTimer = this.weapon.reload;
+                return;
+            }
+            this.ammo--;
+        }
+        
+        this.cooldown = this.weapon.rate;
+        const dir = new Vector(Math.cos(this.angle), Math.sin(this.angle));
+        
+        if (this.weapon.type === 'melee') {
+            createParticleExplosion(this.pos.add(dir.mult(30)), this.weapon.color, 5);
+            STATE.mobs.forEach(m => {
+                if (m.pos.dist(this.pos) < this.weapon.range && Math.abs(getAngleDiff(this.angle, Math.atan2(m.pos.y - this.pos.y, m.pos.x - this.pos.x))) < 1) {
+                    m.takeDamage(this.weapon.damage);
+                    m.vel = m.vel.add(dir.mult(10)); 
+                }
+            });
+        } else if (this.weapon.type === 'projectile') {
+            STATE.projectiles.push(new Projectile(this.pos, dir, this.weapon));
+        } else if (this.weapon.type === 'spread') {
+            for(let i=0; i<this.weapon.count; i++) {
+                const spreadAngle = (Math.random() - 0.5) * this.weapon.spread;
+                const pDir = new Vector(Math.cos(this.angle + spreadAngle), Math.sin(this.angle + spreadAngle));
+                STATE.projectiles.push(new Projectile(this.pos, pDir, this.weapon));
+            }
+        } else if (this.weapon.type === 'ray') {
+            // Ray logic (simplified)
+            const end = this.pos.add(dir.mult(1000));
+            STATE.particles.push(new Particle(end.x, end.y, '#fff', 2)); // Just visual tracer endpoint
+            
+            // Simple Raycast
+            STATE.mobs.forEach(m => {
+                 const angleToMob = Math.atan2(m.pos.y - this.pos.y, m.pos.x - this.pos.x);
+                 if (m.pos.dist(this.pos) < 1000 && Math.abs(getAngleDiff(this.angle, angleToMob)) < 0.1) {
+                     m.takeDamage(this.weapon.damage);
+                 }
+            });
+            // Draw visual beam in main draw loop via temp particle or direct ctx
+        }
+        
+        updateHUD();
+    }
+
+    takeDamage(amt, sourcePos) {
+        if (this.invuln > 0) return;
+        
+        // Screen Shake / Flash
+        document.getElementById('damage-overlay').classList.remove('damage-effect');
+        void document.getElementById('damage-overlay').offsetWidth; // Trigger reflow
+        document.getElementById('damage-overlay').classList.add('damage-effect');
+
+        // Knockback
+        if (sourcePos) {
+            const knockDir = this.pos.sub(sourcePos).norm();
+            this.vel = this.vel.add(knockDir.mult(10)); // Force impulse
+        }
+
+        if (this.armor > 0) {
+            this.armor -= amt;
+            if (this.armor < 0) {
+                this.hp += this.armor;
+                this.armor = 0;
+            }
+        } else {
+            this.hp -= amt;
+        }
+        
+        this.invuln = 1.0; // 1 second invulnerability
+        createFloatingText('-' + Math.floor(amt), this.pos, '#ff6666');
+        createParticleExplosion(this.pos, '#ff0000', 10);
+        updateHUD();
+        
+        if (this.hp <= 0) endGame(false);
+    }
+    
+    heal(amt) {
+        this.hp = Math.min(this.maxHp, this.hp + amt);
+        createFloatingText("HEALED", this.pos, '#00ff00');
+        updateHUD();
+    }
+}
+
+class Mob {
+    constructor(typeKey, x, y) {
+        this.stats = MOBS[typeKey];
+        this.pos = new Vector(x, y);
+        this.vel = new Vector(0, 0);
+        this.hp = this.stats.hp;
+        this.radius = this.stats.radius;
+        this.dead = false;
+        this.attackTimer = 0;
+    }
+    
+    update(dt) {
+        const dist = this.pos.dist(STATE.player.pos);
+        const dir = STATE.player.pos.sub(this.pos).norm();
+        
+        // Behavior
+        if (this.stats.type === 'ranged') {
+            if (dist > 200) {
+                this.vel = dir.mult(this.stats.speed);
+            } else {
+                this.vel = new Vector(0,0);
+                this.attackTimer += dt;
+                if (this.attackTimer > 2) {
+                    STATE.projectiles.push(new Projectile(this.pos, dir, { speed: 8, damage: 10, color: '#ffff00', life: 2 }));
+                    this.attackTimer = 0;
+                }
+            }
+        } else {
+            this.vel = dir.mult(this.stats.speed);
+        }
+        
+        // Physics push against other mobs
+        STATE.mobs.forEach(other => {
+            if (other === this) return;
+            const d = this.pos.dist(other.pos);
+            if (d < this.radius + other.radius) {
+                const push = this.pos.sub(other.pos).norm().mult(0.5);
+                this.vel = this.vel.add(push);
+            }
+        });
+
+        this.pos = this.pos.add(this.vel);
+        
+        // Collision with Player (Damage)
+        if (this.pos.dist(STATE.player.pos) < this.radius + STATE.player.radius) {
+            STATE.player.takeDamage(this.stats.damage, this.pos);
+        }
+    }
+    
+    takeDamage(amt) {
+        this.hp -= amt;
+        createFloatingText(Math.floor(amt), this.pos, '#ffaa00');
+        if (this.hp <= 0) {
+            this.dead = true;
+            createParticleExplosion(this.pos, this.stats.color, 8);
+        }
+    }
+}
+
+class Projectile {
+    constructor(pos, dir, stats) {
+        this.pos = pos;
+        this.vel = dir.mult(stats.speed);
+        this.stats = stats;
+        this.life = stats.life || 1.5;
+        this.dead = false;
+    }
+    
+    update(dt) {
+        this.pos = this.pos.add(this.vel);
+        this.life -= dt;
+        if (this.life <= 0) this.dead = true;
+        
+        // Player Proj vs Mobs
+        STATE.mobs.forEach(m => {
+            if (this.pos.dist(m.pos) < m.radius + 5) {
+                m.takeDamage(this.stats.damage);
+                this.dead = true;
+            }
+        });
+        
+        // Enemy Proj vs Player
+        if (STATE.player) {
+             if (this.pos.dist(STATE.player.pos) < STATE.player.radius + 5) {
+                 // Check if it's an enemy projectile (simplified check: color yellow)
+                 if (this.stats.color === '#ffff00') {
+                    STATE.player.takeDamage(this.stats.damage, this.pos);
+                    this.dead = true;
+                 }
+             }
+        }
+    }
+    
+    draw(ctx) {
+        ctx.fillStyle = this.stats.color;
+        ctx.beginPath();
+        ctx.arc(this.pos.x, this.pos.y, 4, 0, Math.PI*2);
+        ctx.fill();
+    }
+}
+
+class Particle {
+    constructor(x, y, color, life) {
+        this.pos = new Vector(x, y);
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 3;
+        this.vel = new Vector(Math.cos(angle)*speed, Math.sin(angle)*speed);
+        this.color = color;
+        this.life = life;
+        this.maxLife = life;
+    }
+    update(dt) {
+        this.pos = this.pos.add(this.vel);
+        this.life -= dt;
+    }
+    draw(ctx) {
+        ctx.globalAlpha = this.life / this.maxLife;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.pos.x, this.pos.y, 2, 0, Math.PI*2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+}
+
+class FloatingText {
+    constructor(text, pos, color) {
+        this.text = text;
+        this.pos = new Vector(pos.x, pos.y);
+        this.color = color;
+        this.life = 1.5;
+        this.vel = new Vector((Math.random() - 0.5) * 4, -3);
+    }
+    update(dt) {
+        this.pos = this.pos.add(this.vel);
+        this.vel = this.vel.mult(0.96);
+        this.life -= dt;
+    }
+    draw(ctx) {
+        if (this.life <= 0) return;
+        const alpha = this.life / 1.5;
+        ctx.save();
+        ctx.globalAlpha = alpha * alpha;  // Quadratic fade
+        ctx.translate(this.pos.x, this.pos.y);
+        ctx.fillStyle = this.color;
+        ctx.font = 'bold 18px Orbitron, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 8;
+        ctx.fillText(this.text, 0, 0);
+        ctx.restore();
+    }
+}
+
+// --- ENGINE ---
+
+const canvas = document.getElementById(CONFIG.canvasId);
+const ctx = canvas.getContext('2d');
+let lastTime = 0;
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+function initApp() {
+    loadUserData();
+    updateFighterRoomUI();
+}
+
+// UI Generators
+function generateWeaponList() {
+    const grid = document.getElementById('weapon-grid');
+    grid.innerHTML = '';
+    
+    // Sort so unlockable tiers appear at end or logic
+    const keys = Object.keys(WEAPONS).sort((a,b) => WEAPONS[a].tier - WEAPONS[b].tier);
+
+    keys.forEach(key => {
+        const w = WEAPONS[key];
+        const isUnlocked = userData.inventory.includes(key);
+        
+        const div = document.createElement('div');
+        div.className = `weapon-card glass-panel p-6 flex flex-col items-center text-center ${isUnlocked ? '' : 'locked'}`;
+        
+        if (isUnlocked) {
+            div.onclick = () => {
+                document.querySelectorAll('.weapon-card').forEach(c => c.classList.remove('selected'));
+                div.classList.add('selected');
+                STATE.selectedWeapon = key;
+            };
+        } else {
+             div.onclick = () => {
+                 // Prompt to go to shop? For now, just a wiggle animation maybe
+                 div.style.transform = "translateX(5px)";
+                 setTimeout(() => div.style.transform = "none", 100);
+             };
+        }
+
+        div.innerHTML = `
+            <div class="text-6xl mb-4">${w.icon || '🔫'}</div>
+            <h4 class="text-xl font-bold text-cyan-300">${w.name}</h4>
+            <p class="text-xs text-gray-400 mt-2">Tier ${w.tier} | Dmg: ${w.damage}</p>
+        `;
+        grid.appendChild(div);
+    });
+    // Auto select first unlocked
+    const firstUnlocked = grid.querySelector('.weapon-card:not(.locked)');
+    if (firstUnlocked) firstUnlocked.classList.add('selected');
+}
+
+function generateViewerDeck(side) {
+    const deck = document.getElementById('viewer-deck');
+    if (!deck) return;
+    deck.innerHTML = '';
+    VIEWER_CARDS[side].forEach(card => {
+        const btn = document.createElement('button');
+        btn.id = `card-btn-${card.id}`;
+        btn.className = 'viewer-card-btn flex-shrink-0 w-24 h-32 bg-gray-900 border border-gray-700 hover:border-white transition flex flex-col items-center justify-center gap-2 rounded relative overflow-hidden';
+        btn.onclick = () => triggerViewerCard(card);
+
+        btn.innerHTML = `
+            <div class="text-3xl relative z-10">${card.icon}</div>
+            <div class="text-[10px] font-bold text-center leading-tight ${card.color} relative z-10">${card.name}</div>
+            <div class="text-[9px] text-gray-500 text-center px-1 relative z-10">${card.desc}</div>
+            <div class="absolute bottom-1 right-2 text-[10px] text-white font-mono font-bold bg-black/50 px-1 rounded z-10">${card.cost}</div>
+            <div class="cooldown-overlay h-0 z-20"></div>
+        `;
+        deck.appendChild(btn);
+    });
+}
+
+// --- NEW ROOM LOGIC ---
+
+function renderRoomList() {
+    const container = document.getElementById('room-list-container');
+    container.innerHTML = '';
+    
+    activeRooms.forEach(room => {
+        const isClosed = room.state === 'CLOSED';
+        const card = document.createElement('div');
+        card.className = `room-card glass-panel p-6 flex flex-col gap-4 relative ${isClosed ? 'disabled' : ''}`;
+        
+        // Click Event
+        if (!isClosed) {
+            card.onclick = () => selectRoom(room);
+        }
+
+        const statusClass = isClosed ? 'closed' : 'open';
+        const statusText = isClosed ? 'BETTING CLOSED' : 'BETTING OPEN';
+
+        card.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <div class="text-xs text-gray-500 font-mono">${room.id}</div>
+                    <h3 class="text-2xl text-white font-bold">${room.name}</h3>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs text-gray-500">TOTAL BET</div>
+                    <div class="text-gold-400 font-bold">${room.totalBet.toLocaleString()}</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="bg-black/40 p-3 rounded border border-cyan-500/30">
+                    <div class="text-cyan-400">WIN</div>
+                    <div class="text-white font-bold">${room.winBet.toLocaleString()}</div>
+                    <div class="text-xs text-gray-500">${room.winCount} bettors</div>
+                </div>
+                <div class="bg-black/40 p-3 rounded border border-pink-500/30">
+                    <div class="text-pink-400">LOSE</div>
+                    <div class="text-white font-bold">${room.loseBet.toLocaleString()}</div>
+                    <div class="text-xs text-gray-500">${room.loseCount} bettors</div>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-4 border-t border-gray-800 flex justify-between items-center">
+                <div class="status-pill ${statusClass}">${statusText}</div>
+                <div class="text-xs text-gray-500">${isClosed ? 'CLOSED' : 'OPEN'}</div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function selectRoom(room) {
+    selectedRoom = room;
+    document.getElementById('screen-viewer-rooms').classList.add('hidden');
+    document.getElementById('screen-viewer-bet').classList.remove('hidden');
+    updateViewerBetScreen();
+}
+
+// Navigation Screens
+function goToFighterRoom() {
+    document.getElementById('screen-main-menu').classList.add('hidden');
+    document.getElementById('screen-fighter-room').classList.remove('hidden');
+    updateFighterRoomUI();
+}
+
+// MODIFIED NAV
+function goToViewerRooms() {
+    document.getElementById('screen-main-menu').classList.add('hidden');
+    document.getElementById('screen-fighter-room').classList.add('hidden');
+    document.getElementById('screen-viewer-rooms').classList.remove('hidden');
+    renderRoomList();
+}
+
+function goBackToMenu() { 
+    document.getElementById('screen-viewer-rooms').classList.add('hidden'); 
+    document.getElementById('screen-viewer-bet').classList.add('hidden');
+    document.getElementById('screen-fighter-room').classList.add('hidden');
+    document.getElementById('screen-main-menu').classList.remove('hidden'); 
+}
+
+function goBackToRooms() {
+    document.getElementById('screen-viewer-bet').classList.add('hidden');
+    document.getElementById('screen-viewer-rooms').classList.remove('hidden');
+}
+
+function openFighterRoom() {
+    const input = document.getElementById('fighter-room-name');
+    const name = input.value.trim() || 'Fighter Room';
+    fighterRoom.name = name;
+    fighterRoom.state = 'OPEN';
+    fighterRoom.totalBet = 8400;
+    fighterRoom.winBet = 5200;
+    fighterRoom.loseBet = 3200;
+    fighterRoom.winCount = 38;
+    fighterRoom.loseCount = 24;
+    updateFighterRoomUI();
+}
+
+function updateFighterRoomUI() {
+    const statusEl = document.getElementById('fighter-betting-status');
+    const isOpen = fighterRoom.state === 'OPEN';
+    document.getElementById('fighter-room-display').innerText = fighterRoom.name;
+    document.getElementById('fighter-total-bettors').innerText = (fighterRoom.winCount + fighterRoom.loseCount).toLocaleString();
+    document.getElementById('fighter-total-bet').innerText = fighterRoom.totalBet.toLocaleString();
+    document.getElementById('fighter-win-bet').innerText = fighterRoom.winBet.toLocaleString();
+    document.getElementById('fighter-lose-bet').innerText = fighterRoom.loseBet.toLocaleString();
+    document.getElementById('fighter-win-count').innerText = `${fighterRoom.winCount} bettors`;
+    document.getElementById('fighter-lose-count').innerText = `${fighterRoom.loseCount} bettors`;
+    statusEl.innerText = isOpen ? 'BETTING OPEN' : 'BETTING CLOSED';
+    statusEl.className = `status-pill ${isOpen ? 'open' : 'closed'}`;
+}
+
+function startMatchAsFighter() {
+    fighterRoom.state = 'CLOSED';
+    updateFighterRoomUI();
+    startGameAsFighter();
+}
+
+let selectedBetSide = null;
+
+function updateViewerBetScreen() {
+    if (!selectedRoom) return;
+    document.getElementById('viewer-room-title').innerText = selectedRoom.name;
+    document.getElementById('viewer-room-total').innerText = selectedRoom.totalBet.toLocaleString();
+    document.getElementById('viewer-room-win-bet').innerText = selectedRoom.winBet.toLocaleString();
+    document.getElementById('viewer-room-lose-bet').innerText = selectedRoom.loseBet.toLocaleString();
+    selectedBetSide = null;
+    document.getElementById('bet-side-win').classList.remove('selected');
+    document.getElementById('bet-side-lose').classList.remove('selected');
+}
+
+function selectBetSide(side) {
+    selectedBetSide = side;
+    document.getElementById('bet-side-win').classList.toggle('selected', side === 'WIN');
+    document.getElementById('bet-side-lose').classList.toggle('selected', side === 'LOSE');
+}
+
+function lockBetAndEnter() {
+    if (!selectedRoom || selectedRoom.state !== 'OPEN') {
+        alert('Betting is closed.');
+        return;
+    }
+    if (!selectedBetSide) {
+        alert('Select WIN or LOSE.');
+        return;
+    }
+    const amount = parseInt(document.getElementById('viewer-bet-amount').value, 10);
+    if (!amount || amount <= 0) {
+        alert('Enter a valid bet amount.');
+        return;
+    }
+    STATE.userBetAmount = amount;
+    STATE.faction = selectedBetSide;
+    STATE.role = 'VIEWER';
+    STATE.viewerIP = 200;
+    STATE.viewerCooldowns = {};
+    document.getElementById('screen-viewer-bet').classList.add('hidden');
+    document.getElementById('hud-viewer').classList.remove('hidden');
+    updateViewerHUD();
+    generateViewerDeck(selectedBetSide);
+    startMatch();
+}
+
+function updateViewerHUD() {
+    if (!selectedRoom) return;
+    const statusEl = document.getElementById('viewer-betting-status');
+    const isOpen = selectedRoom.state === 'OPEN';
+    document.getElementById('viewer-room-name').innerText = selectedRoom.name;
+    document.getElementById('viewer-total-bet').innerText = selectedRoom.totalBet.toLocaleString();
+    document.getElementById('viewer-win-bet').innerText = selectedRoom.winBet.toLocaleString();
+    document.getElementById('viewer-lose-bet').innerText = selectedRoom.loseBet.toLocaleString();
+    document.getElementById('viewer-user-bet').innerText = STATE.userBetAmount.toLocaleString();
+    document.getElementById('viewer-side').innerText = STATE.faction;
+    const ipEl = document.getElementById('viewer-ip');
+    if (ipEl) ipEl.innerText = STATE.viewerIP.toLocaleString();
+    statusEl.innerText = isOpen ? 'BETTING OPEN' : 'BETTING CLOSED';
+    statusEl.className = `status-pill ${isOpen ? 'open' : 'closed'}`;
+}
+
+function startGameAsFighter() {
+    document.getElementById('reticle').classList.remove('hidden');
+    document.getElementById('screen-fighter-room').classList.add('hidden');
+    document.getElementById('hud-fighter').classList.remove('hidden');
+    STATE.role = 'FIGHTER';
+    startMatch();
+}
+
+function toggleHelpOverlay() {
+    const overlay = document.getElementById('screen-help-overlay');
+    overlay.classList.toggle('hidden');
+}
+
+// --- END NEW INSTRUCTION LOGIC ---
+
+function startGameAsViewer() {
+    document.getElementById('hud-viewer').classList.remove('hidden');
+    STATE.role = 'VIEWER';
+    startMatch();
+}
+
+function startMatch() {
+    STATE.screen = 'GAME';
+    STATE.gameOver = false; // Ensure game over state is reset
+    const weapon = 'knife';
+    STATE.player = new Player(weapon);
+    STATE.mobs = [];
+    STATE.projectiles = [];
+    STATE.particles = [];
+    STATE.loot = [];
+    STATE.floatingTexts = [];
+    STATE.time = 0;
+    STATE.arenaRadius = CONFIG.initialArenaRadius;
+    STATE.zoneDamageTicker = 0;
+    STATE.inputMode = 'MOUSE'; // Default input mode
+    
+    generateHexGrid();
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
+    
+    // Hint Logic
+    if (STATE.role === 'FIGHTER') {
+        const hintEl = document.getElementById('hud-hints');
+        if (hintEl) {
+            hintEl.classList.remove('opacity-0');
+            setTimeout(() => {
+                hintEl.classList.add('opacity-0');
+            }, 12000); // 12 seconds hint display
+        }
+    }
+    
+    // Timer & Passive Logic
+    // Store interval ID to clear it later if needed, though strictly checking state is safer
+    if (STATE.gameInterval) clearInterval(STATE.gameInterval);
+    STATE.gameInterval = setInterval(() => {
+        if(STATE.screen === 'GAME' && !STATE.gameOver) {
+            STATE.time++;
+            
+            // Countdown HUD Logic
+            const timeLeft = Math.max(0, CONFIG.matchDuration - STATE.time);
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            const timeStr = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            if (document.getElementById('game-timer')) document.getElementById('game-timer').innerText = timeStr;
+            
+            // Phase Update
+            const phaseEl = document.getElementById('game-phase');
+            if (phaseEl) {
+                if (timeLeft > 120) phaseEl.innerText = "Phase 1: Warm Up";
+                else if (timeLeft > 60) phaseEl.innerText = "Phase 2: Constriction";
+                else phaseEl.innerText = "Phase 3: SUDDEN DEATH";
+            }
+
+            if (STATE.role === 'FIGHTER' && STATE.time % 5 === 0) spawnWave();
+        }
+    }, 1000);
+}
+
+function spawnWave() {
+    const count = Math.floor(STATE.time / 20) + 1;
+    for(let i=0; i<count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        // Spawn inside current radius to be fair? or slightly outside? 
+        // Let's spawn inside to ensure action.
+        const spawnRadius = STATE.arenaRadius * 0.8; 
+        const x = Math.cos(angle) * spawnRadius;
+        const y = Math.sin(angle) * spawnRadius;
+        let type = 'goblin';
+        if (STATE.time > 30 && Math.random() > 0.7) type = 'archer';
+        if (STATE.time > 60 && Math.random() > 0.8) type = 'ogre';
+        STATE.mobs.push(new Mob(type, x, y));
+    }
+}
+
+function gameLoop(timestamp) {
+    const dt = (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+    if (STATE.screen === 'GAME' && !STATE.gameOver) {
+        update(dt);
+        draw();
+    }
+    requestAnimationFrame(gameLoop);
+}
+
+function update(dt) {
+    if (!STATE.player) return;
+    
+    // --- ARENA SHRINK LOGIC ---
+    if (STATE.time > 0) {
+        const progress = Math.min(STATE.time / CONFIG.matchDuration, 1);
+        // Linear shrink from Initial to Min
+        const targetRadius = CONFIG.initialArenaRadius - ((CONFIG.initialArenaRadius - CONFIG.minArenaRadius) * progress);
+        // Lerp for smoothness, though direct calc above is also smooth
+        STATE.arenaRadius = targetRadius;
+        
+        // Win Condition: Time ran out
+        if (STATE.time >= CONFIG.matchDuration) {
+            endGame(true);
+            return;
+        }
+    }
+
+    // --- ZONE DAMAGE LOGIC ---
+    const dist = STATE.player.pos.mag();
+    const warningOverlay = document.getElementById('zone-warning-overlay');
+    
+    if (dist > STATE.arenaRadius) {
+        STATE.zoneDamageTicker += dt;
+        warningOverlay.classList.remove('hidden');
+        
+        if (STATE.zoneDamageTicker > 1.0) {
+            STATE.player.takeDamage(10, null); // 10 true damage (ignores armor?) - let's use standard takeDamage
+            createFloatingText("ZONE DAMAGE!", STATE.player.pos, '#ff0000');
+            STATE.zoneDamageTicker = 0;
+        }
+    } else {
+        STATE.zoneDamageTicker = 0;
+        warningOverlay.classList.add('hidden');
+    }
+
+    STATE.player.update(dt);
+    
+    STATE.mobs.forEach(m => m.update(dt));
+    STATE.mobs = STATE.mobs.filter(m => !m.dead);
+    
+    STATE.projectiles.forEach(p => p.update(dt));
+    STATE.projectiles = STATE.projectiles.filter(p => !p.dead);
+    
+    STATE.particles.forEach(p => p.update(dt));
+    STATE.particles = STATE.particles.filter(p => p.life > 0);
+
+    STATE.loot.forEach(l => l.update(dt));
+    STATE.loot = STATE.loot.filter(l => l.life > 0);
+    
+    STATE.floatingTexts.forEach(ft => ft.update(dt));
+    STATE.floatingTexts = STATE.floatingTexts.filter(ft => ft.life > 0);
+    
+    // Camera
+    STATE.camera.x = lerp(STATE.camera.x, STATE.player.pos.x, 0.1);
+    STATE.camera.y = lerp(STATE.camera.y, STATE.player.pos.y, 0.1);
+
+    // Interaction UI Prompt
+    let nearLoot = false;
+    STATE.loot.forEach(l => { if (STATE.player.pos.dist(l.pos) < 50) nearLoot = l; });
+    const prompt = document.getElementById('interaction-prompt');
+    if (nearLoot) {
+        prompt.classList.remove('hidden');
+        document.getElementById('prompt-item-name').innerText = nearLoot.data.name;
+    } else {
+        prompt.classList.add('hidden');
+    }
+
+    if (STATE.role === 'VIEWER') {
+        updateViewerState(dt);
+    }
+}
+
+function draw() {
+    ctx.fillStyle = CONFIG.colors.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    const cx = canvas.width / 2 - STATE.camera.x;
+    const cy = canvas.height / 2 - STATE.camera.y;
+    ctx.translate(cx, cy);
+    
+    drawHexGrid();
+    
+    STATE.loot.forEach(l => l.draw(ctx));
+    STATE.particles.forEach(p => p.draw(ctx));
+    STATE.floatingTexts.forEach(ft => ft.draw(ctx));
+    
+    STATE.mobs.forEach(m => {
+        ctx.fillStyle = m.stats.color;
+        ctx.shadowColor = m.stats.color;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(m.pos.x, m.pos.y, m.radius, 0, Math.PI*2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // HP Bar
+        ctx.fillStyle = 'red';
+        ctx.fillRect(m.pos.x - 10, m.pos.y - m.radius - 8, 20, 4);
+        ctx.fillStyle = 'green';
+        ctx.fillRect(m.pos.x - 10, m.pos.y - m.radius - 8, 20 * (m.hp / m.stats.hp), 4);
+    });
+    
+    if (STATE.player) {
+        ctx.save();
+        ctx.translate(STATE.player.pos.x, STATE.player.pos.y);
+        ctx.rotate(STATE.player.angle);
+        
+        // Invuln blink
+        if (STATE.player.invuln > 0 && Math.floor(Date.now() / 50) % 2 === 0) {
+            ctx.globalAlpha = 0.5;
+        }
+
+        ctx.fillStyle = '#fff';
+        ctx.shadowColor = '#00f3ff';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.moveTo(10, 0);
+        ctx.lineTo(-10, 10);
+        ctx.lineTo(-5, 0);
+        ctx.lineTo(-10, -10);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
+    }
+    
+    STATE.projectiles.forEach(p => p.draw(ctx));
+    
+    // Draw Safe Zone Boundary
+    ctx.strokeStyle = '#ff0055';
+    ctx.lineWidth = 5;
+    ctx.shadowColor = '#ff0055';
+    ctx.shadowBlur = 20;
+    ctx.beginPath();
+    ctx.arc(0, 0, STATE.arenaRadius, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.shadowBlur = 0; // Reset
+    
+    ctx.restore();
+    
+    // Reticle (only draw if using mouse input)
+    if (STATE.role === 'FIGHTER' && STATE.inputMode === 'MOUSE') {
+        const mx = STATE.mouse.x;
+        const my = STATE.mouse.y;
+        ctx.strokeStyle = '#00f3ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(mx, my, 10, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(mx-15, my); ctx.lineTo(mx-5, my);
+        ctx.moveTo(mx+5, my); ctx.lineTo(mx+15, my);
+        ctx.moveTo(mx, my-15); ctx.lineTo(mx, my-5);
+        ctx.moveTo(mx, my+5); ctx.lineTo(mx, my-5);
+        ctx.stroke();
+    }
+}
+
+// --- UTILS ---
+
+function generateHexGrid() {
+    STATE.hexes = [];
+    const size = CONFIG.hexSize;
+    // Generate a bit wider to cover max arena
+    for (let q = -25; q <= 25; q++) {
+        for (let r = -25; r <= 25; r++) {
+            const x = size * (3/2 * q);
+            const y = size * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r);
+            if (x*x + y*y < CONFIG.initialArenaRadius * CONFIG.initialArenaRadius) {
+                STATE.hexes.push({ x, y, active: Math.random() > 0.1 });
+            }
+        }
+    }
+}
+
+function drawHexGrid() {
+    ctx.lineWidth = 1;
+    STATE.hexes.forEach(h => {
+        // Culling
+        const d2 = h.x * h.x + h.y * h.y;
+        if (d2 > CONFIG.initialArenaRadius * CONFIG.initialArenaRadius) return;
+        
+        if (!h.active) return;
+        
+        const dist = Math.sqrt(d2);
+        
+        // Zone Logic Coloring
+        if (dist > STATE.arenaRadius) {
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.15)'; // Danger
+            ctx.strokeStyle = '#550000';
+        } else {
+            ctx.fillStyle = 'rgba(0, 243, 255, 0.05)'; // Safe
+            ctx.strokeStyle = '#1a1a2e';
+        }
+
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = 60 * i * Math.PI / 180;
+            ctx.lineTo(h.x + CONFIG.hexSize * Math.cos(angle), h.y + CONFIG.hexSize * Math.sin(angle));
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+    });
+}
+
+function createParticleExplosion(pos, color, count) {
+    for(let i=0; i<count; i++) STATE.particles.push(new Particle(pos.x, pos.y, color, 0.5 + Math.random()*0.5));
+}
+
+function createFloatingText(text, pos, color) {
+    STATE.floatingTexts.push(new FloatingText(text, pos, color));
+}
+
+function updateHUD() {
+    if (STATE.role === 'FIGHTER') {
+        document.getElementById('hud-hp').innerText = Math.floor(STATE.player.hp);
+        document.getElementById('bar-hp').style.width = `${Math.max(0, STATE.player.hp)}%`;
+        document.getElementById('bar-armor').style.width = `${Math.max(0, STATE.player.armor)}%`;
+        document.getElementById('hud-weapon').innerText = STATE.player.weapon.name;
+        const ammoText = STATE.player.weapon.ammo === -1 ? '∞' : STATE.player.ammo;
+        document.getElementById('hud-ammo').innerText = `${STATE.player.weapon.type.toUpperCase()} / ${ammoText}`;
+    } else if (STATE.role === 'VIEWER') {
+        const hpValue = Math.max(0, Math.floor(STATE.player.hp));
+        const hpMax = STATE.player.maxHp || 100;
+        const hpEl = document.getElementById('viewer-hp');
+        const hpBar = document.getElementById('viewer-hp-bar');
+        if (hpEl) hpEl.innerText = hpValue;
+        if (hpBar) hpBar.style.width = `${Math.max(0, Math.min(100, (hpValue / hpMax) * 100))}%`;
+    }
+}
+
+function updateViewerState(dt) {
+    Object.keys(STATE.viewerCooldowns).forEach(id => {
+        if (STATE.viewerCooldowns[id] > 0) {
+            STATE.viewerCooldowns[id] -= dt;
+        }
+    });
+
+    const side = STATE.faction;
+    if (!side || !VIEWER_CARDS[side]) return;
+
+    VIEWER_CARDS[side].forEach(card => {
+        const btn = document.getElementById(`card-btn-${card.id}`);
+        if (!btn) return;
+
+        const cd = STATE.viewerCooldowns[card.id] || 0;
+        const affordable = STATE.viewerIP >= card.cost;
+        const cooldownOverlay = btn.querySelector('.cooldown-overlay');
+
+        btn.disabled = !affordable || cd > 0;
+
+        if (cd > 0) {
+            const pct = (cd / card.cooldown) * 100;
+            cooldownOverlay.style.height = `${pct}%`;
+        } else {
+            cooldownOverlay.style.height = '0%';
+        }
+
+        btn.style.opacity = affordable ? '1' : '0.5';
+    });
+}
+
+function triggerViewerCard(card) {
+    const cd = STATE.viewerCooldowns[card.id] || 0;
+    if (STATE.viewerIP < card.cost || cd > 0) return;
+
+    STATE.viewerIP -= card.cost;
+    const ipEl = document.getElementById('viewer-ip');
+    if (ipEl) ipEl.innerText = STATE.viewerIP;
+
+    STATE.viewerCooldowns[card.id] = card.cooldown;
+    createFloatingText("ACTIVATED: " + card.name, STATE.player.pos, card.color.replace('text-', '#').replace('-400', ''));
+
+    if (card.id.startsWith('spawn_')) {
+        if (card.id === 'spawn_horde') {
+            for (let i = 0; i < 3; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 300 + Math.random() * 100;
+                const x = STATE.player.pos.x + Math.cos(angle) * dist;
+                const y = STATE.player.pos.y + Math.sin(angle) * dist;
+                STATE.mobs.push(new Mob('goblin', x, y));
+            }
+        } else if (card.id === 'spawn_sniper') {
+            const angle = Math.random() * Math.PI * 2;
+            const x = STATE.player.pos.x + Math.cos(angle) * 400;
+            const y = STATE.player.pos.y + Math.sin(angle) * 400;
+            STATE.mobs.push(new Mob('archer', x, y));
+        } else {
+            const angle = Math.random() * Math.PI * 2;
+            const x = STATE.player.pos.x + Math.cos(angle) * 300;
+            const y = STATE.player.pos.y + Math.sin(angle) * 300;
+            STATE.mobs.push(new Mob(card.id.split('_')[1], x, y));
+        }
+    } else if (card.id.startsWith('drop_')) {
+        if (card.id === 'drop_medkit') {
+            const loot = new Loot('medkit', STATE.player.pos.x, STATE.player.pos.y, false);
+            loot.pos = new Vector(STATE.player.pos.x + (Math.random() - 0.5) * 100, STATE.player.pos.y + (Math.random() - 0.5) * 100);
+            STATE.loot.push(loot);
+        } else if (card.id === 'drop_weapon') {
+            const tiers2 = Object.keys(WEAPONS).filter(k => WEAPONS[k].tier >= 2);
+            const key = tiers2[Math.floor(Math.random() * tiers2.length)];
+            const loot = new Loot(key, STATE.player.pos.x, STATE.player.pos.y, true);
+            loot.pos = new Vector(STATE.player.pos.x + (Math.random() - 0.5) * 100, STATE.player.pos.y + (Math.random() - 0.5) * 100);
+            STATE.loot.push(loot);
+        }
+    } else if (card.id.startsWith('buff_')) {
+        if (card.id === 'buff_speed') {
+            STATE.player.speedBuffTimer = 10;
+            createParticleExplosion(STATE.player.pos, '#ffff00', 20);
+        } else if (card.id === 'buff_invuln') {
+            STATE.player.invuln = 5;
+            createParticleExplosion(STATE.player.pos, '#bc13fe', 20);
+        }
+    } else if (card.id.startsWith('env_')) {
+        if (card.id === 'env_shrink') {
+            STATE.arenaRadius -= 50;
+            createFloatingText("ZONE SHRINKING!", STATE.player.pos, '#ff4400');
+        } else if (card.id === 'env_strike') {
+            createParticleExplosion(STATE.player.pos, '#ff0000', 50);
+            STATE.player.takeDamage(20);
+            STATE.mobs.forEach(m => {
+                if (m.pos.dist(STATE.player.pos) < 200) m.takeDamage(50);
+            });
+        }
+    }
+}
+
+function toggleChat() {
+    const chat = document.getElementById('chat-overlay');
+    if (chat) chat.classList.toggle('hidden');
+}
+const CHAT_NAMES = ["Neo_X", "Glitch01", "Viper", "CyberPunk99", "BetLord", "RogueAI", "HexMaster"];
+const CHAT_MSGS = ["Looooool", "RIP", "Drop the hammer!", "Hold the line!", "What a play!", "GG", "Scammed", "Buy low sell high", "Doomers rising!"];
+function addChatMessage(name, msg, color = 'text-gray-400') {
+    const chat = document.getElementById('chat-overlay');
+    if (!chat) return;
+    const div = document.createElement('div');
+    div.className = "mb-1";
+    div.innerHTML = `<span class="${color} font-bold">${name}:</span> <span class="text-gray-300">${msg}</span>`;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+setInterval(() => {
+    if (STATE.screen === 'GAME' && !STATE.gameOver && Math.random() < 0.3) {
+        const name = CHAT_NAMES[Math.floor(Math.random() * CHAT_NAMES.length)];
+        const msg = CHAT_MSGS[Math.floor(Math.random() * CHAT_MSGS.length)];
+        const faction = Math.random() > 0.5 ? 'text-cyan-400' : 'text-pink-500';
+        addChatMessage(name, msg, faction);
+    }
+}, 2000);
+
+function endGame(victory) {
+    if (STATE.gameOver) return;
+
+    STATE.gameOver = true;
+    STATE.screen = 'GAMEOVER';
+
+    const winningSide = victory ? 'WIN' : 'LOSE';
+
+    if (STATE.role === 'FIGHTER') {
+        document.getElementById('screen-gameover').classList.remove('hidden');
+        document.getElementById('go-title').innerText = victory ? 'SURVIVED' : 'ELIMINATED';
+        document.getElementById('go-title').className = victory ? 'text-6xl font-black text-green-400 mb-4' : 'text-6xl font-black text-red-600 mb-4';
+        document.getElementById('go-desc').innerText = victory ? 'Fighter survived the arena.' : 'Fighter was eliminated.';
+
+        const rewardPanel = document.getElementById('fighter-reward-panel');
+        if (victory) {
+            const pool = fighterRoom.totalBet || 0;
+            const reward = Math.floor(pool * 0.15);
+            document.getElementById('fighter-reward-amount').innerText = reward.toLocaleString();
+            rewardPanel.classList.remove('hidden');
+        } else {
+            rewardPanel.classList.add('hidden');
+        }
+    } else {
+        showViewerResults(winningSide, victory);
+    }
+}
+
+function showViewerResults(winningSide, fighterWon) {
+    document.getElementById('screen-viewer-results').classList.remove('hidden');
+    document.getElementById('hud-viewer').classList.add('hidden');
+
+    const elTitle = document.getElementById('vr-title');
+    const elSubtitle = document.getElementById('vr-subtitle');
+    const elTotalPool = document.getElementById('vr-total-pool');
+    const elFighterReward = document.getElementById('vr-fighter-reward');
+    const elViewerPool = document.getElementById('vr-viewer-pool');
+    const elUserBet = document.getElementById('vr-user-bet');
+    const elShare = document.getElementById('vr-share');
+    const elTotalPayout = document.getElementById('vr-total-payout');
+    const elPnl = document.getElementById('vr-pnl');
+    const claimBtn = document.getElementById('vr-claim-btn');
+    const panelStats = document.getElementById('vr-panel-stats');
+
+    if (winningSide === 'WIN') {
+        elTitle.innerText = 'WIN SIDE PAID';
+        elTitle.setAttribute('data-text', 'WIN SIDE PAID');
+        elTitle.className = 'text-6xl md:text-8xl font-black mb-2 glitch-text tracking-wider text-cyan-400';
+        panelStats.className = 'w-full md:w-1/2 glass-panel p-8 border-l-4 border-cyan-500 win-glow-savior transition duration-1000';
+    } else {
+        elTitle.innerText = 'LOSE SIDE PAID';
+        elTitle.setAttribute('data-text', 'LOSE SIDE PAID');
+        elTitle.className = 'text-6xl md:text-8xl font-black mb-2 glitch-text tracking-wider text-pink-500';
+        panelStats.className = 'w-full md:w-1/2 glass-panel p-8 border-l-4 border-pink-500 win-glow-doomer transition duration-1000';
+    }
+
+    const totalPool = selectedRoom ? selectedRoom.totalBet : 0;
+    const fighterReward = fighterWon ? Math.floor(totalPool * 0.15) : 0;
+    const viewerWinPool = totalPool - fighterReward;
+
+    const userWon = (STATE.faction === winningSide);
+    const userBet = STATE.userBetAmount || 0;
+    const totalBetSideWin = winningSide === 'WIN' ? (selectedRoom?.winBet || 0) : (selectedRoom?.loseBet || 0);
+    const share = totalBetSideWin > 0 ? (userBet / totalBetSideWin) : 0;
+    const userPayout = userWon ? Math.floor(share * viewerWinPool) : 0;
+    const pnl = userPayout - userBet;
+
+    elUserBet.innerText = userBet.toLocaleString();
+    elShare.innerText = `${(share * 100).toFixed(2)}%`;
+
+    animateValue(elTotalPool, 0, totalPool, 1500);
+    setTimeout(() => animateValue(elFighterReward, 0, fighterReward, 1000), 500);
+    setTimeout(() => animateValue(elViewerPool, 0, viewerWinPool, 1000), 1000);
+
+    setTimeout(() => {
+        animateValue(elTotalPayout, 0, userPayout, 2000);
+        elPnl.innerText = pnl.toLocaleString();
+        elPnl.className = pnl >= 0 ? 'font-mono text-xl text-green-400' : 'font-mono text-xl text-red-500';
+        if (pnl > 0) {
+            claimBtn.classList.remove('hidden');
+        } else {
+            claimBtn.classList.add('hidden');
+        }
+    }, 1500);
+
+    elSubtitle.innerText = userWon ? 'PAYOUT CONFIRMED' : 'BET LOST';
+    elSubtitle.className = userWon ? 'text-xl text-green-400 mb-12 tracking-[0.5em] uppercase' : 'text-xl text-red-500 mb-12 tracking-[0.5em] uppercase';
+}
+
+function animateValue(obj, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
+function lerp(start, end, t) { return start * (1 - t) + end * t; }
+function getAngleDiff(a, b) { return Math.atan2(Math.sin(b-a), Math.cos(b-a)); }
+
+// FIX: Case sensitivity and Scroll blocking
+window.addEventListener('keydown', e => {
+    // FIX: Convert to lowercase to handle CapsLock/Shift
+    STATE.keys[e.key.toLowerCase()] = true;
+    
+    // Switch to KEYBOARD input mode on WASD or Attack keys
+    if (['w','a','s','d',' ','j'].includes(e.key.toLowerCase()) || 
+        ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(e.key.toLowerCase())) {
+        STATE.inputMode = 'KEYBOARD';
+    }
+
+    // FIX: Prevent default browser scrolling/actions for game keys
+    if(['w','a','s','d',' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+    }
+    
+    // Overlay Toggle Key (Optional support for ESC to close instructions/help)
+    if(e.key === 'Escape') {
+        const overlay = document.getElementById('screen-help-overlay');
+        if (overlay) overlay.classList.add('hidden');
+    }
+});
+
+window.addEventListener('keyup', e => {
+    STATE.keys[e.key.toLowerCase()] = false;
+});
+
+// FIX: Reset keys on window blur to prevent "stuck" movement
+window.addEventListener('blur', () => {
+    STATE.keys = {};
+    STATE.mouse.down = false;
+});
+
+window.addEventListener('mousemove', e => {
+    // Switch to MOUSE input mode
+    STATE.inputMode = 'MOUSE';
+
+    const reticle = document.getElementById('reticle');
+    reticle.style.left = e.clientX + 'px';
+    reticle.style.top = e.clientY + 'px';
+    // Mouse coords for aiming
+    STATE.mouse.x = e.clientX;
+    STATE.mouse.y = e.clientY;
+    
+    // Convert screen to world coords (approximation based on camera)
+    // Center screen is (canvas.width/2, canvas.height/2)
+    // World pos is Player pos.
+    // So relative mouse offset + Player pos = Mouse World Pos
+    if(STATE.player) {
+         const centerX = canvas.width / 2;
+         const centerY = canvas.height / 2;
+         STATE.mouse.worldX = STATE.player.pos.x + (e.clientX - centerX);
+         STATE.mouse.worldY = STATE.player.pos.y + (e.clientY - centerY);
+    }
+});
+
+window.addEventListener('mousedown', () => {
+    STATE.mouse.down = true;
+    STATE.inputMode = 'MOUSE'; // Explicitly set to mouse
+});
+window.addEventListener('mouseup', () => STATE.mouse.down = false);
+
+initApp();
+
+</script>
+</body>
+</html>
