@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import Peer from "peerjs";
 import ConnectRoomSection from "../Section/ConnectRoomSection";
 import ViewerItems from "../Section/ViewerItems";
+import HostLostResultDialog from "../Dialog/HostLostResultDialog";
+import HostWinResultDialog from "../Dialog/HostWinResultDialog";
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer["connect"]>;
@@ -18,6 +20,10 @@ function ViewGame() {
   const [isConnected, setIsConnected] = useState(false);
   const [currentRoomCode, setCurrentRoomCode] = useState<string | null>(null);
   const [peerId, setPeerId] = useState<string | null>(null);
+  const [showPlayerDiedDialog, setShowPlayerDiedDialog] = useState(false);
+  const [playerName, setPlayerName] = useState<string | undefined>(undefined);
+  const [showGameEndedDialog, setShowGameEndedDialog] = useState(false);
+  const [winnerName, setWinnerName] = useState<string | undefined>(undefined);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const peerRef = useRef<Peer | null>(null);
@@ -57,17 +63,13 @@ function ViewGame() {
       return;
     }
 
-    console.log("Sending message to game: " + msg);
-    // Send spawn command to Unity game
-    const spawnCommand = {
+    const command = {
       type: msg,
       viewerId: peerId,
       roomCode: currentRoomCode,
-      x: null, // null = random position
-      y: null, // null = random position
     };
 
-    dataConnection.send(spawnCommand);
+    dataConnection.send(command);
   };
 
   // Initialize PeerJS
@@ -137,6 +139,60 @@ function ViewGame() {
     };
   }, []);
 
+    // Listen for messages from peer server
+    useEffect(() => {
+      if (!isConnected) return;
+      
+      const dataConnection = dataConnectionRef.current;
+      if (!dataConnection) return;
+  
+      const handleData = (data: unknown) => {
+        try {
+          let message: { type?: string; playerName?: string } | null = null;
+
+          if (typeof data === 'string') {
+            if (data === 'player-died' || data === 'game-ended') {
+              if (data === 'player-died') {
+                setShowPlayerDiedDialog(true);
+              } else {
+                setShowGameEndedDialog(true);
+              }
+              return;
+            }
+            
+            try {
+              message = JSON.parse(data) as { type?: string; playerName?: string };
+            } catch {
+              return;
+            }
+          } 
+          else if (typeof data === 'object' && data !== null) {
+            message = data as { type?: string; playerName?: string };
+          } else {
+            return;
+          }
+
+          if (message?.type === 'player-died') {
+            setPlayerName(message.playerName);
+            setShowPlayerDiedDialog(true);
+          } else if (message?.type === 'game-ended') {
+            setWinnerName(message.playerName);
+            setShowGameEndedDialog(true);
+          }
+        } catch (error) {
+          console.error('Error processing message from peer server:', error);
+        }
+      };
+  
+      dataConnection.on('data', handleData);
+  
+      return () => {
+        if (dataConnection) {
+          dataConnection.off('data', handleData);
+        }
+      };
+    }, [isConnected]);
+
   return (
     <div className="flex flex-col h-screen bg-[#111] text-[#eee] font-sans relative">
       {/* Room Selector */}
@@ -158,8 +214,27 @@ function ViewGame() {
       </div>
 
       <ViewerItems onSendMessageToGame={handleSendMessageToGame} />
+
+      <HostLostResultDialog
+        isOpen={showPlayerDiedDialog}
+        onClose={() => {
+          setShowPlayerDiedDialog(false);
+          setPlayerName(undefined);
+        }}
+        playerName={playerName}
+      />
+
+      <HostWinResultDialog
+        isOpen={showGameEndedDialog}
+        onClose={() => {
+          setShowGameEndedDialog(false);
+          setWinnerName(undefined);
+        }}
+        playerName={winnerName}
+      />
     </div>
   );
 }
 
 export default ViewGame;
+

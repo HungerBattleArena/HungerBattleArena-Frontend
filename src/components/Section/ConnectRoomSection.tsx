@@ -1,9 +1,7 @@
 import Peer from "peerjs";
 import { useState, useRef, useEffect } from "react";
 
-// Infer DataConnection type from Peer's connect method return type
 type DataConnection = ReturnType<Peer["connect"]>;
-
 interface ConnectRoomSectionProps {
   peerRef: React.MutableRefObject<Peer | null>;
   onConnectionChange: (isConnected: boolean, roomCode: string | null) => void;
@@ -72,11 +70,11 @@ const ConnectRoomSection = ({
       setIsConnected(true);
 
       // Send a small message so host knows this viewer is ready
-      dataConnection.send({
-        type: "viewer-hello",
-        viewerId: peer.id,
-        roomCode: code,
-      });
+      // dataConnection.send({
+      //   type: "viewer-hello",
+      //   viewerId: peer.id,
+      //   roomCode: code,
+      // });
     });
 
     dataConnection.on("error", (err) => {
