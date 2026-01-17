@@ -53,11 +53,17 @@ const GameHost = () => {
       secure: true,
     };
 
-    const connectToRoom = (peer: Peer, hostPeerId: string, retryCount: number = 0) => {
+    const connectToRoom = (
+      peer: Peer,
+      hostPeerId: string,
+      retryCount: number = 0,
+    ) => {
       if (isConnectingRef.current) return;
 
       if (retryCount >= MAX_RETRIES) {
-        console.error(`Max retries (${MAX_RETRIES}) reached. Connection failed.`);
+        console.error(
+          `Max retries (${MAX_RETRIES}) reached. Connection failed.`,
+        );
         isConnectingRef.current = false;
         return;
       }
@@ -76,8 +82,11 @@ const GameHost = () => {
         if (!dataConnection.open) {
           dataConnection.close();
           isConnectingRef.current = false;
-          
-          const delay = Math.min(INITIAL_RETRY_DELAY * Math.pow(2, retryCount), MAX_RETRY_DELAY);
+
+          const delay = Math.min(
+            INITIAL_RETRY_DELAY * Math.pow(2, retryCount),
+            MAX_RETRY_DELAY,
+          );
           retryTimeoutRef.current = setTimeout(() => {
             retryCountRef.current = retryCount + 1;
             connectToRoom(peer, hostPeerId, retryCount + 1);
@@ -98,7 +107,10 @@ const GameHost = () => {
         setIsConnected(false);
         isConnectingRef.current = false;
 
-        const delay = Math.min(INITIAL_RETRY_DELAY * Math.pow(2, retryCount), MAX_RETRY_DELAY);
+        const delay = Math.min(
+          INITIAL_RETRY_DELAY * Math.pow(2, retryCount),
+          MAX_RETRY_DELAY,
+        );
         retryTimeoutRef.current = setTimeout(() => {
           retryCountRef.current = retryCount + 1;
           connectToRoom(peer, hostPeerId, retryCount + 1);
@@ -153,7 +165,7 @@ const GameHost = () => {
 
   useEffect(() => {
     if (!isConnected) return;
-    
+
     const dataConnection = dataConnectionRef.current;
     if (!dataConnection || !dataConnection.open) return;
 
@@ -161,45 +173,47 @@ const GameHost = () => {
       try {
         let message: { type?: string; playerName?: string } | null = null;
 
-        if (typeof data === 'string') {
-          if (data === 'player-died' || data === 'game-ended') {
-            if (data === 'player-died') {
+        if (typeof data === "string") {
+          if (data === "player-died" || data === "game-ended") {
+            if (data === "player-died") {
               setShowPlayerDiedDialog(true);
             } else {
               setShowGameEndedDialog(true);
             }
             return;
           }
-          
+
           try {
-            message = JSON.parse(data) as { type?: string; playerName?: string };
+            message = JSON.parse(data) as {
+              type?: string;
+              playerName?: string;
+            };
           } catch {
             return;
           }
-        } 
-        else if (typeof data === 'object' && data !== null) {
+        } else if (typeof data === "object" && data !== null) {
           message = data as { type?: string; playerName?: string };
         } else {
           return;
         }
 
-        if (message?.type === 'player-died') {
+        if (message?.type === "player-died") {
           setPlayerName(message.playerName);
           setShowPlayerDiedDialog(true);
-        } else if (message?.type === 'game-ended') {
+        } else if (message?.type === "game-ended") {
           setWinnerName(message.playerName);
           setShowGameEndedDialog(true);
         }
       } catch (error) {
-        console.error('Error processing message from peer server:', error);
+        console.error("Error processing message from peer server:", error);
       }
     };
 
-    dataConnection.on('data', handleData);
+    dataConnection.on("data", handleData);
 
     return () => {
       if (dataConnection) {
-        dataConnection.off('data', handleData);
+        dataConnection.off("data", handleData);
       }
     };
   }, [isConnected]);
@@ -209,7 +223,7 @@ const GameHost = () => {
       <iframe
         ref={iframeRef}
         // src={`https://game.a-star.group?room=${roomId}`}
-        src={`http://localhost:61051?room=${roomId}`}
+        src={`http://localhost:8080?room=${roomId}`}
         className="w-full h-full border-0"
         title="Game Host"
         allowFullScreen

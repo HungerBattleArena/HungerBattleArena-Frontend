@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import Peer from "peerjs";
 import ConnectRoomSection from "../Section/ConnectRoomSection";
 import ViewerItems from "../Section/ViewerItems";
-import HostLostResultDialog from "../Dialog/HostLostResultDialog";
-import HostWinResultDialog from "../Dialog/HostWinResultDialog";
+import ViewerLostResultDialog from "../Dialog/ViewerLostResultDialog";
+import ViewerWinResultDialog from "../Dialog/ViewerWinResultDialog";
+import { useNavigate } from "react-router-dom";
+import { useGame } from "../../context/GameContext";
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer["connect"]>;
@@ -21,9 +23,10 @@ function ViewGame() {
   const [currentRoomCode, setCurrentRoomCode] = useState<string | null>(null);
   const [peerId, setPeerId] = useState<string | null>(null);
   const [showPlayerDiedDialog, setShowPlayerDiedDialog] = useState(false);
-  const [playerName, setPlayerName] = useState<string | undefined>(undefined);
   const [showGameEndedDialog, setShowGameEndedDialog] = useState(false);
-  const [winnerName, setWinnerName] = useState<string | undefined>(undefined);
+  // const [playerGameState, setPlayerGameState] = useState<
+  //   "ALIVE" | "DIED" | "ENDED"
+  // >("ALIVE");
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const peerRef = useRef<Peer | null>(null);
@@ -31,9 +34,14 @@ function ViewGame() {
   const pendingStreamRef = useRef<MediaStream | null>(null);
   const currentRoomCodeRef = useRef<string | null>(null);
 
+  const navigate = useNavigate();
+  const { gameState } = useGame();
+
+  const viewerBetSide = gameState.faction;
+
   const handleConnectionChange = (
     connected: boolean,
-    roomCode: string | null
+    roomCode: string | null,
   ) => {
     setIsConnected(connected);
     setCurrentRoomCode(roomCode);
@@ -46,7 +54,7 @@ function ViewGame() {
   };
 
   const handleDataConnectionChange = (
-    dataConnection: DataConnection | null
+    dataConnection: DataConnection | null,
   ) => {
     dataConnectionRef.current = dataConnection;
   };
@@ -139,60 +147,86 @@ function ViewGame() {
     };
   }, []);
 
-    // Listen for messages from peer server
-    useEffect(() => {
-      if (!isConnected) return;
-      
-      const dataConnection = dataConnectionRef.current;
-      if (!dataConnection) return;
-  
-      const handleData = (data: unknown) => {
-        try {
-          let message: { type?: string; playerName?: string } | null = null;
+  // Listen for messages from peer server
+  useEffect(() => {
+    if (!isConnected) return;
 
-          if (typeof data === 'string') {
-            if (data === 'player-died' || data === 'game-ended') {
-              if (data === 'player-died') {
+    const dataConnection = dataConnectionRef.current;
+    if (!dataConnection) return;
+
+    const handleData = (data: unknown) => {
+      try {
+        let message: { type?: string; playerName?: string } | null = null;
+
+        if (typeof data === "string") {
+          if (data === "player-died" || data === "game-ended") {
+            if (data === "player-died") {
+              if (viewerBetSide == "WIN") {
+                setShowPlayerDiedDialog(false);
+                setShowGameEndedDialog(true);
+              } else if (viewerBetSide == "LOSE") {
+                setShowGameEndedDialog(false);
                 setShowPlayerDiedDialog(true);
-              } else {
+              }
+            } else if (data === "game-ended") {
+              if (viewerBetSide == "LOSE") {
+                setShowGameEndedDialog(false);
+                setShowPlayerDiedDialog(true);
+              } else if (viewerBetSide == "WIN") {
+                setShowPlayerDiedDialog(false);
                 setShowGameEndedDialog(true);
               }
-              return;
             }
-            
-            try {
-              message = JSON.parse(data) as { type?: string; playerName?: string };
-            } catch {
-              return;
-            }
-          } 
-          else if (typeof data === 'object' && data !== null) {
-            message = data as { type?: string; playerName?: string };
-          } else {
             return;
           }
 
-          if (message?.type === 'player-died') {
-            setPlayerName(message.playerName);
+          try {
+            message = JSON.parse(data) as {
+              type?: string;
+              playerName?: string;
+            };
+          } catch {
+            return;
+          }
+        } else if (typeof data === "object" && data !== null) {
+          message = data as { type?: string; playerName?: string };
+        } else {
+          return;
+        }
+
+        if (message?.type === "player-died") {
+          if (viewerBetSide == "WIN") {
+            setShowPlayerDiedDialog(false);
+            setShowGameEndedDialog(true);
+          } else if (viewerBetSide == "LOSE") {
+            setShowGameEndedDialog(false);
             setShowPlayerDiedDialog(true);
-          } else if (message?.type === 'game-ended') {
-            setWinnerName(message.playerName);
+          }
+        } else if (message?.type === "game-ended") {
+          if (viewerBetSide == "LOSE") {
+            setShowGameEndedDialog(false);
+            setShowPlayerDiedDialog(true);
+          } else if (viewerBetSide == "WIN") {
+            setShowPlayerDiedDialog(false);
             setShowGameEndedDialog(true);
           }
-        } catch (error) {
-          console.error('Error processing message from peer server:', error);
         }
-      };
-  
-      dataConnection.on('data', handleData);
-  
-      return () => {
-        if (dataConnection) {
-          dataConnection.off('data', handleData);
-        }
-      };
-    }, [isConnected]);
+      } catch (error) {
+        console.error("Error processing message from peer server:", error);
+      }
+    };
 
+    dataConnection.on("data", handleData);
+
+    return () => {
+      if (dataConnection) {
+        dataConnection.off("data", handleData);
+      }
+    };
+  }, [isConnected, viewerBetSide]);
+
+  console.log("🚀 ~ ViewGame ~ showPlayerDiedDialog:", showPlayerDiedDialog);
+  console.log("🚀 ~ ViewGame ~ showGameEndedDialog:", showGameEndedDialog);
   return (
     <div className="flex flex-col h-screen bg-[#111] text-[#eee] font-sans relative">
       {/* Room Selector */}
@@ -215,26 +249,21 @@ function ViewGame() {
 
       <ViewerItems onSendMessageToGame={handleSendMessageToGame} />
 
-      <HostLostResultDialog
+      <ViewerLostResultDialog
         isOpen={showPlayerDiedDialog}
         onClose={() => {
-          setShowPlayerDiedDialog(false);
-          setPlayerName(undefined);
+          navigate("/viewer-rooms");
         }}
-        playerName={playerName}
       />
 
-      <HostWinResultDialog
+      <ViewerWinResultDialog
         isOpen={showGameEndedDialog}
         onClose={() => {
-          setShowGameEndedDialog(false);
-          setWinnerName(undefined);
+          navigate("/viewer-rooms");
         }}
-        playerName={winnerName}
       />
     </div>
   );
 }
 
 export default ViewGame;
-
