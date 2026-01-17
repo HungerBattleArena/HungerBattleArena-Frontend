@@ -5,6 +5,7 @@ import FighterRoom from "./components/Screens/FighterRoom";
 import ViewerRooms from "./components/Screens/ViewerRooms";
 import ViewerBet from "./components/Screens/ViewerBet";
 import GameHost from "./components/Screens/GameHost";
+import ViewGame from "./components/Screens/ViewGame";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
             <Route path="/fighter-room" element={<FighterRoom />} />
             <Route path="/viewer-rooms" element={<ViewerRooms />} />
             <Route path="/viewer-bet" element={<ViewerBet />} />
+            <Route path="/view-game" element={<ViewGame />} />
             <Route path="/game" element={<GameHost />} />
           </Routes>
         </div>
