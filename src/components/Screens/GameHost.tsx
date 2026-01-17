@@ -222,8 +222,8 @@ const GameHost = () => {
     <div className="w-screen h-screen overflow-hidden relative">
       <iframe
         ref={iframeRef}
-        // src={`https://game.a-star.group?room=${roomId}`}
-        src={`http://localhost:8080?room=${roomId}`}
+        src={`https://game.a-star.group?room=${roomId}`}
+        // src={`http://localhost:8080?room=${roomId}`}
         className="w-full h-full border-0"
         title="Game Host"
         allowFullScreen
