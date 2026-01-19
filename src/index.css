@@ -342,7 +342,7 @@ h3,
 }
 
 .fade-in {
-  animation: fadeIn 1s ease-in;
+  animation: fadeIn 0.3s ease-in;
 }
 
 @keyframes fadeIn {
@@ -473,4 +473,9 @@ h3,
 .bet-side-card.selected {
   border-color: var(--neon-gold);
   box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+/* Ensure dapp-kit modals are visible */
+[data-radix-portal] {
+  z-index: 99999 !important;
 }
