@@ -222,7 +222,7 @@ const GameHost = () => {
     };
   }, [isConnected]);
 
-  if (fighterRoom.state !== "STARTED" || fighterRoom.matchId === null || gameState.role !== "FIGHTER") {
+  if (fighterRoom.match_id === null || gameState.role !== "FIGHTER") {
     redirect("/");
   }
 

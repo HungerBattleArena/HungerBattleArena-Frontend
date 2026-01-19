@@ -14,10 +14,10 @@ const useFighterClaim = () => {
   const { data: matchInfo } = useMatchInfo();
 
   const mutation = useMutation({
-    mutationKey: ["fighter-claim", fighterRoom.matchId],
+    mutationKey: ["fighter-claim", fighterRoom.match_id],
     mutationFn: async () => {
       try {
-        if (!fighterRoom.matchId || !matchInfo?.vault_id) {
+        if (!fighterRoom.match_id || !matchInfo?.vault_id) {
           throw new Error("Match ID is required");
         }
         if (!currentAccount?.address) {
@@ -29,7 +29,7 @@ const useFighterClaim = () => {
           target: `${PackageID}::bet_engine::claim_fighter_reward`,
           arguments: [
             tx.object(matchInfo.vault_id!),
-            tx.object(fighterRoom.matchId!),
+            tx.object(fighterRoom.match_id!),
           ],
         });
 

@@ -11,7 +11,7 @@ const useStartMatch = () => {
   const mutation = useMutation({
     mutationFn: async () => {
       try {
-        if (!fighterRoom.matchId) {
+        if (!fighterRoom.match_id) {
           throw new Error("Match ID is required");
         }
 
@@ -19,7 +19,7 @@ const useStartMatch = () => {
         tx.moveCall({
           target: `${PackageID}::match_manager::start_match`,
           arguments: [
-            tx.object(fighterRoom.matchId!),
+            tx.object(fighterRoom.match_id!),
           ],
         });
 

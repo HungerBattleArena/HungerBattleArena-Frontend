@@ -41,14 +41,14 @@ const useOpenRoom = () => {
           setFighterRoomAction({
             ...fighterRoom,
             name: roomName,
-            id: roomId,
-            state: "OPEN",
-            totalBet: 0,
-            winBet: 0,
-            loseBet: 0,
-            winCount: 0,
-            loseCount: 0,
-            matchId: match?.objectId || null,
+            status: "created",
+            total_bet_viewers: "0",
+            win_bets_total: "0",
+            lose_bets_total: "0",
+            win_bettors_count: "0",
+            lose_bettors_count: "0",
+            match_id: match?.objectId || '',
+            room_id: roomId,
           });
         }
       } catch (error) {
