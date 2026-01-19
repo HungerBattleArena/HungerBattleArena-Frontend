@@ -56,7 +56,7 @@ export default function FighterRoom() {
         setFighterRoomAction({
           ...fighterRoom,
           name: roomName,
-          status: 'OPEN',
+          status: 'created',
           total_bet_viewers: '0',
           win_bets_total: '0',
           lose_bets_total: '0',
@@ -72,7 +72,7 @@ export default function FighterRoom() {
   };
 
   const startMatchAsFighter = () => {
-    setFighterRoomAction({ ...fighterRoom, status: 'CLOSED' });
+    setFighterRoomAction({ ...fighterRoom, status: 'closed' });
     setGameStateAction({ role: 'FIGHTER' });
     navigate(`/game?roomId=${newRoomId}`);
   };

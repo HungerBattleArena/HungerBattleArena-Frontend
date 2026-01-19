@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --neon-blue: #00f3ff;
@@ -14,11 +14,11 @@
 
 body {
   background-color: var(--bg-dark);
-  background-image: url("https://images.stockcake.com/public/a/e/3/ae345db0-8915-45fd-9ec4-4603887ed8ae_large/neon-stadium-future-stockcake.jpg");
+  background-image: url('https://images.stockcake.com/public/a/e/3/ae345db0-8915-45fd-9ec4-4603887ed8ae_large/neon-stadium-future-stockcake.jpg');
   background-size: cover;
   background-position: center;
   color: white;
-  font-family: "Rajdhani", sans-serif;
+  font-family: 'Rajdhani', sans-serif;
   overflow: hidden;
   margin: 0;
   user-select: none;
@@ -28,7 +28,7 @@ h1,
 h2,
 h3,
 .font-tech {
-  font-family: "Orbitron", sans-serif;
+  font-family: 'Orbitron', sans-serif;
 }
 
 .glass-panel {
@@ -94,11 +94,7 @@ h3,
 }
 
 .btn-cyber {
-  background: linear-gradient(
-    145deg,
-    rgba(0, 243, 255, 0.2),
-    rgba(0, 100, 150, 0.1)
-  );
+  background: linear-gradient(145deg, rgba(0, 243, 255, 0.2), rgba(0, 100, 150, 0.1));
   border: 2px solid var(--neon-blue);
   box-shadow: 0 0 30px rgba(0, 243, 255, 0.5);
   transition: all 0.4s;
@@ -131,7 +127,7 @@ h3,
 }
 
 .weapon-card.selected::after {
-  content: "✓";
+  content: '✓';
   position: absolute;
   top: 8px;
   right: 8px;
@@ -146,7 +142,7 @@ h3,
 }
 
 .weapon-card.locked::before {
-  content: "🔒";
+  content: '🔒';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -161,7 +157,7 @@ h3,
 }
 
 .mode-card.locked::before {
-  content: "COMING SOON";
+  content: 'COMING SOON';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -196,7 +192,7 @@ h3,
 }
 
 .timer-badge {
-  font-family: "Orbitron", monospace;
+  font-family: 'Orbitron', monospace;
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid var(--neon-blue);
 }
@@ -321,7 +317,7 @@ h3,
 
 #reticle::before,
 #reticle::after {
-  content: "";
+  content: '';
   position: absolute;
   background: var(--neon-blue);
   box-shadow: 0 0 15px var(--neon-blue);
@@ -381,7 +377,7 @@ h3,
   height: 40px;
   border: 2px solid var(--neon-blue);
   border-radius: 4px;
-  font-family: "Orbitron", monospace;
+  font-family: 'Orbitron', monospace;
   font-weight: bold;
   background: rgba(0, 243, 255, 0.1);
   color: white;
@@ -407,7 +403,7 @@ h3,
   align-items: center;
   justify-content: center;
   color: var(--neon-blue);
-  font-family: "Orbitron", monospace;
+  font-family: 'Orbitron', monospace;
   cursor: pointer;
   pointer-events: auto;
   z-index: 100;

@@ -18,7 +18,7 @@ export default function ViewerRooms() {
   };
 
   const selectRoom = (room: (typeof activeRooms)[0]) => {
-    if (room.status === 'CLOSED') return;
+    if (room.status === 'closed') return;
     setSelectedRoomAction(room);
     navigate('/viewer-bet?room=' + room.match_id);
   };
@@ -95,7 +95,7 @@ export default function ViewerRooms() {
           </div>
         ) : (
           paginatedRooms.map((room) => {
-            const isClosed = room.status === 'CLOSED';
+            const isClosed = room.status === 'closed';
             return (
               <div
                 key={room.match_id}

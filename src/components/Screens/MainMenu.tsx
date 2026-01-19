@@ -1,7 +1,7 @@
-import { useNavigate } from "react-router-dom";
-import { useCurrentAccount, useDisconnectWallet } from "@mysten/dapp-kit";
-import { useState, useRef, useEffect } from "react";
-import { CustomConnectWalletDialog } from "../Dialog/CustomConnectWalletDialog";
+import { useNavigate } from 'react-router-dom';
+import { useCurrentAccount, useDisconnectWallet } from '@mysten/dapp-kit';
+import { useState, useRef, useEffect } from 'react';
+import { CustomConnectWalletDialog } from '../Dialog/CustomConnectWalletDialog';
 
 export default function MainMenu() {
   const navigate = useNavigate();
@@ -23,20 +23,17 @@ export default function MainMenu() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
     };
 
     if (isDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isDropdownOpen]);
 
@@ -50,45 +47,30 @@ export default function MainMenu() {
               className="glass-panel px-6 py-3 flex items-center gap-3 cursor-pointer hover:border-cyan-400/50 transition-all"
             >
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm font-tech text-cyan-400">
-                {formatAddress(currentAccount.address)}
-              </span>
+              <span className="text-sm font-tech text-cyan-400">{formatAddress(currentAccount.address)}</span>
               <svg
-                className={`w-4 h-4 text-cyan-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""
-                  }`}
+                className={`w-4 h-4 text-cyan-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute top-full right-0 mt-2 glass-panel min-w-[200px] border border-cyan-400/30 shadow-[0_0_30px_rgba(0,243,255,0.3)] rounded-lg overflow-hidden fade-in">
+              <div className="absolute top-full right-0 mt-2 glass-panel min-w-50 border border-cyan-400/30 shadow-[0_0_30px_rgba(0,243,255,0.3)] rounded-lg overflow-hidden fade-in">
                 <div className="p-2">
                   <div className="px-4 py-2 text-xs text-gray-400 border-b border-cyan-400/20 mb-2">
                     <div className="font-tech">Wallet Address</div>
-                    <div className="text-cyan-400 mt-1 break-all">
-                      {currentAccount.address}
-                    </div>
+                    <div className="text-cyan-400 mt-1 break-all">{currentAccount.address}</div>
                   </div>
                   <button
                     onClick={handleDisconnect}
                     className="w-full px-4 py-3 text-left text-sm font-tech text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all flex items-center gap-2 rounded"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -111,28 +93,20 @@ export default function MainMenu() {
             >
               Connect Wallet
             </button>
-            <CustomConnectWalletDialog
-              isOpen={isWalletDialogOpen}
-              onClose={() => setIsWalletDialogOpen(false)}
-            />
+            <CustomConnectWalletDialog isOpen={isWalletDialogOpen} onClose={() => setIsWalletDialogOpen(false)} />
           </>
         )}
       </div>
 
-      <h1
-        className="text-7xl md:text-9xl font-black mb-4 glitch-text text-center"
-        data-text="HUNGER BATTLE"
-      >
+      <h1 className="text-7xl md:text-9xl font-black mb-4 glitch-text text-center" data-text="HUNGER BATTLE">
         HUNGER BATTLE
       </h1>
-      <h2 className="text-2xl md:text-3xl text-gray-300 tracking-[0.6em] mb-14 uppercase">
-        Arena Prototype
-      </h2>
+      <h2 className="text-2xl md:text-3xl text-gray-300 tracking-[0.6em] mb-14 uppercase">Arena Prototype</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl w-full px-6">
         <div
           className="glass-panel p-8 flex flex-col items-center relative mode-card cursor-pointer"
-          onClick={() => navigate("/fighter-room")}
+          onClick={() => navigate('/fighter-room')}
         >
           <div className="text-6xl mb-4">F</div>
           <h3 className="text-3xl text-cyan-400">Fighter</h3>
@@ -141,7 +115,7 @@ export default function MainMenu() {
 
         <div
           className="glass-panel p-8 flex flex-col items-center relative mode-card cursor-pointer"
-          onClick={() => navigate("/viewer-rooms")}
+          onClick={() => navigate('/viewer-rooms')}
         >
           <div className="text-6xl mb-4">V</div>
           <h3 className="text-3xl text-pink-500">Viewer Mode</h3>
@@ -149,9 +123,7 @@ export default function MainMenu() {
         </div>
       </div>
 
-      <div className="mt-14 text-xs uppercase tracking-[0.4em] text-gray-500">
-        Solo survival + betting flow
-      </div>
+      <div className="mt-14 text-xs uppercase tracking-[0.4em] text-gray-500">Solo survival + betting flow</div>
     </div>
   );
 }
