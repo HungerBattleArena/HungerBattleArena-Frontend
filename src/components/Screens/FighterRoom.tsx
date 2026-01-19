@@ -14,8 +14,9 @@ import RoomInfo from '../Section/FighterRoom/RoomInfo';
 export default function FighterRoom() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { mutateAsync: signAndExecute } = useCustomSign();
   const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
+  const { mutateAsync: openRoom } = useOpenRoom();
+  const { mutateAsync: startMatch } = useStartMatch();
   const setFighterRoomAction = (room: Parameters<typeof setFighterRoom>[0]) => {
     dispatch(setFighterRoom(room));
   };
