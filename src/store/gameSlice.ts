@@ -1,18 +1,18 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
-import type { GameState, Room } from "../types/game";
+import { createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import type { GameState, TMatchInfo } from '../types/game';
 
 interface GameSliceState {
   gameState: GameState;
-  activeRooms: Room[];
-  selectedRoom: Room | null;
-  fighterRoom: Room;
+  activeRooms: TMatchInfo[];
+  selectedRoom: TMatchInfo | null;
+  fighterRoom: TMatchInfo;
 }
 
 const initialState: GameSliceState = {
   gameState: {
-    screen: "MENU",
-    role: "FIGHTER",
+    screen: 'MENU',
+    role: 'FIGHTER',
     faction: null,
     time: 0,
     phase: 1,
@@ -22,39 +22,40 @@ const initialState: GameSliceState = {
   activeRooms: [],
   selectedRoom: null,
   fighterRoom: {
-    id: "FIGHTER-ROOM",
-    name: "Not opened",
-    totalBet: 0,
-    winBet: 0,
-    loseBet: 0,
-    winCount: 0,
-    loseCount: 0,
-    state: "CLOSED",
-    matchId: null,
+    match_id: '',
+    fighter: '',
+    name: '',
+    status: 0,
+    vault_id: null,
+    result: null,
+    total_bet_viewers: '0',
+    total_pool: '0',
+    win_bets_total: '0',
+    lose_bets_total: '0',
+    win_bettors_count: '0',
+    lose_bettors_count: '0',
   },
 };
 
 const gameSlice = createSlice({
-  name: "game",
+  name: 'game',
   initialState,
   reducers: {
     setGameState: (state, action: PayloadAction<Partial<GameState>>) => {
       state.gameState = { ...state.gameState, ...action.payload };
     },
-    setActiveRooms: (state, action: PayloadAction<Room[]>) => {
+    setActiveRooms: (state, action: PayloadAction<TMatchInfo[]>) => {
       state.activeRooms = action.payload;
     },
-    setSelectedRoom: (state, action: PayloadAction<Room | null>) => {
+    setSelectedRoom: (state, action: PayloadAction<TMatchInfo | null>) => {
       state.selectedRoom = action.payload;
     },
-    setFighterRoom: (state, action: PayloadAction<Room>) => {
+    setFighterRoom: (state, action: PayloadAction<TMatchInfo>) => {
       state.fighterRoom = action.payload;
     },
   },
 });
 
-export const { setGameState, setActiveRooms, setSelectedRoom, setFighterRoom } =
-  gameSlice.actions;
+export const { setGameState, setActiveRooms, setSelectedRoom, setFighterRoom } = gameSlice.actions;
 
 export default gameSlice.reducer;
-

@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAppSelector, useAppDispatch } from "../../store/hooks";
-import { setFighterRoom, setGameState } from "../../store/gameSlice";
-import { cn, generateRoomId } from "../../utils/utils";
-import { toast } from "react-toastify";
-import { Transaction } from "@mysten/sui/transactions";
-import { PackageID, Registry } from "../../constants/contract";
-import type { SuiObjectChange } from "@mysten/sui/client";
-import type { CustomSuiObjectChange } from "../../contract-modules/type";
-import useCustomSign from "../../hooks/mutation/match/useCustomSign";
-import RoomInfo from "../Section/FighterRoom/RoomInfo";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { setFighterRoom, setGameState } from '../../store/gameSlice';
+import { cn, generateRoomId } from '../../utils/utils';
+import { toast } from 'react-toastify';
+import { Transaction } from '@mysten/sui/transactions';
+import { PackageID, Registry } from '../../constants/contract';
+import type { SuiObjectChange } from '@mysten/sui/client';
+import type { CustomSuiObjectChange } from '../../contract-modules/type';
+import useCustomSign from '../../hooks/mutation/match/useCustomSign';
+import RoomInfo from '../Section/FighterRoom/RoomInfo';
 
 export default function FighterRoom() {
   const navigate = useNavigate();
@@ -22,13 +22,13 @@ export default function FighterRoom() {
   const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
     dispatch(setGameState(updates));
   };
-  const [roomName, setRoomName] = useState("");
+  const [roomName, setRoomName] = useState('');
   const [isOpenRoom, setIsOpenRoom] = useState(false);
-  const [newRoomId, setNewRoomId] = useState("");
+  const [newRoomId, setNewRoomId] = useState('');
 
   const openFighterRoom = async () => {
-    if (roomName.trim() === "") {
-      toast.error("Room name is required");
+    if (roomName.trim() === '') {
+      toast.error('Room name is required');
       return;
     }
 
@@ -36,10 +36,7 @@ export default function FighterRoom() {
       const tx = new Transaction();
       tx.moveCall({
         target: `${PackageID}::bet_engine::create_match_with_bet_vault`,
-        arguments: [
-          tx.object(Registry),
-          tx.pure.vector("u8", new TextEncoder().encode(roomName))
-        ],
+        arguments: [tx.object(Registry), tx.pure.vector('u8', new TextEncoder().encode(roomName))],
       });
 
       const result = await signAndExecute({
@@ -49,7 +46,7 @@ export default function FighterRoom() {
       if (result?.objectChanges?.length && result.objectChanges.length > 0) {
         const match = result.objectChanges.find((change: SuiObjectChange) => {
           const currObj = change as unknown as CustomSuiObjectChange;
-          return currObj.objectType.toLowerCase().includes("match_manager::match")
+          return currObj.objectType.toLowerCase().includes('match_manager::match');
         }) as unknown as CustomSuiObjectChange;
         // const matchId = match?.objectId?.split("::")[0];
 
@@ -59,35 +56,31 @@ export default function FighterRoom() {
         setFighterRoomAction({
           ...fighterRoom,
           name: roomName,
-          id: newRoomId,
-          state: "OPEN",
-          totalBet: 0,
-          winBet: 0,
-          loseBet: 0,
-          winCount: 0,
-          loseCount: 0,
-          matchId: match?.objectId || null,
+          status: 'OPEN',
+          total_bet_viewers: '0',
+          win_bets_total: '0',
+          lose_bets_total: '0',
+          win_bettors_count: '0',
+          lose_bettors_count: '0',
+          match_id: match?.objectId || '',
         });
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to open room");
+      toast.error('Failed to open room');
     }
   };
 
   const startMatchAsFighter = () => {
-    setFighterRoomAction({ ...fighterRoom, state: "CLOSED" });
-    setGameStateAction({ role: "FIGHTER" });
+    setFighterRoomAction({ ...fighterRoom, status: 'CLOSED' });
+    setGameStateAction({ role: 'FIGHTER' });
     navigate(`/game?roomId=${newRoomId}`);
   };
 
   return (
     <div className="absolute inset-0 bg-black/90 pointer-events-auto z-50 flex items-center justify-center">
       <div className="glass-panel w-full max-w-5xl p-10 relative fade-in overflow-y-auto max-h-screen">
-        <button
-          className="absolute top-6 right-6 text-3xl text-gray-400 hover:text-white z-50"
-          onClick={() => navigate("/")}
-        >
+        <button className="absolute top-6 right-6 text-3xl text-gray-400 hover:text-white z-50" onClick={() => navigate('/')}>
           ✕
         </button>
 
@@ -95,15 +88,11 @@ export default function FighterRoom() {
           <div className="space-y-6">
             <div>
               <h3 className="text-3xl text-cyan-400 mb-2">Create Room</h3>
-              <p className="text-sm text-gray-400">
-                Name your room and open betting.
-              </p>
+              <p className="text-sm text-gray-400">Name your room and open betting.</p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs uppercase tracking-widest text-gray-500">
-                Room name
-              </label>
+              <label className="text-xs uppercase tracking-widest text-gray-500">Room name</label>
               <input
                 id="fighter-room-name"
                 className="input-cyber w-full rounded"
@@ -124,10 +113,7 @@ export default function FighterRoom() {
               </div>
             </div>
 
-            <button
-              className="btn-cyber px-8 py-3 text-lg font-bold w-full"
-              onClick={openFighterRoom}
-            >
+            <button className="btn-cyber px-8 py-3 text-lg font-bold w-full" onClick={openFighterRoom}>
               Open Room
             </button>
           </div>
@@ -135,22 +121,18 @@ export default function FighterRoom() {
           <div className="space-y-6">
             <div>
               <h3 className="text-3xl text-white mb-2">Room Status</h3>
-              <p className="text-sm text-gray-400">
-                Track bettors before starting.
-              </p>
+              <p className="text-sm text-gray-400">Track bettors before starting.</p>
             </div>
             <RoomInfo />
             <button
               id="btn-start-match"
-              className={cn("btn-cyber px-8 py-3 text-lg font-bold w-full", !isOpenRoom && "opacity-50 disabled:cursor-not-allowed")}
+              className={cn('btn-cyber px-8 py-3 text-lg font-bold w-full', !isOpenRoom && 'opacity-50 disabled:cursor-not-allowed')}
               onClick={startMatchAsFighter}
               disabled={!isOpenRoom}
             >
               Start Match
             </button>
-            <p className="text-xs text-gray-500">
-              Start when you feel there are enough bettors.
-            </p>
+            <p className="text-xs text-gray-500">Start when you feel there are enough bettors.</p>
           </div>
         </div>
       </div>
