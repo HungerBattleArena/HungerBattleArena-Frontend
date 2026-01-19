@@ -125,8 +125,9 @@ export default function FighterRoom() {
             </div>
 
             <button
-              className="btn-cyber px-8 py-3 text-lg font-bold w-full"
+              className={cn("btn-cyber px-8 py-3 text-lg font-bold w-full", isOpenRoom && "opacity-50 disabled:cursor-not-allowed")}
               onClick={openFighterRoom}
+              disabled={isOpenRoom}
             >
               Open Room
             </button>
