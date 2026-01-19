@@ -1,4 +1,3 @@
-
 export interface Vector {
   x: number;
   y: number;
@@ -44,18 +43,6 @@ export interface ViewerCard {
   desc: string;
 }
 
-export interface Room {
-  id: string;
-  name: string;
-  totalBet: number;
-  winBet: number;
-  loseBet: number;
-  winCount: number;
-  loseCount: number;
-  state: 'OPEN' | 'CLOSED' | 'STARTED';
-  matchId: string | null;
-}
-
 export interface UserData {
   credits: number;
   inventory: string[];
@@ -78,7 +65,7 @@ export type TMatchInfo = {
   vault_id: string | null;
   name: string;
   fighter: string;
-  status: number;
+  status: number | string;
   result: boolean | null;
   total_pool: string;
   total_bet_viewers: string;
@@ -86,4 +73,4 @@ export type TMatchInfo = {
   lose_bets_total: string;
   win_bettors_count: string;
   lose_bettors_count: string;
-}
+};

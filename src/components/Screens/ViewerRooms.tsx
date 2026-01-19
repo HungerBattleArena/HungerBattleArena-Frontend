@@ -1,58 +1,75 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAppSelector, useAppDispatch } from "../../store/hooks";
-import { setSelectedRoom } from "../../store/gameSlice";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '../../store/hooks';
+import { setSelectedRoom } from '../../store/gameSlice';
+import useListMatchInfo from '../../hooks/query/useListMatchInfo';
+import usePagination from '../../hooks/usePagination';
 
 export default function ViewerRooms() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const activeRooms = useAppSelector((state) => state.game.activeRooms);
+  const { data: activeRooms } = useListMatchInfo();
+
   const setSelectedRoomAction = (room: Parameters<typeof setSelectedRoom>[0]) => {
     dispatch(setSelectedRoom(room));
   };
-  const [searchQuery, setSearchQuery] = useState("");
 
   const selectRoom = (room: (typeof activeRooms)[0]) => {
-    if (room.state === "CLOSED") return;
+    if (room.status === 'closed') return;
     setSelectedRoomAction(room);
-    navigate("/viewer-bet");
+    navigate('/viewer-bet?room=' + room.match_id);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const foundRoom = activeRooms.find(
-      (room) => room.id.toUpperCase() === searchQuery.trim().toUpperCase()
-    );
+    const searchTerm = searchQuery.trim().toUpperCase();
+    const foundRoom = activeRooms.find((room) => room.match_id.toUpperCase() === searchTerm || room.name.toUpperCase() === searchTerm);
+
     if (foundRoom) {
       selectRoom(foundRoom);
+      return;
     }
 
-    navigate("/view-game?room=" + searchQuery);
+    navigate('/view-game?room=' + searchQuery);
   };
 
   const filteredRooms = activeRooms.filter(
     (room) =>
-      room.id.toUpperCase().includes(searchQuery.trim().toUpperCase()) ||
-      room.name.toUpperCase().includes(searchQuery.trim().toUpperCase())
+      room.match_id.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase()) ||
+      room.name.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase())
   );
 
+  const { data: paginatedRooms, currentPage, maxPage, next, prev } = usePagination(filteredRooms, { itemPerPage: 6 });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   return (
-    <div className="absolute inset-0 bg-black/95 pointer-events-auto z-50 flex flex-col items-center justify-center fade-in">
-      <div className="w-full max-w-7xl px-8 mb-4 flex flex-col gap-4 border-b border-gray-800 pb-4">
-        <div className="flex justify-between items-end">
+    <div className="bg-black/95 pointer-events-auto flex flex-col min-h-screen items-center fade-in pt-2">
+      <div className="w-full max-w-7xl px-8 mb-4 flex flex-col gap-4 border-b border-gray-800">
+        <button
+          className="self-start text-xl text-gray-400 hover:text-white flex items-center gap-2 font-tech"
+          onClick={() => navigate('/')}
+        >
+          <span>‹</span> RETURN TO MENU
+        </button>
+        {/* center the header */}
+        <div className="flex justify-center items-end">
           <div>
-            <h1
-              className="text-4xl md:text-6xl font-black glitch-text text-white"
-              data-text="VIEWER ROOMS"
-            >
+            <h1 className="text-4xl md:text-6xl font-black glitch-text text-white text-center" data-text="VIEWER ROOMS">
               VIEWER ROOMS
             </h1>
-            <p className="text-gray-400 tracking-widest uppercase text-sm mt-2">
-              Pick a room to lock your bet
-            </p>
           </div>
         </div>
-
+        <p className="text-gray-400 tracking-widest uppercase text-sm">Pick a room to lock your bet</p>
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
             type="text"
@@ -70,71 +87,45 @@ export default function ViewerRooms() {
         </form>
       </div>
 
-      <div className="w-full max-w-7xl h-[65vh] overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="w-full max-w-7xl p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredRooms.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-500">
             <div className="text-2xl mb-2">No rooms found</div>
-            <div className="text-sm">
-              Try searching with a different Room ID or Name
-            </div>
+            <div className="text-sm">Try searching with a different Room ID or Name</div>
           </div>
         ) : (
-          filteredRooms.map((room) => {
-            const isClosed = room.state === "CLOSED";
+          paginatedRooms.map((room) => {
+            const isClosed = room.status === 'closed';
             return (
               <div
-                key={room.id}
-                className={`room-card glass-panel p-6 flex flex-col gap-4 relative ${isClosed ? "disabled" : ""
-                  }`}
+                key={room.match_id}
+                className={`room-card glass-panel p-2 flex flex-col gap-4 relative ${isClosed ? 'disabled' : ''}`}
                 onClick={() => selectRoom(room)}
               >
                 <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <div className="text-xs text-gray-500 font-mono">
-                      {room.id}
-                    </div>
-                    <h3 className="text-2xl text-white font-bold">
-                      {room.name}
-                    </h3>
-                  </div>
+                  <h3 className="text-2xl text-white font-bold">{room.name}</h3>
                   <div className="text-right">
                     <div className="text-xs text-gray-500">TOTAL BET</div>
-                    <div className="text-gold-400 font-bold">
-                      {room.totalBet.toLocaleString()}
-                    </div>
+                    <div className="text-gold-400 font-bold">{room.total_bet_viewers.toLocaleString()}</div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="bg-black/40 p-3 rounded border border-cyan-500/30">
                     <div className="text-cyan-400">WIN</div>
-                    <div className="text-white font-bold">
-                      {room.winBet.toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {room.winCount} bettors
-                    </div>
+                    <div className="text-white font-bold">{room.win_bets_total.toLocaleString()}</div>
+                    <div className="text-xs text-gray-500">{room.win_bettors_count} bettors</div>
                   </div>
                   <div className="bg-black/40 p-3 rounded border border-pink-500/30">
                     <div className="text-pink-400">LOSE</div>
-                    <div className="text-white font-bold">
-                      {room.loseBet.toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {room.loseCount} bettors
-                    </div>
+                    <div className="text-white font-bold">{room.lose_bets_total.toLocaleString()}</div>
+                    <div className="text-xs text-gray-500">{room.lose_bettors_count} bettors</div>
                   </div>
                 </div>
 
                 <div className="mt-auto pt-4 border-t border-gray-800 flex justify-between items-center">
-                  <div
-                    className={`status-pill ${isClosed ? "closed" : "open"}`}
-                  >
-                    {isClosed ? "BETTING CLOSED" : "BETTING OPEN"}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {isClosed ? "CLOSED" : "OPEN"}
-                  </div>
+                  <div className={`status-pill ${isClosed ? 'closed' : 'open'}`}>{isClosed ? 'BETTING CLOSED' : 'BETTING OPEN'}</div>
+                  <div className="text-xs text-gray-500">{isClosed ? 'CLOSED' : 'OPEN'}</div>
                 </div>
               </div>
             );
@@ -142,12 +133,27 @@ export default function ViewerRooms() {
         )}
       </div>
 
-      <button
-        className="absolute top-6 left-6 text-xl text-gray-400 hover:text-white z-50 flex items-center gap-2 font-tech"
-        onClick={() => navigate("/")}
-      >
-        <span>‹</span> RETURN TO MENU
-      </button>
+      {filteredRooms.length > 0 && maxPage > 1 && (
+        <div className="w-full max-w-7xl px-8 py-4 flex justify-center items-center gap-4">
+          <button
+            onClick={prev}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded border border-cyan-500/50 hover:border-cyan-500 transition-all text-sm font-bold uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            ‹ PREV
+          </button>
+          <div className="text-white font-mono">
+            Page {currentPage} of {maxPage}
+          </div>
+          <button
+            onClick={next}
+            disabled={currentPage === maxPage}
+            className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded border border-cyan-500/50 hover:border-cyan-500 transition-all text-sm font-bold uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            NEXT ›
+          </button>
+        </div>
+      )}
     </div>
   );
 }
