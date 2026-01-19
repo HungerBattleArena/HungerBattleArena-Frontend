@@ -1,3 +1,4 @@
+
 export interface Vector {
   x: number;
   y: number;
@@ -52,6 +53,7 @@ export interface Room {
   winCount: number;
   loseCount: number;
   state: 'OPEN' | 'CLOSED';
+  matchId: string | null;
 }
 
 export interface UserData {
@@ -67,10 +69,21 @@ export interface GameState {
   time: number;
   phase: number;
   gameOver: boolean;
-  inputMode: 'MOUSE' | 'KEYBOARD';
   userBetAmount: number;
-  viewerIP: number;
-  viewerCooldowns: Record<string, number>;
-  arenaRadius: number;
-  zoneDamageTicker: number;
+  // viewerCooldowns: Record<string, number>;
+}
+
+export type TMatchInfo = {
+  match_id: string;
+  vault_id: string | null;
+  name: string;
+  fighter: string;
+  status: number;
+  result: boolean | null;
+  total_pool: string;
+  total_bet_viewers: string;
+  win_bets_total: string;
+  lose_bets_total: string;
+  win_bettors_count: string;
+  lose_bettors_count: string;
 }

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useGame } from '../../context/GameContext';
+import { useAppSelector } from '../../store/hooks';
 
 interface GameOverProps {
   victory: boolean;
@@ -7,7 +7,7 @@ interface GameOverProps {
 
 export default function GameOver({ victory }: GameOverProps) {
   const navigate = useNavigate();
-  const { fighterRoom } = useGame();
+  const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
 
   const pool = fighterRoom.totalBet || 0;
   const reward = victory ? Math.floor(pool * 0.15) : 0;
@@ -15,9 +15,8 @@ export default function GameOver({ victory }: GameOverProps) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/95 z-[60] pointer-events-auto">
       <h1
-        className={`text-6xl font-black mb-4 ${
-          victory ? 'text-green-400' : 'text-red-600'
-        }`}
+        className={`text-6xl font-black mb-4 ${victory ? 'text-green-400' : 'text-red-600'
+          }`}
       >
         {victory ? 'SURVIVED' : 'ELIMINATED'}
       </h1>

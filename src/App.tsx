@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { createNetworkConfig, SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { GameProvider } from "./context/GameContext";
+import { Provider } from "react-redux";
+import { store } from "./store/store";
 import MainMenu from "./components/Screens/MainMenu";
 import FighterRoom from "./components/Screens/FighterRoom";
 import ViewerRooms from "./components/Screens/ViewerRooms";
@@ -21,8 +22,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
-        <WalletProvider>
-          <GameProvider>
+        <WalletProvider autoConnect={true}>
+          <Provider store={store}>
             <BrowserRouter>
               <div className="relative w-screen h-screen overflow-hidden">
                 <Routes>
@@ -35,7 +36,7 @@ function App() {
                 </Routes>
               </div>
             </BrowserRouter>
-          </GameProvider>
+          </Provider>
           <ToastNotifier />
         </WalletProvider>
       </SuiClientProvider>

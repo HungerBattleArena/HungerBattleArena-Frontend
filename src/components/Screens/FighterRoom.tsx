@@ -1,36 +1,85 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGame } from "../../context/GameContext";
-import { generateRoomId } from "../../utils/utils";
+import { useAppSelector, useAppDispatch } from "../../store/hooks";
+import { setFighterRoom, setGameState } from "../../store/gameSlice";
+import { cn, generateRoomId } from "../../utils/utils";
+import { toast } from "react-toastify";
+import { Transaction } from "@mysten/sui/transactions";
+import { PackageID, Registry } from "../../constants/contract";
+import type { SuiObjectChange } from "@mysten/sui/client";
+import type { CustomSuiObjectChange } from "../../contract-modules/type";
+import useCustomSign from "../../hooks/mutation/match/useCustomSign";
+import RoomInfo from "../Section/FighterRoom/RoomInfo";
 
 export default function FighterRoom() {
   const navigate = useNavigate();
-  const { fighterRoom, setFighterRoom, setGameState } = useGame();
+  const dispatch = useAppDispatch();
+  const { mutateAsync: signAndExecute } = useCustomSign();
+  const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
+  const setFighterRoomAction = (room: Parameters<typeof setFighterRoom>[0]) => {
+    dispatch(setFighterRoom(room));
+  };
+  const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
+    dispatch(setGameState(updates));
+  };
   const [roomName, setRoomName] = useState("");
-  const newRoomId = generateRoomId();
+  const [isOpenRoom, setIsOpenRoom] = useState(false);
+  const [newRoomId, setNewRoomId] = useState("");
 
-  const openFighterRoom = () => {
-    const name = roomName.trim() || "Fighter Room";
-    setFighterRoom({
-      ...fighterRoom,
-      name,
-      id: newRoomId,
-      state: "OPEN",
-      totalBet: 8400,
-      winBet: 5200,
-      loseBet: 3200,
-      winCount: 38,
-      loseCount: 24,
-    });
+  const openFighterRoom = async () => {
+    if (roomName.trim() === "") {
+      toast.error("Room name is required");
+      return;
+    }
+
+    try {
+      const tx = new Transaction();
+      tx.moveCall({
+        target: `${PackageID}::bet_engine::create_match_with_bet_vault`,
+        arguments: [
+          tx.object(Registry),
+          tx.pure.vector("u8", new TextEncoder().encode(roomName))
+        ],
+      });
+
+      const result = await signAndExecute({
+        transaction: tx,
+      });
+
+      if (result?.objectChanges?.length && result.objectChanges.length > 0) {
+        const match = result.objectChanges.find((change: SuiObjectChange) => {
+          const currObj = change as unknown as CustomSuiObjectChange;
+          return currObj.objectType.toLowerCase().includes("match_manager::match")
+        }) as unknown as CustomSuiObjectChange;
+        // const matchId = match?.objectId?.split("::")[0];
+
+        const newRoomId = generateRoomId();
+        setNewRoomId(newRoomId);
+        setIsOpenRoom(true);
+        setFighterRoomAction({
+          ...fighterRoom,
+          name: roomName,
+          id: newRoomId,
+          state: "OPEN",
+          totalBet: 0,
+          winBet: 0,
+          loseBet: 0,
+          winCount: 0,
+          loseCount: 0,
+          matchId: match?.objectId || null,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to open room");
+    }
   };
 
   const startMatchAsFighter = () => {
-    setFighterRoom({ ...fighterRoom, state: "CLOSED" });
-    setGameState({ role: "FIGHTER" });
+    setFighterRoomAction({ ...fighterRoom, state: "CLOSED" });
+    setGameStateAction({ role: "FIGHTER" });
     navigate(`/game?roomId=${newRoomId}`);
   };
-
-  const isOpen = fighterRoom.state === "OPEN";
 
   return (
     <div className="absolute inset-0 bg-black/90 pointer-events-auto z-50 flex items-center justify-center">
@@ -90,62 +139,12 @@ export default function FighterRoom() {
                 Track bettors before starting.
               </p>
             </div>
-
-            <div className="glass-panel p-6 space-y-4 border border-gray-800">
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-500">Room</div>
-                <div className="text-lg text-white font-bold">
-                  {fighterRoom.name}
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-500">Status</div>
-                <div className={`status-pill ${isOpen ? "open" : "closed"}`}>
-                  {isOpen ? "BETTING OPEN" : "BETTING CLOSED"}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-black/40 p-3 rounded border border-gray-800">
-                  <div className="text-gray-500">Total bettors</div>
-                  <div className="text-xl text-white font-bold">
-                    {(
-                      fighterRoom.winCount + fighterRoom.loseCount
-                    ).toLocaleString()}
-                  </div>
-                </div>
-                <div className="bg-black/40 p-3 rounded border border-gray-800">
-                  <div className="text-gray-500">Total bet</div>
-                  <div className="text-xl text-gold-400 font-bold">
-                    {fighterRoom.totalBet.toLocaleString()}
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-black/40 p-3 rounded border border-cyan-500/30">
-                  <div className="text-cyan-400">WIN side</div>
-                  <div className="text-white font-bold">
-                    {fighterRoom.winBet.toLocaleString()}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {fighterRoom.winCount} bettors
-                  </div>
-                </div>
-                <div className="bg-black/40 p-3 rounded border border-pink-500/30">
-                  <div className="text-pink-400">LOSE side</div>
-                  <div className="text-white font-bold">
-                    {fighterRoom.loseBet.toLocaleString()}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {fighterRoom.loseCount} bettors
-                  </div>
-                </div>
-              </div>
-            </div>
-
+            <RoomInfo />
             <button
               id="btn-start-match"
-              className="btn-cyber px-8 py-3 text-lg font-bold w-full"
+              className={cn("btn-cyber px-8 py-3 text-lg font-bold w-full", !isOpenRoom && "opacity-50 disabled:cursor-not-allowed")}
               onClick={startMatchAsFighter}
+              disabled={!isOpenRoom}
             >
               Start Match
             </button>
