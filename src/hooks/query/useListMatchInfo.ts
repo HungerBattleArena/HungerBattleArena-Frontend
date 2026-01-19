@@ -43,20 +43,21 @@ const useListMatchInfo = () => {
           }
         }
 
+        console.log('🚀 ~ useListMatchInfo ~ matchInfos:', matchInfos);
         return matchInfos;
       } catch (error) {
         console.error('Error fetching rooms info:', error);
         return matchInfos;
       }
     },
-    initialData: matchInfos,
+    // initialData: matchInfos,
     enabled: !!currentAccount?.address,
     staleTime: 60000,
     refetchInterval: Infinity,
     refetchOnWindowFocus: true,
   });
 
-  return query;
+  return { ...query, data: query.data || matchInfos };
 };
 
 export default useListMatchInfo;

@@ -25,8 +25,8 @@ export default function ViewerRooms() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const searchTerm = searchQuery.trim().toUpperCase();
-    const foundRoom = activeRooms.find((room) => room.match_id.toUpperCase() === searchTerm || room.name.toUpperCase() === searchTerm);
+    const searchTerm = searchQuery.trim().toLowerCase();
+    const foundRoom = activeRooms.find((room) => room.match_id.toLowerCase() === searchTerm || room.name.toLowerCase() === searchTerm);
 
     if (foundRoom) {
       selectRoom(foundRoom);
@@ -95,11 +95,10 @@ export default function ViewerRooms() {
           </div>
         ) : (
           paginatedRooms.map((room) => {
-            const isClosed = room.status === 'closed';
             return (
               <div
                 key={room.match_id}
-                className={`room-card glass-panel p-2 flex flex-col gap-4 relative ${isClosed ? 'disabled' : ''}`}
+                className={`room-card glass-panel p-2 flex flex-col gap-4 relative ${room.status == 'closed' ? 'disabled' : ''}`}
                 onClick={() => selectRoom(room)}
               >
                 <div className="flex justify-between items-start mb-2">
@@ -124,8 +123,16 @@ export default function ViewerRooms() {
                 </div>
 
                 <div className="mt-auto pt-4 border-t border-gray-800 flex justify-between items-center">
-                  <div className={`status-pill ${isClosed ? 'closed' : 'open'}`}>{isClosed ? 'BETTING CLOSED' : 'BETTING OPEN'}</div>
-                  <div className="text-xs text-gray-500">{isClosed ? 'CLOSED' : 'OPEN'}</div>
+                  <div className={`status-pill ${room.status === 'open' ? 'open' : 'closed'}`}>
+                    {room.status === 'open' ? 'BETTING OPEN' : 'BETTING CLOSED'}
+                  </div>
+                  <div
+                    className={`text-xs font-semibold ${
+                      room.status === 'open' ? 'text-green-400' : room.status === 'in_game' ? 'text-yellow-400' : 'text-red-400'
+                    }`}
+                  >
+                    {room.status === 'open' ? 'OPEN' : room.status === 'in_game' ? 'IN GAME' : 'CLOSED'}
+                  </div>
                 </div>
               </div>
             );
