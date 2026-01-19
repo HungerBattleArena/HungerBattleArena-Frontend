@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGame } from "../../context/GameContext";
+import { useAppSelector } from "../../store/hooks";
 
 interface ViewerResultsProps {
   victory: boolean;
@@ -8,7 +8,8 @@ interface ViewerResultsProps {
 
 export default function ViewerResults({ victory }: ViewerResultsProps) {
   const navigate = useNavigate();
-  const { gameState, selectedRoom } = useGame();
+  const gameState = useAppSelector((state) => state.game.gameState);
+  const selectedRoom = useAppSelector((state) => state.game.selectedRoom);
   const [animatedValues, setAnimatedValues] = useState({
     totalPool: 0,
     fighterReward: 0,
@@ -63,28 +64,25 @@ export default function ViewerResults({ victory }: ViewerResultsProps) {
   return (
     <div className="absolute inset-0 bg-black/95 pointer-events-auto z-60 flex flex-col items-center justify-center fade-in">
       <h1
-        className={`text-6xl md:text-8xl font-black mb-2 glitch-text tracking-wider ${
-          winningSide === "WIN" ? "text-cyan-400" : "text-pink-500"
-        }`}
+        className={`text-6xl md:text-8xl font-black mb-2 glitch-text tracking-wider ${winningSide === "WIN" ? "text-cyan-400" : "text-pink-500"
+          }`}
         data-text={winningSide === "WIN" ? "WIN SIDE PAID" : "LOSE SIDE PAID"}
       >
         {winningSide === "WIN" ? "WIN SIDE PAID" : "LOSE SIDE PAID"}
       </h1>
       <p
-        className={`text-xl mb-12 tracking-[0.5em] uppercase ${
-          userWon ? "text-green-400" : "text-red-500"
-        }`}
+        className={`text-xl mb-12 tracking-[0.5em] uppercase ${userWon ? "text-green-400" : "text-red-500"
+          }`}
       >
         {userWon ? "PAYOUT CONFIRMED" : "BET LOST"}
       </p>
 
       <div className="flex flex-col md:flex-row gap-12 w-full max-w-5xl">
         <div
-          className={`w-full md:w-1/2 glass-panel p-8 border-l-4 ${
-            winningSide === "WIN"
+          className={`w-full md:w-1/2 glass-panel p-8 border-l-4 ${winningSide === "WIN"
               ? "border-cyan-500 win-glow-savior"
               : "border-pink-500 win-glow-doomer"
-          } transition duration-1000`}
+            } transition duration-1000`}
         >
           <h3 className="text-2xl text-cyan-400 mb-6 border-b border-gray-700 pb-2">
             POOL SUMMARY

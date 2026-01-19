@@ -1,15 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGame } from "../../context/GameContext";
+import { useAppSelector, useAppDispatch } from "../../store/hooks";
+import { setSelectedRoom } from "../../store/gameSlice";
 
 export default function ViewerRooms() {
   const navigate = useNavigate();
-  const { activeRooms, setSelectedRoom } = useGame();
+  const dispatch = useAppDispatch();
+  const activeRooms = useAppSelector((state) => state.game.activeRooms);
+  const setSelectedRoomAction = (room: Parameters<typeof setSelectedRoom>[0]) => {
+    dispatch(setSelectedRoom(room));
+  };
   const [searchQuery, setSearchQuery] = useState("");
 
   const selectRoom = (room: (typeof activeRooms)[0]) => {
     if (room.state === "CLOSED") return;
-    setSelectedRoom(room);
+    setSelectedRoomAction(room);
     navigate("/viewer-bet");
   };
 
@@ -79,9 +84,8 @@ export default function ViewerRooms() {
             return (
               <div
                 key={room.id}
-                className={`room-card glass-panel p-6 flex flex-col gap-4 relative ${
-                  isClosed ? "disabled" : ""
-                }`}
+                className={`room-card glass-panel p-6 flex flex-col gap-4 relative ${isClosed ? "disabled" : ""
+                  }`}
                 onClick={() => selectRoom(room)}
               >
                 <div className="flex justify-between items-start mb-2">

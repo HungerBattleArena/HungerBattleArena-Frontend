@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGame } from "../../context/GameContext";
+import { useAppSelector, useAppDispatch } from "../../store/hooks";
+import { setGameState } from "../../store/gameSlice";
 
 export default function ViewerBet() {
   const navigate = useNavigate();
-  const { selectedRoom, setGameState } = useGame();
+  const dispatch = useAppDispatch();
+  const selectedRoom = useAppSelector((state) => state.game.selectedRoom);
+  const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
+    dispatch(setGameState(updates));
+  };
   const [selectedBetSide, setSelectedBetSide] = useState<"WIN" | "LOSE" | null>(
     null,
   );
@@ -29,7 +34,7 @@ export default function ViewerBet() {
       alert("Enter a valid bet amount.");
       return;
     }
-    setGameState({
+    setGameStateAction({
       role: "VIEWER",
       faction: selectedBetSide,
       userBetAmount: amount,

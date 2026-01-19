@@ -5,7 +5,7 @@ import ViewerItems from "../Section/ViewerItems";
 import ViewerLostResultDialog from "../Dialog/ViewerLostResultDialog";
 import ViewerWinResultDialog from "../Dialog/ViewerWinResultDialog";
 import { useNavigate } from "react-router-dom";
-import { useGame } from "../../context/GameContext";
+import { useAppSelector } from "../../store/hooks";
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer["connect"]>;
@@ -35,7 +35,7 @@ function ViewGame() {
   const currentRoomCodeRef = useRef<string | null>(null);
 
   const navigate = useNavigate();
-  const { gameState } = useGame();
+  const gameState = useAppSelector((state) => state.game.gameState);
 
   const viewerBetSide = gameState.faction;
 

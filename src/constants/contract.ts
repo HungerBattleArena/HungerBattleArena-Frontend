@@ -1,0 +1,2 @@
+export const PackageID = "0xf8a216d7b62ce20dd6b06b88b8b289ec977558436f885e4ba2bd9fe282707dc1";
+export const Registry = "0xda3e712118ac9e34558dea9225dbab4c8df15e7444fbc8fcb954a18a95e54400";

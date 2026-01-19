@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { redirect, useSearchParams } from "react-router-dom";
 import Peer from "peerjs";
 import HostLostResultDialog from "../Dialog/HostLostResultDialog";
 import HostWinResultDialog from "../Dialog/HostWinResultDialog";
+import { useAppSelector } from "../../store/hooks";
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer["connect"]>;
@@ -18,6 +19,9 @@ const GameHost = () => {
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get("roomId");
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
+  const gameState = useAppSelector((state) => state.game.gameState);
+
   const [showPlayerDiedDialog, setShowPlayerDiedDialog] = useState(false);
   const [playerName, setPlayerName] = useState<string | undefined>(undefined);
   const [showGameEndedDialog, setShowGameEndedDialog] = useState(false);
@@ -217,6 +221,10 @@ const GameHost = () => {
       }
     };
   }, [isConnected]);
+
+  if (fighterRoom.state !== "STARTED" || fighterRoom.matchId === null || gameState.role !== "FIGHTER") {
+    redirect("/");
+  }
 
   return (
     <div className="w-screen h-screen overflow-hidden relative">
