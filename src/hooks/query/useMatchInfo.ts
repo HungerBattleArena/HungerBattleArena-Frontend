@@ -59,6 +59,9 @@ const useMatchInfo = () => {
       }
     },
     enabled: !!matchId && !!currentAccount?.address,
+    retryDelay: 1000,
+    retry: 3,
+    staleTime: 0,
   });
 
   return query;

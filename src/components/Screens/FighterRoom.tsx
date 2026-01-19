@@ -1,27 +1,26 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppSelector, useAppDispatch } from "../../store/hooks";
-import { setFighterRoom, setGameState } from "../../store/gameSlice";
-import { cn, generateRoomId } from "../../utils/utils";
 import { toast } from "react-toastify";
-import { Transaction } from "@mysten/sui/transactions";
-import { PackageID, Registry } from "../../constants/contract";
-import type { SuiObjectChange } from "@mysten/sui/client";
-import type { CustomSuiObjectChange } from "../../contract-modules/type";
-import useCustomSign from "../../hooks/mutation/match/useCustomSign";
+import useOpenRoom from "../../hooks/mutation/match/useOpenRoom";
+import { setFighterRoom, setGameState } from "../../store/gameSlice";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { cn, generateRoomId } from "../../utils/utils";
 import RoomInfo from "../Section/FighterRoom/RoomInfo";
+import useStartMatch from "../../hooks/mutation/match/useStartMatch";
 
 export default function FighterRoom() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { mutateAsync: signAndExecute } = useCustomSign();
   const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
+  const { mutateAsync: openRoom } = useOpenRoom();
+  const { mutateAsync: startMatch } = useStartMatch();
   const setFighterRoomAction = (room: Parameters<typeof setFighterRoom>[0]) => {
     dispatch(setFighterRoom(room));
   };
   const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
     dispatch(setGameState(updates));
   };
+
   const [roomName, setRoomName] = useState("");
   const [isOpenRoom, setIsOpenRoom] = useState(false);
   const [newRoomId, setNewRoomId] = useState("");
@@ -33,52 +32,26 @@ export default function FighterRoom() {
     }
 
     try {
-      const tx = new Transaction();
-      tx.moveCall({
-        target: `${PackageID}::bet_engine::create_match_with_bet_vault`,
-        arguments: [
-          tx.object(Registry),
-          tx.pure.vector("u8", new TextEncoder().encode(roomName))
-        ],
-      });
-
-      const result = await signAndExecute({
-        transaction: tx,
-      });
-
-      if (result?.objectChanges?.length && result.objectChanges.length > 0) {
-        const match = result.objectChanges.find((change: SuiObjectChange) => {
-          const currObj = change as unknown as CustomSuiObjectChange;
-          return currObj.objectType.toLowerCase().includes("match_manager::match")
-        }) as unknown as CustomSuiObjectChange;
-        // const matchId = match?.objectId?.split("::")[0];
-
-        const newRoomId = generateRoomId();
-        setNewRoomId(newRoomId);
-        setIsOpenRoom(true);
-        setFighterRoomAction({
-          ...fighterRoom,
-          name: roomName,
-          id: newRoomId,
-          state: "OPEN",
-          totalBet: 0,
-          winBet: 0,
-          loseBet: 0,
-          winCount: 0,
-          loseCount: 0,
-          matchId: match?.objectId || null,
-        });
-      }
+      const newRoomId = generateRoomId();
+      await openRoom({ roomName, roomId: newRoomId });
+      setIsOpenRoom(true);
+      setNewRoomId(newRoomId);
     } catch (error) {
       console.error(error);
       toast.error("Failed to open room");
     }
   };
 
-  const startMatchAsFighter = () => {
-    setFighterRoomAction({ ...fighterRoom, state: "CLOSED" });
-    setGameStateAction({ role: "FIGHTER" });
-    navigate(`/game?roomId=${newRoomId}`);
+  const startMatchAsFighter = async () => {
+    try {
+      await startMatch();
+      setFighterRoomAction({ ...fighterRoom, state: "STARTED" });
+      setGameStateAction({ role: "FIGHTER" });
+      navigate(`/game?roomId=${newRoomId}`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to start match");
+    }
   };
 
   return (

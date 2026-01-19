@@ -1,0 +1,53 @@
+import { useCurrentAccount } from "@mysten/dapp-kit";
+import { Transaction } from "@mysten/sui/transactions";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { PackageID } from "../../../constants/contract";
+import { useAppSelector } from "../../../store/hooks";
+import useMatchInfo from "../../query/useMatchInfo";
+import useCustomSign from "./useCustomSign";
+
+const useFighterClaim = () => {
+  const { mutateAsync: signAndExecute } = useCustomSign();
+  const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
+  const currentAccount = useCurrentAccount();
+  const { data: matchInfo } = useMatchInfo();
+
+  const mutation = useMutation({
+    mutationKey: ["fighter-claim", fighterRoom.matchId],
+    mutationFn: async () => {
+      try {
+        if (!fighterRoom.matchId || !matchInfo?.vault_id) {
+          throw new Error("Match ID is required");
+        }
+        if (!currentAccount?.address) {
+          throw new Error("No account connected");
+        }
+
+        const tx = new Transaction();
+        tx.moveCall({
+          target: `${PackageID}::bet_engine::claim_fighter_reward`,
+          arguments: [
+            tx.object(matchInfo.vault_id!),
+            tx.object(fighterRoom.matchId!),
+          ],
+        });
+
+        const result = await signAndExecute({
+          transaction: tx,
+        });
+
+        console.log("🚀 ~ useFighterClaim ~ result:", result);
+        toast.success("Fighter reward claimed");
+        return result;
+      } catch (error) {
+        throw new Error("Failed to end match", { cause: error });
+      }
+    },
+  });
+
+
+  return mutation;
+}
+
+export default useFighterClaim

@@ -52,7 +52,7 @@ export interface Room {
   loseBet: number;
   winCount: number;
   loseCount: number;
-  state: 'OPEN' | 'CLOSED';
+  state: 'OPEN' | 'CLOSED' | 'STARTED';
   matchId: string | null;
 }
 
