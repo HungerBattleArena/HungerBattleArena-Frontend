@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
-import { redirect, useNavigate, useSearchParams } from "react-router-dom";
 import Peer from "peerjs";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAppSelector } from "../../store/hooks";
 import HostLostResultDialog from "../Dialog/HostLostResultDialog";
 import HostWinResultDialog from "../Dialog/HostWinResultDialog";
-import { useAppSelector } from "../../store/hooks";
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer["connect"]>;
@@ -29,6 +29,8 @@ const GameHost = () => {
   const [winnerName, setWinnerName] = useState<string | undefined>(undefined);
   const [isConnected, setIsConnected] = useState(false);
 
+  const log = (...args: unknown[]) => console.log("[GameHost]", ...args);
+
   const peerRef = useRef<Peer | null>(null);
   const dataConnectionRef = useRef<DataConnection | null>(null);
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -48,6 +50,8 @@ const GameHost = () => {
 
   useEffect(() => {
     if (!roomId) return;
+    if (dataConnectionRef.current) return;
+    log("init peer connection", { roomId });
 
     const windowWithConfig = window as typeof window & {
       PEERJS_CONFIG?: PeerJSConfig;
@@ -63,6 +67,7 @@ const GameHost = () => {
       hostPeerId: string,
       retryCount: number = 0,
     ) => {
+      log("connectToRoom start", { hostPeerId, retryCount });
       if (isConnectingRef.current) return;
 
       if (retryCount >= MAX_RETRIES) {
@@ -85,6 +90,9 @@ const GameHost = () => {
 
       const timeoutId = setTimeout(() => {
         if (!dataConnection.open) {
+          log("connection timeout, closing and scheduling retry", {
+            retryCount,
+          });
           dataConnection.close();
           isConnectingRef.current = false;
 
@@ -101,6 +109,7 @@ const GameHost = () => {
 
       dataConnection.on("open", () => {
         clearTimeout(timeoutId);
+        log("dataConnection open");
         setIsConnected(true);
         isConnectingRef.current = false;
         retryCountRef.current = 0;
@@ -109,6 +118,7 @@ const GameHost = () => {
       dataConnection.on("error", (err) => {
         clearTimeout(timeoutId);
         console.error("Data connection error:", err);
+        log("dataConnection error", err);
         setIsConnected(false);
         isConnectingRef.current = false;
 
@@ -124,6 +134,7 @@ const GameHost = () => {
 
       dataConnection.on("close", () => {
         clearTimeout(timeoutId);
+        log("dataConnection close");
         setIsConnected(false);
         dataConnectionRef.current = null;
         isConnectingRef.current = false;
@@ -134,12 +145,14 @@ const GameHost = () => {
     peerRef.current = peer;
 
     peer.on("open", () => {
+      log("peer open");
       const hostPeerId = "room-" + roomId;
       retryCountRef.current = 0;
       connectToRoom(peer, hostPeerId, 0);
     });
 
     peer.on("error", (err) => {
+      log("peer error", err);
       isConnectingRef.current = false;
       if (
         err &&
@@ -170,19 +183,22 @@ const GameHost = () => {
 
   useEffect(() => {
     if (!isConnected) return;
+    log("data listener setup - isConnected true");
 
     const dataConnection = dataConnectionRef.current;
     if (!dataConnection || !dataConnection.open) return;
 
     const handleData = (data: unknown) => {
+      log("data received raw", data);
       try {
         let message: { type?: string; playerName?: string } | null = null;
-
         if (typeof data === "string") {
           if (data === "player-died" || data === "game-ended") {
             if (data === "player-died") {
+              log("parsed event player-died");
               setShowPlayerDiedDialog(true);
             } else {
+              log("parsed event game-ended");
               setShowGameEndedDialog(true);
             }
             return;
@@ -194,23 +210,28 @@ const GameHost = () => {
               playerName?: string;
             };
           } catch {
+            log("failed to parse string JSON");
             return;
           }
         } else if (typeof data === "object" && data !== null) {
           message = data as { type?: string; playerName?: string };
         } else {
+          log("unknown data type, ignoring");
           return;
         }
 
         if (message?.type === "player-died") {
+          log("parsed message player-died", message.playerName);
           setPlayerName(message.playerName);
           setShowPlayerDiedDialog(true);
         } else if (message?.type === "game-ended") {
+          log("parsed message game-ended", message.playerName);
           setWinnerName(message.playerName);
           setShowGameEndedDialog(true);
         }
       } catch (error) {
         console.error("Error processing message from peer server:", error);
+        log("handleData error", error);
       }
     };
 
@@ -218,21 +239,24 @@ const GameHost = () => {
 
     return () => {
       if (dataConnection) {
+        log("data listener cleanup");
         dataConnection.off("data", handleData);
       }
     };
   }, [isConnected]);
 
-  if (fighterRoom.match_id === null || gameState.role !== "FIGHTER") {
-    redirect("/");
-  }
+  useEffect(() => {
+    if (fighterRoom.match_id === null || gameState.role !== "FIGHTER") {
+      navigate("/");
+    }
+  }, [fighterRoom.match_id, gameState.role, navigate]);
 
   return (
     <div className="w-screen h-screen overflow-hidden relative">
       <iframe
         ref={iframeRef}
-        src={`https://game.a-star.group?room=${roomId}`}
-        // src={`http://localhost:8080?room=${roomId}`}
+        // src={`https://game.a-star.group?room=${roomId}`}
+        src={`http://localhost:61244?room=${roomId}`}
         className="w-full h-full border-0"
         title="Game Host"
         allowFullScreen
