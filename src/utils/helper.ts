@@ -50,3 +50,8 @@ export const fetchMatchView = async (client: SuiClient, matchId: string, senderA
     return null;
   }
 };
+
+export const UserBetView = bcs.struct("UserBetView", {
+  side: bcs.u8(),
+  amount: bcs.u64(),
+});
