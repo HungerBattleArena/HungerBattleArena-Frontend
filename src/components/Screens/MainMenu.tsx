@@ -101,7 +101,7 @@ export default function MainMenu() {
       <h1 className="text-7xl md:text-9xl font-black mb-4 glitch-text text-center" data-text="HUNGER BATTLE">
         HUNGER BATTLE
       </h1>
-      <h2 className="text-2xl md:text-3xl text-gray-300 tracking-[0.6em] mb-14 uppercase">Arena Prototype</h2>
+      <h2 className="text-2xl md:text-3xl text-gray-300 text-center tracking-[0.6em] mb-14 uppercase">Arena Prototype</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl w-full px-6">
         <div
