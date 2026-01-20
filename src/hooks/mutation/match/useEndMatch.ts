@@ -1,39 +1,30 @@
-// import { useMutation } from "@tanstack/react-query";
-// import useCustomSign from "./useCustomSign";
-// import { useSuiClientContext } from "@mysten/dapp-kit";
-// import { useAppSelector } from "../../../store/hooks";
-// import { PackageID } from "../../../constants/contract";
-// import { Transaction } from "@mysten/sui/transactions";
+import { useMutation } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
+import { handleEndMatch } from "../../../services";
 
-// const useEndMatch = () => {
-//   const { mutateAsync: signAndExecute } = useCustomSign();
-//   const { client } = useSuiClientContext();
-//   const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
+const useEndMatch = () => {
+  const [searchParams] = useSearchParams();
+  const matchId = searchParams.get('room');
 
-//   const mutation = useMutation({
-//     mutationKey: ["end-match", fighterRoom.matchId],
-//     mutationFn: async () => {
-//       try {
-//         const tx = new Transaction();
-//         tx.moveCall({
-//           target: `${PackageID}::match_manager::match_view`,
-//           arguments: [
-//             tx.object(fighterRoom.matchId!),
-//           ],
-//         });
+  const mutation = useMutation({
+    mutationKey: ["end-match", matchId],
+    mutationFn: async (values: { isWin: boolean }) => {
+      const { isWin } = values;
 
-//         const result = await client.devInspectTransactionBlock({
-//           sender: currentAccount.address,
-//           transactionBlock: tx,
-//         });
-//       } catch (error) {
-//         throw new Error("Failed to end match", { cause: error });
-//       }
-//     },
-//   });
+      if (!matchId || !isWin) {
+        throw new Error("Match ID and isWin are required");
+      }
 
+      try {
+        const result = await handleEndMatch(matchId, isWin);
+        return result;
+      } catch (error) {
+        throw new Error("Failed to end match", { cause: error });
+      }
+    },
+  });
 
-//   return mutation;
-// }
+  return mutation;
+}
 
-// export default useEndMatch
+export default useEndMatch

@@ -1,0 +1,1 @@
+export const API_URL = 'https://hunger-api.a-star.group/api/';

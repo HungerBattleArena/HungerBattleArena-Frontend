@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react';
+import useFighterClaim from '../../hooks/mutation/match/useFighterClaim';
+import useEndMatch from '../../hooks/mutation/match/useEndMatch';
 
 interface HostWinResultDialogProps {
   isOpen: boolean;
@@ -6,36 +8,38 @@ interface HostWinResultDialogProps {
   playerName?: string;
 }
 
-const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ 
-  isOpen, 
+const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({
+  isOpen,
   onClose,
-  playerName 
+  playerName,
 }) => {
-  // Close dialog on Escape key
+  const { mutateAsync: claimFighterReward } = useFighterClaim();
+  const { mutateAsync: endMatch } = useEndMatch();
+
+  const handleClaimReward = async () => {
+    await claimFighterReward();
+    onClose();
+  }
+
+  const handleEndMatch = useCallback(async () => {
+    await endMatch({ isWin: true });
+    onClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (isOpen && e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose]);
+    handleEndMatch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="absolute inset-0 bg-black/90 backdrop-blur-xl pointer-events-auto z-50 flex items-center justify-center fade-in"
       onClick={onClose}
     >
-      <div 
+      <div
         className="glass-panel w-full max-w-lg p-10 relative fade-in"
         onClick={(e) => e.stopPropagation()}
       >
@@ -49,8 +53,8 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({
 
         <div className="text-center space-y-6">
           <div className="text-6xl mb-4">🏆</div>
-          
-          <h2 
+
+          <h2
             className="text-4xl font-black text-green-500 mb-2 font-tech"
             style={{ textShadow: '0 0 20px rgba(34, 197, 94, 0.8)' }}
           >
@@ -69,12 +73,21 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({
             Congratulations on your triumph!
           </p>
 
-          <button
-            className="btn-cyber px-8 py-3 text-lg font-bold mt-6"
-            onClick={onClose}
-          >
-            Continue
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+            <button
+              className="btn-cyber px-8 py-3 text-lg font-bold"
+              onClick={handleClaimReward}
+            >
+              Claim Reward
+            </button>
+
+            <button
+              className="btn-cyber px-8 py-3 text-lg font-bold"
+              onClick={onClose}
+            >
+              Continue
+            </button>
+          </div>
         </div>
       </div>
     </div>

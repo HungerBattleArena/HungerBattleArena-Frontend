@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { redirect, useSearchParams } from "react-router-dom";
+import { redirect, useNavigate, useSearchParams } from "react-router-dom";
 import Peer from "peerjs";
 import HostLostResultDialog from "../Dialog/HostLostResultDialog";
 import HostWinResultDialog from "../Dialog/HostWinResultDialog";
@@ -16,6 +16,7 @@ interface PeerJSConfig {
 }
 
 const GameHost = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get("roomId");
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -243,6 +244,7 @@ const GameHost = () => {
         onClose={() => {
           setShowPlayerDiedDialog(false);
           setPlayerName(undefined);
+          navigate('/');
         }}
         playerName={playerName}
       />
@@ -252,6 +254,7 @@ const GameHost = () => {
         onClose={() => {
           setShowGameEndedDialog(false);
           setWinnerName(undefined);
+          navigate('/');
         }}
         playerName={winnerName}
       />
