@@ -19,7 +19,7 @@ export default function ViewerBet() {
   }
 
   const lockBetAndEnter = () => {
-    if (selectedRoom.status === 'closed') {
+    if (selectedRoom.status !== 'created') {
       alert('Betting is closed.');
       return;
     }

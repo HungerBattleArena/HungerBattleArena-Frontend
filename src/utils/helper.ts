@@ -35,10 +35,10 @@ export const fetchMatchView = async (client: SuiClient, matchId: string, senderA
     const [bytes] = result.results?.[0]?.returnValues?.[0] || [];
     const decoded = MatchView.parse(Uint8Array.from(bytes || []));
 
-    const matchStatus: Record<number, 'created' | 'in_game' | 'closed'> = {
+    const matchStatus: Record<number, 'created' | 'in_game' | 'ended'> = {
       0: 'created',
       1: 'in_game',
-      2: 'closed',
+      2: 'ended',
     };
 
     return {
