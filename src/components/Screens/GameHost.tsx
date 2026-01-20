@@ -53,10 +53,7 @@ const GameHost = () => {
     if (dataConnectionRef.current) return;
     log("init peer connection", { roomId });
 
-    const windowWithConfig = window as typeof window & {
-      PEERJS_CONFIG?: PeerJSConfig;
-    };
-    const config: PeerJSConfig = windowWithConfig.PEERJS_CONFIG || {
+    const config: PeerJSConfig = {
       host: "peer.hedos.finance",
       path: "/",
       secure: true,
@@ -255,8 +252,8 @@ const GameHost = () => {
     <div className="w-screen h-screen overflow-hidden relative">
       <iframe
         ref={iframeRef}
-        // src={`https://game.a-star.group?room=${roomId}`}
-        src={`http://localhost:61244?room=${roomId}`}
+        src={`https://game.a-star.group?room=${roomId}`}
+        // src={`http://localhost:61244?room=${roomId}`}
         className="w-full h-full border-0"
         title="Game Host"
         allowFullScreen
