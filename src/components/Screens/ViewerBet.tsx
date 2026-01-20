@@ -25,27 +25,26 @@ export default function ViewerBet() {
 
   const lockBetAndEnter = async () => {
     if (selectedRoom.status === 'ended' || selectedRoom.status == 'in_game') {
-      alert('Betting is closed.');
+      toast.warning('Betting is closed.');
       return;
     }
     if (!selectedBetSide) {
-      alert('Select WIN or LOSE.');
+      toast.warning('Select WIN or LOSE.');
       return;
     }
     const amount = parseInt(betAmount, 10);
     if (!amount || amount <= 0) {
-      alert('Enter a valid bet amount.');
+      toast.warning('Enter a valid bet amount.');
       return;
     }
 
     try {
-      const result = await placeBet({
+      await placeBet({
         vaultId: selectedRoom.vault_id!,
         side: selectedBetSide,
         amount: amount,
       });
-      
-      console.log("🚀 ~ lockBetAndEnter ~ result:", result);
+
       setGameStateAction({
         role: 'VIEWER',
         faction: selectedBetSide,
@@ -53,15 +52,14 @@ export default function ViewerBet() {
       });
       setShowBetLockedDialog(true);
 
-    // NOTE: Auto-navigate after 5 seconds - mock player entering the game
-    setTimeout(() => {
-      navigate(`/view-game?room=${selectedRoom.match_id}`);
-    }, 5000);
+      // NOTE: Auto-navigate after 5 seconds - mock player entering the game
+      setTimeout(() => {
+        navigate(`/view-game?room=${selectedRoom.match_id}`);
+      }, 5000);
     } catch (error) {
       console.error(error);
       toast.error('Failed to place bet');
     }
-
   };
 
   if (showBetLockedDialog) {
@@ -82,8 +80,8 @@ export default function ViewerBet() {
 
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-50 bg-black/95">
-      <div className="glass-panel w-full max-w-4xl p-10 relative fade-in">
-        <button className="absolute top-6 left-6 text-white z-50 hover:text-cyan-400 transition" onClick={() => navigate('/viewer-rooms')}>
+      <div className="glass-panel w-full max-w-4xl p-2 md:p-10 relative fade-in">
+        <button className="text-white z-50 hover:text-cyan-400 transition" onClick={() => navigate('/viewer-rooms')}>
           ← Change room
         </button>
 
