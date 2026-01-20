@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { redirect, useNavigate, useSearchParams } from "react-router-dom";
 import Peer from "peerjs";
 import HostLostResultDialog from "../Dialog/HostLostResultDialog";
@@ -22,6 +22,7 @@ const GameHost = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
   const gameState = useAppSelector((state) => state.game.gameState);
+  const [logs, setLogs] = useState<string[]>([]);
 
   const [showPlayerDiedDialog, setShowPlayerDiedDialog] = useState(false);
   const [playerName, setPlayerName] = useState<string | undefined>(undefined);
@@ -39,6 +40,11 @@ const GameHost = () => {
   const INITIAL_RETRY_DELAY = 1000; // 1 second
   const MAX_RETRY_DELAY = 10000; // 10 seconds
   const CONNECTION_TIMEOUT = 15000; // 15 seconds
+
+  const addLog = useCallback((message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setLogs((prev) => [...prev.slice(-49), `[${timestamp}] ${message}`]);
+  }, []);
 
   useEffect(() => {
     if (iframeRef.current) {
@@ -69,11 +75,15 @@ const GameHost = () => {
         console.error(
           `Max retries (${MAX_RETRIES}) reached. Connection failed.`,
         );
+        addLog(`Max retries reached while connecting to ${hostPeerId}.`);
         isConnectingRef.current = false;
         return;
       }
 
       isConnectingRef.current = true;
+      addLog(
+        `Connecting to ${hostPeerId} (attempt ${retryCount + 1}/${MAX_RETRIES})`,
+      );
 
       if (dataConnectionRef.current) {
         dataConnectionRef.current.close();
@@ -104,6 +114,7 @@ const GameHost = () => {
         setIsConnected(true);
         isConnectingRef.current = false;
         retryCountRef.current = 0;
+        addLog(`Connected to ${hostPeerId}.`);
       });
 
       dataConnection.on("error", (err) => {
@@ -111,6 +122,10 @@ const GameHost = () => {
         console.error("Data connection error:", err);
         setIsConnected(false);
         isConnectingRef.current = false;
+        addLog(
+          `Connection error with ${hostPeerId}: ${err instanceof Error ? err.message : String(err)
+          }`,
+        );
 
         const delay = Math.min(
           INITIAL_RETRY_DELAY * Math.pow(2, retryCount),
@@ -127,6 +142,7 @@ const GameHost = () => {
         setIsConnected(false);
         dataConnectionRef.current = null;
         isConnectingRef.current = false;
+        addLog(`Connection to ${hostPeerId} closed.`);
       });
     };
 
@@ -136,6 +152,7 @@ const GameHost = () => {
     peer.on("open", () => {
       const hostPeerId = "room-" + roomId;
       retryCountRef.current = 0;
+      addLog(`Peer opened. Connecting to ${hostPeerId}.`);
       connectToRoom(peer, hostPeerId, 0);
     });
 
@@ -148,8 +165,12 @@ const GameHost = () => {
         err.type === "peer-unavailable"
       ) {
         setIsConnected(false);
+        addLog("Peer unavailable. Waiting for host to come online.");
       } else {
         console.error("PeerJS error:", err);
+        addLog(
+          `PeerJS error: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     });
 
@@ -166,7 +187,7 @@ const GameHost = () => {
       retryCountRef.current = 0;
       peer.destroy();
     };
-  }, [roomId]);
+  }, [addLog, roomId]);
 
   useEffect(() => {
     if (!isConnected) return;
@@ -182,8 +203,10 @@ const GameHost = () => {
           if (data === "player-died" || data === "game-ended") {
             if (data === "player-died") {
               setShowPlayerDiedDialog(true);
+              addLog("Received: player-died");
             } else {
               setShowGameEndedDialog(true);
+              addLog("Received: game-ended");
             }
             return;
           }
@@ -205,12 +228,20 @@ const GameHost = () => {
         if (message?.type === "player-died") {
           setPlayerName(message.playerName);
           setShowPlayerDiedDialog(true);
+          addLog(
+            `Player died: ${message.playerName ? message.playerName : "Unknown"}`,
+          );
         } else if (message?.type === "game-ended") {
           setWinnerName(message.playerName);
           setShowGameEndedDialog(true);
+          addLog(
+            `Game ended. Winner: ${message.playerName ? message.playerName : "Unknown"
+            }`,
+          );
         }
       } catch (error) {
         console.error("Error processing message from peer server:", error);
+        addLog("Error processing message from peer server.");
       }
     };
 
@@ -221,7 +252,7 @@ const GameHost = () => {
         dataConnection.off("data", handleData);
       }
     };
-  }, [isConnected]);
+  }, [addLog, isConnected]);
 
   if (fighterRoom.match_id === null || gameState.role !== "FIGHTER") {
     redirect("/");
@@ -229,6 +260,25 @@ const GameHost = () => {
 
   return (
     <div className="w-screen h-screen overflow-hidden relative">
+      <div className="absolute top-4 left-4 z-10 bg-black/70 text-white p-3 rounded-md max-w-sm max-h-64 overflow-y-auto text-sm space-y-1">
+        <div className="font-semibold">Connection Log</div>
+        {logs.length === 0 ? (
+          <div className="text-gray-300">Waiting for events...</div>
+        ) : (
+          logs
+            .slice()
+            .reverse()
+            .map((entry, idx) => (
+              <div
+                key={`${entry}-${idx}`}
+                className="whitespace-pre-wrap leading-tight"
+              >
+                {entry}
+              </div>
+            ))
+        )}
+      </div>
+
       <iframe
         ref={iframeRef}
         src={`https://game.a-star.group?room=${roomId}`}
