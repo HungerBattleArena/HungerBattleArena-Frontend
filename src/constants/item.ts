@@ -1,9 +1,4 @@
-export const itemList = [
-  {
-    id: "slow-speed",
-    name: "Slow",
-    img: "/Items/Slow.png",
-  },
+export const WinSideItems = [
   {
     id: "boost-speed",
     name: "Speed Boost",
@@ -13,6 +8,24 @@ export const itemList = [
     id: "heal",
     name: "Heal",
     img: "/Items/Heal.png",
+  },
+  {
+    id: "increase-damage",
+    name: "Atk Boost",
+    img: "/Items/DmgBoost.png",
+  },
+  {
+    id: "add-shield",
+    name: "Add Shield",
+    img: "/Items/Shield.png",
+  },
+];
+
+export const LoseSideItems = [
+  {
+    id: "slow-speed",
+    name: "Slow",
+    img: "/Items/Slow.png",
   },
   {
     id: "decrease-damage",
@@ -28,15 +41,5 @@ export const itemList = [
     id: "trap",
     name: "Trap Spike",
     img: "/Items/TrapSpike .png",
-  },
-  {
-    id: "increase-damage",
-    name: "Damage Boost",
-    img: "/Items/DmgBoost.png",
-  },
-  {
-    id: "add-shield",
-    name: "Add Shield",
-    img: "/Items/Shield.png",
   },
 ];

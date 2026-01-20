@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setGameState } from '../../store/gameSlice';
+import usePlaceBet from '../../hooks/mutation/viewer/usePlaceBet';
+import { toast } from 'react-toastify';
 
 export default function ViewerBet() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { mutateAsync: placeBet } = usePlaceBet();
   const selectedRoom = useAppSelector((state) => state.game.selectedRoom);
   const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
     dispatch(setGameState(updates));
@@ -18,7 +21,7 @@ export default function ViewerBet() {
     return null;
   }
 
-  const lockBetAndEnter = () => {
+  const lockBetAndEnter = async () => {
     if (selectedRoom.status === 'closed') {
       alert('Betting is closed.');
       return;
@@ -32,12 +35,26 @@ export default function ViewerBet() {
       alert('Enter a valid bet amount.');
       return;
     }
-    setGameStateAction({
-      role: 'VIEWER',
-      faction: selectedBetSide,
-      userBetAmount: amount,
-    });
-    navigate(`/view-game?room=${selectedRoom.match_id}`);
+
+    try {
+      const result = await placeBet({
+        vaultId: selectedRoom.vault_id!,
+        side: selectedBetSide,
+        amount: amount,
+      });
+      
+      console.log("🚀 ~ lockBetAndEnter ~ result:", result);
+      setGameStateAction({
+        role: 'VIEWER',
+        faction: selectedBetSide,
+        userBetAmount: amount,
+      });
+      navigate(`/view-game?room=${selectedRoom.match_id}`);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to place bet');
+    }
+
   };
 
   return (
