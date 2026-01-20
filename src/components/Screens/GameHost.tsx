@@ -7,6 +7,7 @@ import { useAppSelector } from "../../store/hooks";
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer["connect"]>;
+const FIGHTER_PEER_ROOM_ID = "fighter-peer-room-id";
 
 interface PeerJSConfig {
   host?: string;
@@ -55,10 +56,7 @@ const GameHost = () => {
   useEffect(() => {
     if (!roomId) return;
 
-    const windowWithConfig = window as typeof window & {
-      PEERJS_CONFIG?: PeerJSConfig;
-    };
-    const config: PeerJSConfig = windowWithConfig.PEERJS_CONFIG || {
+    const config: PeerJSConfig = {
       host: "peer.hedos.finance",
       path: "/",
       secure: true,
@@ -146,7 +144,7 @@ const GameHost = () => {
       });
     };
 
-    const peer = new Peer(null as unknown as string, config);
+    const peer = new Peer(FIGHTER_PEER_ROOM_ID, config);
     peerRef.current = peer;
 
     peer.on("open", () => {

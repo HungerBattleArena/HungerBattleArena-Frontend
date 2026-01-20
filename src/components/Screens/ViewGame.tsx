@@ -77,16 +77,12 @@ function ViewGame() {
 
   // Initialize PeerJS
   useEffect(() => {
-    const windowWithConfig = window as typeof window & {
-      PEERJS_CONFIG?: PeerJSConfig;
-    };
-    const config: PeerJSConfig = windowWithConfig.PEERJS_CONFIG || {
+    const config: PeerJSConfig = {
       host: 'peer.hedos.finance',
       path: '/',
       secure: true,
     };
 
-    // PeerJS will generate a random ID when null/undefined is passed
     const peer = new Peer(null as unknown as string, config);
     peerRef.current = peer;
 
