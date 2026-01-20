@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setGameState } from '../../store/gameSlice';
+import BetLockedDialog from '../Dialog/BetLockedDialog';
 
 export default function ViewerBet() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function ViewerBet() {
   };
   const [selectedBetSide, setSelectedBetSide] = useState<'WIN' | 'LOSE' | null>(null);
   const [betAmount, setBetAmount] = useState('');
+  const [showBetLockedDialog, setShowBetLockedDialog] = useState(false);
 
   if (!selectedRoom) {
     navigate('/viewer-rooms');
@@ -37,8 +39,30 @@ export default function ViewerBet() {
       faction: selectedBetSide,
       userBetAmount: amount,
     });
-    navigate(`/view-game?room=${selectedRoom.match_id}`);
+
+    setShowBetLockedDialog(true);
+
+    // NOTE: Auto-navigate after 5 seconds - mock player entering the game
+    setTimeout(() => {
+      navigate(`/view-game?room=${selectedRoom.match_id}`);
+    }, 5000);
   };
+
+  if (showBetLockedDialog) {
+    return (
+      <BetLockedDialog
+        isOpen={showBetLockedDialog}
+        roomName={selectedRoom.name}
+        yourBet={parseInt(betAmount, 10)}
+        yourSide={selectedBetSide!}
+        roomPool={Number(selectedRoom.total_bet_viewers)}
+        winAmount={Number(selectedRoom.win_bets_total)}
+        winBettors={Number(selectedRoom.win_bettors_count)}
+        loseAmount={Number(selectedRoom.lose_bets_total)}
+        loseBettors={Number(selectedRoom.lose_bettors_count)}
+      />
+    );
+  }
 
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-50 bg-black/95">
