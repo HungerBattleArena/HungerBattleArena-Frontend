@@ -2,8 +2,10 @@ import useMatchInfo from '../../../hooks/query/useMatchInfo';
 import { useAppSelector } from '../../../store/hooks';
 
 const RoomInfo = () => {
-  const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
-  const isOpen = fighterRoom.status === 'OPEN';
+  const fighterRoom = useAppSelector((state) => {
+    return state.game.fighterRoom;
+  });
+  const isOpen = fighterRoom?.status === 'created' ? true : false;
   const { data: matchInfo } = useMatchInfo();
 
   return (
