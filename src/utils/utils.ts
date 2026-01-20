@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { v4 as uuidv4 } from 'uuid';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -16,4 +17,9 @@ export const generateRoomId = () => {
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function BN(value: any): BigNumber {
+  return new BigNumber(value);
 }

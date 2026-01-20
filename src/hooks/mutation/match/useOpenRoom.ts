@@ -15,8 +15,8 @@ const useOpenRoom = () => {
   };
 
   const mutation = useMutation({
-    mutationFn: async (values: { roomName: string, roomId: string }) => {
-      const { roomName, roomId } = values;
+    mutationFn: async (values: { roomName: string }) => {
+      const { roomName } = values;
 
       try {
         const tx = new Transaction();
@@ -48,8 +48,9 @@ const useOpenRoom = () => {
             win_bettors_count: "0",
             lose_bettors_count: "0",
             match_id: match?.objectId || '',
-            room_id: roomId,
           });
+
+          return match?.objectId || '';
         }
       } catch (error) {
         throw new Error("Failed to open room", { cause: error });

@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setGameState } from '../../store/gameSlice';
 import BetLockedDialog from '../Dialog/BetLockedDialog';
+import usePlaceBet from '../../hooks/mutation/viewer/usePlaceBet';
+import { toast } from 'react-toastify';
 
 export default function ViewerBet() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { mutateAsync: placeBet } = usePlaceBet();
   const selectedRoom = useAppSelector((state) => state.game.selectedRoom);
   const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
     dispatch(setGameState(updates));
@@ -20,8 +23,8 @@ export default function ViewerBet() {
     return null;
   }
 
-  const lockBetAndEnter = () => {
-    if (selectedRoom.status !== 'created') {
+  const lockBetAndEnter = async () => {
+    if (selectedRoom.status === 'ended' || selectedRoom.status == 'in_game') {
       alert('Betting is closed.');
       return;
     }
@@ -34,18 +37,31 @@ export default function ViewerBet() {
       alert('Enter a valid bet amount.');
       return;
     }
-    setGameStateAction({
-      role: 'VIEWER',
-      faction: selectedBetSide,
-      userBetAmount: amount,
-    });
 
-    setShowBetLockedDialog(true);
+    try {
+      const result = await placeBet({
+        vaultId: selectedRoom.vault_id!,
+        side: selectedBetSide,
+        amount: amount,
+      });
+      
+      console.log("🚀 ~ lockBetAndEnter ~ result:", result);
+      setGameStateAction({
+        role: 'VIEWER',
+        faction: selectedBetSide,
+        userBetAmount: amount,
+      });
+      setShowBetLockedDialog(true);
 
     // NOTE: Auto-navigate after 5 seconds - mock player entering the game
     setTimeout(() => {
       navigate(`/view-game?room=${selectedRoom.match_id}`);
     }, 5000);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to place bet');
+    }
+
   };
 
   if (showBetLockedDialog) {

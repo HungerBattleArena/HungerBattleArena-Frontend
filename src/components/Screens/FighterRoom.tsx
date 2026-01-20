@@ -5,7 +5,7 @@ import useOpenRoom from '../../hooks/mutation/match/useOpenRoom';
 import useStartMatch from '../../hooks/mutation/match/useStartMatch';
 import { setFighterRoom, setGameState } from '../../store/gameSlice';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { cn, generateRoomId } from '../../utils/utils';
+import { cn } from '../../utils/utils';
 import RoomInfo from '../Section/FighterRoom/RoomInfo';
 
 export default function FighterRoom() {
@@ -29,11 +29,15 @@ export default function FighterRoom() {
       toast.error('Room name is required');
       return;
     }
-    const newRoomId = generateRoomId();
 
     try {
-      await openRoom({ roomName, roomId: newRoomId });
-      setNewRoomId(newRoomId);
+      const matchId = await openRoom({ roomName });
+
+      if (!matchId || matchId === '') {
+        throw new Error("Failed to open room" + matchId);
+      }
+
+      setNewRoomId(matchId);
       setIsOpenRoom(true);
     } catch (error) {
       console.error(error);

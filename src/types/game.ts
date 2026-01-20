@@ -73,5 +73,4 @@ export type TMatchInfo = {
   lose_bets_total: string;
   win_bettors_count: string;
   lose_bettors_count: string;
-  room_id?: string;
 };

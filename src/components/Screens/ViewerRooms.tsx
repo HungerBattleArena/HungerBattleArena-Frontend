@@ -13,6 +13,14 @@ export default function ViewerRooms() {
   const dispatch = useAppDispatch();
   const { data: activeRooms, isFetching, isLoading } = useListMatchInfo();
 
+  const filteredRooms = activeRooms.filter(
+    (room) =>
+      room.match_id.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase()) ||
+      room.name.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase())
+  );
+
+  const { data: paginatedRooms, currentPage, maxPage, next, prev } = usePagination(filteredRooms, { itemPerPage: 6 });
+
   const setSelectedRoomAction = (room: Parameters<typeof setSelectedRoom>[0]) => {
     dispatch(setSelectedRoom(room));
   };
@@ -20,7 +28,7 @@ export default function ViewerRooms() {
   const selectRoom = (room: (typeof activeRooms)[0]) => {
     if (room.status === 'ended' || room.status === 'in_game') return;
     setSelectedRoomAction(room);
-    navigate('/viewer-bet?room=' + room.match_id);
+    navigate(`/viewer-bet?room=${room.match_id}`);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -32,17 +40,8 @@ export default function ViewerRooms() {
       selectRoom(foundRoom);
       return;
     }
-
-    navigate('/view-game?room=' + searchQuery);
+    // navigate('/view-game?room=' + searchQuery);
   };
-
-  const filteredRooms = activeRooms.filter(
-    (room) =>
-      room.match_id.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase()) ||
-      room.name.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase())
-  );
-
-  const { data: paginatedRooms, currentPage, maxPage, next, prev } = usePagination(filteredRooms, { itemPerPage: 6 });
 
   useEffect(() => {
     const timer = setTimeout(() => {
