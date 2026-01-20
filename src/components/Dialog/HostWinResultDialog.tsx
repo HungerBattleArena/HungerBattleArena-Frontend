@@ -28,9 +28,11 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({
   }, []);
 
   useEffect(() => {
-    handleEndMatch();
+    if (isOpen) {
+      handleEndMatch();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

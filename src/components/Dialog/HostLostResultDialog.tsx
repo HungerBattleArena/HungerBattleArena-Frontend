@@ -21,9 +21,11 @@ const HostLostResultDialog: React.FC<HostLostResultDialogProps> = ({
   }, []);
 
   useEffect(() => {
-    handleEndMatch();
+    if (isOpen) {
+      handleEndMatch();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
