@@ -46,7 +46,7 @@ export default function FighterRoom() {
   };
 
   const startMatchAsFighter = async () => {
-    setFighterRoomAction({ ...fighterRoom, status: 'closed' });
+    setFighterRoomAction({ ...fighterRoom, status: 'ended' });
     setGameStateAction({ role: 'FIGHTER' });
     await startMatch();
     navigate(`/game?roomId=${newRoomId}`);

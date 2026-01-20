@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef } from "react";
-import Peer from "peerjs";
-import ConnectRoomSection from "../Section/ConnectRoomSection";
-import ViewerItems from "../Section/ViewerItems";
-import ViewerLostResultDialog from "../Dialog/ViewerLostResultDialog";
-import ViewerWinResultDialog from "../Dialog/ViewerWinResultDialog";
-import { useNavigate } from "react-router-dom";
-import { useAppSelector } from "../../store/hooks";
+import { useState, useEffect, useRef } from 'react';
+import Peer from 'peerjs';
+import ConnectRoomSection from '../Section/ConnectRoomSection';
+import ViewerItems from '../Section/ViewerItems';
+import ViewerLostResultDialog from '../Dialog/ViewerLostResultDialog';
+import ViewerWinResultDialog from '../Dialog/ViewerWinResultDialog';
+import { useNavigate } from 'react-router-dom';
+import { useAppSelector } from '../../store/hooks';
 
 // Infer types from Peer methods to avoid runtime import issues
-type DataConnection = ReturnType<Peer["connect"]>;
-type MediaConnection = ReturnType<Peer["call"]>;
+type DataConnection = ReturnType<Peer['connect']>;
+type MediaConnection = ReturnType<Peer['call']>;
 
 interface PeerJSConfig {
   host?: string;
@@ -39,10 +39,7 @@ function ViewGame() {
 
   const viewerBetSide = gameState.faction;
 
-  const handleConnectionChange = (
-    connected: boolean,
-    roomCode: string | null,
-  ) => {
+  const handleConnectionChange = (connected: boolean, roomCode: string | null) => {
     setIsConnected(connected);
     setCurrentRoomCode(roomCode);
     currentRoomCodeRef.current = roomCode;
@@ -53,21 +50,19 @@ function ViewGame() {
     }
   };
 
-  const handleDataConnectionChange = (
-    dataConnection: DataConnection | null,
-  ) => {
+  const handleDataConnectionChange = (dataConnection: DataConnection | null) => {
     dataConnectionRef.current = dataConnection;
   };
 
   const handleSendMessageToGame = (msg: string) => {
     const dataConnection = dataConnectionRef.current;
     if (!dataConnection || !dataConnection.open) {
-      console.log("Not connected to game");
+      console.log('Not connected to game');
       return;
     }
 
     if (!isConnected) {
-      console.log("Not connected to game");
+      console.log('Not connected to game');
       return;
     }
 
@@ -86,8 +81,8 @@ function ViewGame() {
       PEERJS_CONFIG?: PeerJSConfig;
     };
     const config: PeerJSConfig = windowWithConfig.PEERJS_CONFIG || {
-      host: "peer.hedos.finance",
-      path: "/",
+      host: 'peer.hedos.finance',
+      path: '/',
       secure: true,
     };
 
@@ -95,43 +90,36 @@ function ViewGame() {
     const peer = new Peer(null as unknown as string, config);
     peerRef.current = peer;
 
-    peer.on("open", (id) => {
+    peer.on('open', (id) => {
       setPeerId(id);
     });
 
-    peer.on("error", (err) => {
-      if (
-        err &&
-        typeof err === "object" &&
-        "type" in err &&
-        err.type === "peer-unavailable"
-      ) {
+    peer.on('error', (err) => {
+      if (err && typeof err === 'object' && 'type' in err && err.type === 'peer-unavailable') {
         setIsConnected(false);
       }
     });
 
     // Host will initiate the media call; viewer just answers and shows the stream
-    peer.on("call", (call: MediaConnection) => {
+    peer.on('call', (call: MediaConnection) => {
       call.answer(undefined); // no local media to send back
 
-      call.on("stream", (remoteStream: MediaStream) => {
+      call.on('stream', (remoteStream: MediaStream) => {
         pendingStreamRef.current = remoteStream;
         if (videoRef.current) {
           videoRef.current.srcObject = remoteStream;
         }
       });
 
-      call.on("error", (err) => {
-        console.log("Call error: " + err);
+      call.on('error', (err) => {
+        console.log('Call error: ' + err);
       });
 
-      call.on("close", () => {
-        console.log("Call closed");
-        if (
-          videoRef.current &&
-          videoRef.current.srcObject === pendingStreamRef.current
-        ) {
+      call.on('close', () => {
+        console.log('Call closed');
+        if (videoRef.current && videoRef.current.srcObject === pendingStreamRef.current) {
           videoRef.current.srcObject = null;
+          // TODO: display refund dialog here
         }
       });
     });
@@ -158,21 +146,21 @@ function ViewGame() {
       try {
         let message: { type?: string; playerName?: string } | null = null;
 
-        if (typeof data === "string") {
-          if (data === "player-died" || data === "game-ended") {
-            if (data === "player-died") {
-              if (viewerBetSide == "WIN") {
+        if (typeof data === 'string') {
+          if (data === 'player-died' || data === 'game-ended') {
+            if (data === 'player-died') {
+              if (viewerBetSide == 'WIN') {
                 setShowPlayerDiedDialog(false);
                 setShowGameEndedDialog(true);
-              } else if (viewerBetSide == "LOSE") {
+              } else if (viewerBetSide == 'LOSE') {
                 setShowGameEndedDialog(false);
                 setShowPlayerDiedDialog(true);
               }
-            } else if (data === "game-ended") {
-              if (viewerBetSide == "LOSE") {
+            } else if (data === 'game-ended') {
+              if (viewerBetSide == 'LOSE') {
                 setShowGameEndedDialog(false);
                 setShowPlayerDiedDialog(true);
-              } else if (viewerBetSide == "WIN") {
+              } else if (viewerBetSide == 'WIN') {
                 setShowPlayerDiedDialog(false);
                 setShowGameEndedDialog(true);
               }
@@ -188,45 +176,45 @@ function ViewGame() {
           } catch {
             return;
           }
-        } else if (typeof data === "object" && data !== null) {
+        } else if (typeof data === 'object' && data !== null) {
           message = data as { type?: string; playerName?: string };
         } else {
           return;
         }
 
-        if (message?.type === "player-died") {
-          if (viewerBetSide == "WIN") {
+        if (message?.type === 'player-died') {
+          if (viewerBetSide == 'WIN') {
             setShowPlayerDiedDialog(false);
             setShowGameEndedDialog(true);
-          } else if (viewerBetSide == "LOSE") {
+          } else if (viewerBetSide == 'LOSE') {
             setShowGameEndedDialog(false);
             setShowPlayerDiedDialog(true);
           }
-        } else if (message?.type === "game-ended") {
-          if (viewerBetSide == "LOSE") {
+        } else if (message?.type === 'game-ended') {
+          if (viewerBetSide == 'LOSE') {
             setShowGameEndedDialog(false);
             setShowPlayerDiedDialog(true);
-          } else if (viewerBetSide == "WIN") {
+          } else if (viewerBetSide == 'WIN') {
             setShowPlayerDiedDialog(false);
             setShowGameEndedDialog(true);
           }
         }
       } catch (error) {
-        console.error("Error processing message from peer server:", error);
+        console.error('Error processing message from peer server:', error);
       }
     };
 
-    dataConnection.on("data", handleData);
+    dataConnection.on('data', handleData);
 
     return () => {
       if (dataConnection) {
-        dataConnection.off("data", handleData);
+        dataConnection.off('data', handleData);
       }
     };
   }, [isConnected, viewerBetSide]);
 
-  console.log("🚀 ~ ViewGame ~ showPlayerDiedDialog:", showPlayerDiedDialog);
-  console.log("🚀 ~ ViewGame ~ showGameEndedDialog:", showGameEndedDialog);
+  console.log('🚀 ~ ViewGame ~ showPlayerDiedDialog:', showPlayerDiedDialog);
+  console.log('🚀 ~ ViewGame ~ showGameEndedDialog:', showGameEndedDialog);
   return (
     <div className="flex flex-col h-screen bg-[#111] text-[#eee] font-sans relative">
       {/* Room Selector */}
@@ -238,13 +226,7 @@ function ViewGame() {
 
       {/* Video Container */}
       <div className="flex-1 flex items-center justify-center bg-black h-fit w-full mx-auto">
-        <video
-          ref={videoRef}
-          id="remoteVideo"
-          autoPlay
-          playsInline
-          className="w-250 h-150 bg-black"
-        />
+        <video ref={videoRef} id="remoteVideo" autoPlay playsInline className="w-250 h-150 bg-black" />
       </div>
 
       <ViewerItems onSendMessageToGame={handleSendMessageToGame} />
@@ -252,14 +234,14 @@ function ViewGame() {
       <ViewerLostResultDialog
         isOpen={showPlayerDiedDialog}
         onClose={() => {
-          navigate("/viewer-rooms");
+          navigate('/viewer-rooms');
         }}
       />
 
       <ViewerWinResultDialog
         isOpen={showGameEndedDialog}
         onClose={() => {
-          navigate("/viewer-rooms");
+          navigate('/viewer-rooms');
         }}
       />
     </div>

@@ -43,7 +43,6 @@ const useListMatchInfo = () => {
           }
         }
 
-        console.log('🚀 ~ useListMatchInfo ~ matchInfos:', matchInfos);
         return matchInfos;
       } catch (error) {
         console.error('Error fetching rooms info:', error);
