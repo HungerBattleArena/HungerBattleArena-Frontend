@@ -9,6 +9,21 @@ interface GameSliceState {
   fighterRoom: TMatchInfo;
 }
 
+export const defaultFighterRoom: TMatchInfo = {
+  match_id: '',
+  fighter: '',
+  name: '',
+  status: 0,
+  vault_id: null,
+  result: null,
+  total_bet_viewers: '0',
+  total_pool: '0',
+  win_bets_total: '0',
+  lose_bets_total: '0',
+  win_bettors_count: '0',
+  lose_bettors_count: '0',
+}
+
 const initialState: GameSliceState = {
   gameState: {
     screen: 'MENU',
@@ -21,20 +36,7 @@ const initialState: GameSliceState = {
   },
   activeRooms: [],
   selectedRoom: null,
-  fighterRoom: {
-    match_id: '',
-    fighter: '',
-    name: '',
-    status: 0,
-    vault_id: null,
-    result: null,
-    total_bet_viewers: '0',
-    total_pool: '0',
-    win_bets_total: '0',
-    lose_bets_total: '0',
-    win_bettors_count: '0',
-    lose_bettors_count: '0',
-  },
+  fighterRoom: defaultFighterRoom,
 };
 
 const gameSlice = createSlice({

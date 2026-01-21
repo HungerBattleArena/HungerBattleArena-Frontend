@@ -1,12 +1,16 @@
 import useMatchInfo from '../../../hooks/query/useMatchInfo';
 import { useAppSelector } from '../../../store/hooks';
 
-const RoomInfo = () => {
+interface RoomInfoProps {
+  matchId: string;
+}
+
+const RoomInfo = ({ matchId }: RoomInfoProps) => {
   const fighterRoom = useAppSelector((state) => {
     return state.game.fighterRoom;
   });
   const isOpen = fighterRoom?.status === 'created' ? true : false;
-  const { data: matchInfo } = useMatchInfo();
+  const { data: matchInfo } = useMatchInfo(matchId, 2000);
 
   return (
     <div className="glass-panel p-6 space-y-4 border border-gray-800">

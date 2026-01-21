@@ -9,20 +9,21 @@ import { cn } from '../../utils/utils';
 import RoomInfo from '../Section/FighterRoom/RoomInfo';
 
 export default function FighterRoom() {
+  const [roomName, setRoomName] = useState('');
+  const [isOpenRoom, setIsOpenRoom] = useState(false);
+  const [matchId, setMatchId] = useState('');
+
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
   const { mutateAsync: openRoom } = useOpenRoom();
   const { mutateAsync: startMatch } = useStartMatch();
+  const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
   const setFighterRoomAction = (room: Parameters<typeof setFighterRoom>[0]) => {
     dispatch(setFighterRoom(room));
   };
   const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
     dispatch(setGameState(updates));
   };
-  const [roomName, setRoomName] = useState('');
-  const [isOpenRoom, setIsOpenRoom] = useState(false);
-  const [newRoomId, setNewRoomId] = useState('');
 
   const openFighterRoom = async () => {
     if (roomName.trim() === '') {
@@ -37,7 +38,7 @@ export default function FighterRoom() {
         throw new Error("Failed to open room" + matchId);
       }
 
-      setNewRoomId(matchId);
+      setMatchId(matchId);
       setIsOpenRoom(true);
     } catch (error) {
       console.error(error);
@@ -49,7 +50,7 @@ export default function FighterRoom() {
     setFighterRoomAction({ ...fighterRoom, status: 'ended' });
     setGameStateAction({ role: 'FIGHTER' });
     await startMatch();
-    navigate(`/game?room=${newRoomId}`);
+    navigate(`/game?room=${matchId}`);
   };
 
   return (
@@ -98,7 +99,7 @@ export default function FighterRoom() {
               <h3 className="text-3xl text-white mb-2">Room Status</h3>
               <p className="text-sm text-gray-400">Track bettors before starting.</p>
             </div>
-            <RoomInfo />
+            <RoomInfo matchId={matchId} />
             <button
               id="btn-start-match"
               className={cn('btn-cyber px-8 py-3 text-lg font-bold w-full', !isOpenRoom && 'opacity-50 disabled:cursor-not-allowed')}
