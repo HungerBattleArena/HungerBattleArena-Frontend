@@ -30,13 +30,6 @@ const ConnectRoomSection = ({
   const autoConnectAttemptedRef = useRef(false);
 
   const connectToRoom = (code: string) => {
-    if (!code || code.length !== 6) {
-      console.log(
-        "Invalid room code. Please enter a 6-character code (e.g., ABC123)"
-      );
-      return;
-    }
-
     const peer = peerRef.current;
     if (!peer || !peer.id) {
       console.log("PeerJS not ready yet. Please wait...");
@@ -68,13 +61,6 @@ const ConnectRoomSection = ({
     dataConnection.on("open", () => {
       console.log(`Connected to room ${code}`);
       setIsConnected(true);
-
-      // Send a small message so host knows this viewer is ready
-      // dataConnection.send({
-      //   type: "viewer-hello",
-      //   viewerId: peer.id,
-      //   roomCode: code,
-      // });
     });
 
     dataConnection.on("error", (err) => {
@@ -109,24 +95,21 @@ const ConnectRoomSection = ({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !isConnected) {
-      handleConnect();
-    }
-  };
-
   // Auto-connect on mount if room code is present in URL
   useEffect(() => {
-    if (autoConnectAttemptedRef.current) {
+    if (autoConnectAttemptedRef.current && isConnected) {
+      console.log("Auto-connect already attempted");
       return; // Already attempted auto-connect
     }
 
     const initialRoomCode = getInitialRoomCode();
-    if (!initialRoomCode || initialRoomCode.length !== 6) {
+    if (!initialRoomCode) {
+      console.log("No valid room code in URL");
       return; // No valid room code in URL
     }
 
     if (isConnected) {
+      console.log("Already connected");
       return; // Already connected
     }
 
@@ -139,6 +122,7 @@ const ConnectRoomSection = ({
     const tryAutoConnect = () => {
       const peer = peerRef.current;
       if (peer && peer.id) {
+        console.log("Peer is ready, connecting to room");
         connectToRoom(initialRoomCode);
       } else if (retryCount < maxRetries) {
         retryCount++;
@@ -179,7 +163,6 @@ const ConnectRoomSection = ({
         id="roomCodeInput"
         value={roomCode}
         onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-        onKeyPress={handleKeyPress}
         placeholder="ABC123"
         maxLength={6}
         disabled={isConnected}
@@ -203,9 +186,8 @@ const ConnectRoomSection = ({
         </button>
       )}
       <div
-        className={`ml-auto text-xs ${
-          isConnected ? "text-[#27ae60]" : "text-[#999]"
-        }`}
+        className={`ml-auto text-xs ${isConnected ? "text-[#27ae60]" : "text-[#999]"
+          }`}
       >
         {isConnected
           ? `Connected to room: ${currentRoomCode}`
