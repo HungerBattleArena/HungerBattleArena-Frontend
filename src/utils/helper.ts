@@ -2,10 +2,12 @@ import type { SuiClient } from '@mysten/sui/client';
 import type { TMatchInfo } from '../types/game';
 import { bcs } from '@mysten/sui/bcs';
 import { Transaction } from '@mysten/sui/transactions';
-import { PackageID } from '../constants/contract';
+import { OCT_COIN_DECIMALS, PackageID } from '../constants/contract';
+import { BN } from './utils';
 
 export const fetchMatchView = async (client: SuiClient, matchId: string, senderAddress: string): Promise<TMatchInfo | null> => {
   try {
+    // NOTE: divide by OCT_COIN_DECIMALS when displaying coin amounts
     const MatchView = bcs.struct('MatchView', {
       match_id: bcs.Address,
       vault_id: bcs.option(bcs.Address),
@@ -43,6 +45,10 @@ export const fetchMatchView = async (client: SuiClient, matchId: string, senderA
 
     return {
       ...decoded,
+      total_pool: BN(decoded.total_pool).dividedBy(BN(10).pow(OCT_COIN_DECIMALS)).toString(),
+      total_bet_viewers: BN(decoded.total_bet_viewers).dividedBy(BN(10).pow(OCT_COIN_DECIMALS)).toString(),
+      win_bets_total: BN(decoded.win_bets_total).dividedBy(BN(10).pow(OCT_COIN_DECIMALS)).toString(),
+      lose_bets_total: BN(decoded.lose_bets_total).dividedBy(BN(10).pow(OCT_COIN_DECIMALS)).toString(),
       status: matchStatus[decoded.status] || 'created',
     };
   } catch (error) {
@@ -51,7 +57,7 @@ export const fetchMatchView = async (client: SuiClient, matchId: string, senderA
   }
 };
 
-export const UserBetView = bcs.struct("UserBetView", {
+export const UserBetView = bcs.struct('UserBetView', {
   side: bcs.u8(),
   amount: bcs.u64(),
 });

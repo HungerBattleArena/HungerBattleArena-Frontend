@@ -3,7 +3,7 @@ import useCustomSign from '../match/useCustomSign';
 import { useCurrentAccount, useSuiClientContext } from '@mysten/dapp-kit';
 import { useSearchParams } from 'react-router-dom';
 import { Transaction } from '@mysten/sui/transactions';
-import { PackageID } from '../../../constants/contract';
+import { OCT_COIN_DECIMALS, PackageID } from '../../../constants/contract';
 import { BN } from '../../../utils/utils';
 
 const usePlaceBet = () => {
@@ -43,7 +43,7 @@ const usePlaceBet = () => {
         ]);
 
         const rawAmount = BN(amount)
-          .multipliedBy(10 ** 9)
+          .multipliedBy(10 ** OCT_COIN_DECIMALS)
           .toString();
         const [betCoin] = tx.splitCoins(tx.gas, [tx.pure('u64', rawAmount)]);
         tx.moveCall({

@@ -16,6 +16,7 @@ export default function ViewerBet() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { data, refetch } = useGetUserBet();
+  console.log('🚀 ~ ViewerBet ~ data:', data);
   const { mutateAsync: placeBet } = usePlaceBet();
   const selectedRoom = useAppSelector((state) => state.game.selectedRoom);
   const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
@@ -45,7 +46,7 @@ export default function ViewerBet() {
         side: selectedBetSide,
         amount: amount,
       });
-      refetch();
+      await refetch();
     } catch (error) {
       console.error(error);
       toast.error('Failed to place bet');
@@ -53,11 +54,11 @@ export default function ViewerBet() {
   };
 
   useEffect(() => {
-    if (data && data[0] && Number(data[0]?.amount) > 0) {
+    if (data && Number(data.amount) > 0) {
       setGameStateAction({
         role: 'VIEWER',
         faction: selectedBetSide,
-        userBetAmount: Number(data[0]?.amount),
+        userBetAmount: Number(data.amount),
       });
       setShowBetLockedDialog(true);
     }
@@ -80,7 +81,6 @@ export default function ViewerBet() {
       <BetLockedDialog
         isOpen={showBetLockedDialog}
         roomName={selectedRoom.name}
-        yourBet={parseFloat(betAmount)}
         yourSide={selectedBetSide!}
         roomPool={Number(selectedRoom.total_bet_viewers)}
         winAmount={Number(selectedRoom.win_bets_total)}
