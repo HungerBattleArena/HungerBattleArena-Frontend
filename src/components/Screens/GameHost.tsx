@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import Peer from "peerjs";
-import HostLostResultDialog from "../Dialog/HostLostResultDialog";
-import HostWinResultDialog from "../Dialog/HostWinResultDialog";
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import Peer from 'peerjs';
+import HostLostResultDialog from '../Dialog/HostLostResultDialog';
+import HostWinResultDialog from '../Dialog/HostWinResultDialog';
 
 // Infer types from Peer methods to avoid runtime import issues
-type DataConnection = ReturnType<Peer["connect"]>;
+type DataConnection = ReturnType<Peer['connect']>;
 
 interface PeerJSConfig {
   host?: string;
@@ -16,7 +16,7 @@ interface PeerJSConfig {
 
 const GameHost = () => {
   const [searchParams] = useSearchParams();
-  const roomId = searchParams.get("room");
+  const roomId = searchParams.get('room');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [showPlayerDiedDialog, setShowPlayerDiedDialog] = useState(false);
   const [playerName, setPlayerName] = useState<string | undefined>(undefined);
@@ -49,8 +49,8 @@ const GameHost = () => {
       PEERJS_CONFIG?: PeerJSConfig;
     };
     const config: PeerJSConfig = windowWithConfig.PEERJS_CONFIG || {
-      host: "peer.hedos.finance",
-      path: "/",
+      host: 'peer.hedos.finance',
+      path: '/',
       secure: true,
     };
 
@@ -86,16 +86,16 @@ const GameHost = () => {
         }
       }, CONNECTION_TIMEOUT);
 
-      dataConnection.on("open", () => {
+      dataConnection.on('open', () => {
         clearTimeout(timeoutId);
         setIsConnected(true);
         isConnectingRef.current = false;
         retryCountRef.current = 0;
       });
 
-      dataConnection.on("error", (err) => {
+      dataConnection.on('error', (err) => {
         clearTimeout(timeoutId);
-        console.error("Data connection error:", err);
+        console.error('Data connection error:', err);
         setIsConnected(false);
         isConnectingRef.current = false;
 
@@ -106,7 +106,7 @@ const GameHost = () => {
         }, delay);
       });
 
-      dataConnection.on("close", () => {
+      dataConnection.on('close', () => {
         clearTimeout(timeoutId);
         setIsConnected(false);
         dataConnectionRef.current = null;
@@ -117,23 +117,18 @@ const GameHost = () => {
     const peer = new Peer(null as unknown as string, config);
     peerRef.current = peer;
 
-    peer.on("open", () => {
-      const hostPeerId = "room-" + roomId;
+    peer.on('open', () => {
+      const hostPeerId = 'room-' + roomId;
       retryCountRef.current = 0;
       connectToRoom(peer, hostPeerId, 0);
     });
 
-    peer.on("error", (err) => {
+    peer.on('error', (err) => {
       isConnectingRef.current = false;
-      if (
-        err &&
-        typeof err === "object" &&
-        "type" in err &&
-        err.type === "peer-unavailable"
-      ) {
+      if (err && typeof err === 'object' && 'type' in err && err.type === 'peer-unavailable') {
         setIsConnected(false);
       } else {
-        console.error("PeerJS error:", err);
+        console.error('PeerJS error:', err);
       }
     });
 
@@ -177,8 +172,7 @@ const GameHost = () => {
           } catch {
             return;
           }
-        }
-        else if (typeof data === 'object' && data !== null) {
+        } else if (typeof data === 'object' && data !== null) {
           message = data as { type?: string; playerName?: string };
         } else {
           return;
@@ -209,9 +203,8 @@ const GameHost = () => {
     <div className="w-screen h-screen overflow-hidden relative">
       <iframe
         ref={iframeRef}
-        // src={`https://game.a-star.group?room=${roomId}`}
-        //Must be room
-        src={`http://localhost:53050?room=${roomId}`}
+        src={`https://game.a-star.group?room=${roomId}`}
+        // src={`http://localhost:53050?room=${roomId}`}
         className="w-full h-full border-0"
         title="Game Host"
         allowFullScreen
