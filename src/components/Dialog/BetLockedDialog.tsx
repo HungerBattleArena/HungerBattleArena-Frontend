@@ -3,7 +3,7 @@ import useGetUserBet from '../../hooks/query/useGetUserBet';
 interface BetLockedDialogProps {
   isOpen: boolean;
   roomName: string;
-  yourSide: 'WIN' | 'LOSE';
+  yourSide: string;
   roomPool: number;
   winAmount: number;
   winBettors: number;
@@ -21,7 +21,7 @@ const BetLockedDialog: React.FC<BetLockedDialogProps> = ({
   loseAmount,
   loseBettors,
 }) => {
-  const { data } = useGetUserBet();
+  const { data: userBetData } = useGetUserBet();
 
   if (!isOpen) return null;
 
@@ -63,7 +63,7 @@ const BetLockedDialog: React.FC<BetLockedDialogProps> = ({
             <h3 className="text-gray-400 text-sm uppercase tracking-wider">YOUR BET</h3>
 
             <div className="flex items-start justify-between">
-              <div className="text-5xl font-black text-white">{data?.amount}</div>
+              <div className="text-5xl font-black text-white">{userBetData?.amount}</div>
               <div className="text-right">
                 <span className="text-gray-400 text-sm">Side: </span>
                 <span className={`text-lg font-bold ${yourSide === 'WIN' ? 'text-cyan-400' : 'text-pink-400'}`}>{yourSide}</span>

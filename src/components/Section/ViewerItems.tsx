@@ -14,7 +14,7 @@ const ViewerItems = ({ onSendMessageToGame }: ViewerItemsProps) => {
   const listItems = gameState.faction === 'WIN' ? WinSideItems : LoseSideItems;
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 p-4 flex gap-3 w-full items-center justify-center">
+    <div className="p-4 flex gap-3 w-full items-center justify-center">
       {listItems.map((item) => (
         <div
           key={item.id}

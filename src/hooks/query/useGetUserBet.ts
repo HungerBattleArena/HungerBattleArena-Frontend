@@ -5,8 +5,9 @@ import { Transaction } from '@mysten/sui/transactions';
 import { useSearchParams } from 'react-router-dom';
 import { UserBetView } from '../../utils/helper';
 import { BN } from '../../utils/utils';
+import { bcs } from '@mysten/sui/bcs';
 
-const useGetUserBet = (interval: number = 5 * 1000) => {
+const useGetUserBet = (interval?: number) => {
   const { client } = useSuiClientContext();
   const currentAccount = useCurrentAccount();
   const [searchParams] = useSearchParams();
@@ -21,7 +22,6 @@ const useGetUserBet = (interval: number = 5 * 1000) => {
         if (!matchId || !currentAccount?.address) {
           throw new Error('Match ID is required');
         }
-        console.log('🚀 ~ useGetUserBet ~ matchId:', matchId);
 
         const tx = new Transaction();
         tx.moveCall({
@@ -34,12 +34,15 @@ const useGetUserBet = (interval: number = 5 * 1000) => {
           transactionBlock: tx,
         });
 
+        const decode = bcs.option(UserBetView);
         const [bytes] = result.results?.[0]?.returnValues?.[0] || [];
-        const decodedUserBets = UserBetView.parse(Uint8Array.from(bytes || []));
+        const decodedUserBets = decode.parse(Uint8Array.from(bytes || []));
+
+        if (!decodedUserBets) return initData;
 
         return {
           amount: BN(decodedUserBets.amount).dividedBy(BN(10).pow(OCT_COIN_DECIMALS)).toNumber(),
-          side: decodedUserBets.side,
+          side: decodedUserBets.side == 0 ? 'WIN' : 'LOSE',
         };
       } catch (error) {
         console.error(error);

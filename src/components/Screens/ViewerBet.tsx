@@ -15,14 +15,13 @@ export default function ViewerBet() {
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { data, refetch } = useGetUserBet();
-  console.log('🚀 ~ ViewerBet ~ data:', data);
-  const { mutateAsync: placeBet } = usePlaceBet();
   const selectedRoom = useAppSelector((state) => state.game.selectedRoom);
+  const { data, refetch } = useGetUserBet();
+  const { mutateAsync: placeBet } = usePlaceBet();
+  const { data: matchInfo } = useMatchInfo(selectedRoom?.match_id, 5000);
   const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
     dispatch(setGameState(updates));
   };
-  const { data: matchInfo } = useMatchInfo(selectedRoom?.match_id, 5000);
 
   const lockBetAndEnter = async () => {
     if (!selectedRoom) return null;
@@ -81,8 +80,8 @@ export default function ViewerBet() {
       <BetLockedDialog
         isOpen={showBetLockedDialog}
         roomName={selectedRoom.name}
-        yourSide={selectedBetSide!}
-        roomPool={Number(selectedRoom.total_bet_viewers)}
+        yourSide={data?.side || selectedBetSide || 'NONE'}
+        roomPool={Number(selectedRoom.total_pool)}
         winAmount={Number(selectedRoom.win_bets_total)}
         winBettors={Number(selectedRoom.win_bettors_count)}
         loseAmount={Number(selectedRoom.lose_bets_total)}

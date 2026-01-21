@@ -46,7 +46,6 @@ export const fetchMatchView = async (client: SuiClient, matchId: string, senderA
     return {
       ...decoded,
       total_pool: BN(decoded.total_pool).dividedBy(BN(10).pow(OCT_COIN_DECIMALS)).toString(),
-      total_bet_viewers: BN(decoded.total_bet_viewers).dividedBy(BN(10).pow(OCT_COIN_DECIMALS)).toString(),
       win_bets_total: BN(decoded.win_bets_total).dividedBy(BN(10).pow(OCT_COIN_DECIMALS)).toString(),
       lose_bets_total: BN(decoded.lose_bets_total).dividedBy(BN(10).pow(OCT_COIN_DECIMALS)).toString(),
       status: matchStatus[decoded.status] || 'created',
