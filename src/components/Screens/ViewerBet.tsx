@@ -6,6 +6,7 @@ import BetLockedDialog from '../Dialog/BetLockedDialog';
 import usePlaceBet from '../../hooks/mutation/viewer/usePlaceBet';
 import { toast } from 'react-toastify';
 import useMatchInfo from '../../hooks/query/useMatchInfo';
+import useGetUserBet from '../../hooks/query/useGetUserBet';
 
 export default function ViewerBet() {
   const [selectedBetSide, setSelectedBetSide] = useState<'WIN' | 'LOSE' | null>(null);
@@ -14,6 +15,7 @@ export default function ViewerBet() {
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { data, refetch } = useGetUserBet();
   const { mutateAsync: placeBet } = usePlaceBet();
   const selectedRoom = useAppSelector((state) => state.game.selectedRoom);
   const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
@@ -31,7 +33,7 @@ export default function ViewerBet() {
       toast.warning('Select WIN or LOSE.');
       return;
     }
-    const amount = parseInt(betAmount, 10);
+    const amount = parseFloat(betAmount);
     if (!amount || amount <= 0) {
       toast.warning('Enter a valid bet amount.');
       return;
@@ -43,18 +45,24 @@ export default function ViewerBet() {
         side: selectedBetSide,
         amount: amount,
       });
-
-      setGameStateAction({
-        role: 'VIEWER',
-        faction: selectedBetSide,
-        userBetAmount: amount,
-      });
-      setShowBetLockedDialog(true);
+      refetch();
     } catch (error) {
       console.error(error);
       toast.error('Failed to place bet');
     }
   };
+
+  useEffect(() => {
+    if (data && data[0] && Number(data[0]?.amount) > 0) {
+      setGameStateAction({
+        role: 'VIEWER',
+        faction: selectedBetSide,
+        userBetAmount: Number(data[0]?.amount),
+      });
+      setShowBetLockedDialog(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
 
   useEffect(() => {
     // NOTE: Auto-navigate after 5 seconds - mock player entering the game
@@ -72,7 +80,7 @@ export default function ViewerBet() {
       <BetLockedDialog
         isOpen={showBetLockedDialog}
         roomName={selectedRoom.name}
-        yourBet={parseInt(betAmount, 10)}
+        yourBet={parseFloat(betAmount)}
         yourSide={selectedBetSide!}
         roomPool={Number(selectedRoom.total_bet_viewers)}
         winAmount={Number(selectedRoom.win_bets_total)}
