@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setGameState } from '../../store/gameSlice';
 import BetLockedDialog from '../Dialog/BetLockedDialog';
 import usePlaceBet from '../../hooks/mutation/viewer/usePlaceBet';
 import { toast } from 'react-toastify';
+import useMatchInfo from '../../hooks/query/useMatchInfo';
 
 export default function ViewerBet() {
+  const [selectedBetSide, setSelectedBetSide] = useState<'WIN' | 'LOSE' | null>(null);
+  const [betAmount, setBetAmount] = useState('');
+  const [showBetLockedDialog, setShowBetLockedDialog] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { mutateAsync: placeBet } = usePlaceBet();
@@ -14,16 +19,10 @@ export default function ViewerBet() {
   const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
     dispatch(setGameState(updates));
   };
-  const [selectedBetSide, setSelectedBetSide] = useState<'WIN' | 'LOSE' | null>(null);
-  const [betAmount, setBetAmount] = useState('');
-  const [showBetLockedDialog, setShowBetLockedDialog] = useState(false);
-
-  if (!selectedRoom) {
-    navigate('/viewer-rooms');
-    return null;
-  }
+  const { data: matchInfo } = useMatchInfo(selectedRoom?.match_id, 5000);
 
   const lockBetAndEnter = async () => {
+    if (!selectedRoom) return null;
     if (selectedRoom.status === 'ended' || selectedRoom.status == 'in_game') {
       toast.warning('Betting is closed.');
       return;
@@ -51,16 +50,22 @@ export default function ViewerBet() {
         userBetAmount: amount,
       });
       setShowBetLockedDialog(true);
-
-      // NOTE: Auto-navigate after 5 seconds - mock player entering the game
-      setTimeout(() => {
-        navigate(`/view-game?room=${selectedRoom.match_id}`);
-      }, 5000);
     } catch (error) {
       console.error(error);
       toast.error('Failed to place bet');
     }
   };
+
+  useEffect(() => {
+    // NOTE: Auto-navigate after 5 seconds - mock player entering the game
+    if (matchInfo?.status == 'in_game') navigate(`/view-game?room=${selectedRoom?.match_id}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchInfo?.status]);
+
+  if (!selectedRoom) {
+    navigate('/viewer-rooms');
+    return null;
+  }
 
   if (showBetLockedDialog) {
     return (
