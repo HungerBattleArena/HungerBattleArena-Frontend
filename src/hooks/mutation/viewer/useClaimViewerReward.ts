@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import useCustomSign from "../match/useCustomSign";
 import { Transaction } from "@mysten/sui/transactions";
 import { PackageID } from "../../../constants/contract";
+import { toast } from "react-toastify";
 
 const useClaimViewerReward = () => {
   const { mutateAsync: signAndExecute } = useCustomSign();
@@ -34,6 +35,8 @@ const useClaimViewerReward = () => {
           transaction: tx,
         });
 
+        console.log(result);
+        toast.success("Viewer reward claimed");
         return result;
       } catch (error) {
         throw new Error("Failed to open room", { cause: error });

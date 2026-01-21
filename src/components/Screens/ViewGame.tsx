@@ -145,18 +145,18 @@ function ViewGame() {
             if (data === 'player-died') {
               if (viewerBetSide == 'WIN') {
                 setIsShowResultDialog(true);
-                setViewerWon(false);
+                setViewerWon(true);
               } else if (viewerBetSide == 'LOSE') {
                 setIsShowResultDialog(true);
-                setViewerWon(true);
+                setViewerWon(false);
               }
             } else if (data === 'game-ended') {
               if (viewerBetSide == 'LOSE') {
                 setIsShowResultDialog(true);
-                setViewerWon(false);
+                setViewerWon(true);
               } else if (viewerBetSide == 'WIN') {
                 setIsShowResultDialog(true);
-                setViewerWon(true);
+                setViewerWon(false);
               }
             }
             return;
@@ -179,18 +179,18 @@ function ViewGame() {
         if (message?.type === 'player-died') {
           if (viewerBetSide == 'WIN') {
             setIsShowResultDialog(true);
-            setViewerWon(false);
+            setViewerWon(true);
           } else if (viewerBetSide == 'LOSE') {
             setIsShowResultDialog(true);
-            setViewerWon(true);
+            setViewerWon(false);
           }
         } else if (message?.type === 'game-ended') {
           if (viewerBetSide == 'LOSE') {
             setIsShowResultDialog(true);
-            setViewerWon(false);
+            setViewerWon(true);
           } else if (viewerBetSide == 'WIN') {
             setIsShowResultDialog(true);
-            setViewerWon(true);
+            setViewerWon(false);
           }
         }
       } catch (error) {
