@@ -18,7 +18,7 @@ const ConnectRoomSection = ({
     const urlParams = new URLSearchParams(window.location.search);
     const roomParam = urlParams.get("room");
     return roomParam && roomParam.trim() !== ""
-      ? roomParam.trim().toUpperCase()
+      ? roomParam.trim()
       : "";
   };
 
@@ -69,6 +69,7 @@ const ConnectRoomSection = ({
     });
 
     dataConnection.on("close", () => {
+      console.log("Data connection close");
       setIsConnected(false);
       onDataConnectionChange(null);
     });
@@ -87,7 +88,7 @@ const ConnectRoomSection = ({
   };
 
   const handleConnect = () => {
-    const code = roomCode.trim().toUpperCase();
+    const code = roomCode.trim();
     if (code) {
       connectToRoom(code);
     } else {
@@ -97,50 +98,50 @@ const ConnectRoomSection = ({
 
   // Auto-connect on mount if room code is present in URL
   useEffect(() => {
-    if (autoConnectAttemptedRef.current && isConnected) {
-      console.log("Auto-connect already attempted");
-      return; // Already attempted auto-connect
-    }
-
-    const initialRoomCode = getInitialRoomCode();
-    if (!initialRoomCode) {
-      console.log("No valid room code in URL");
-      return; // No valid room code in URL
-    }
-
-    if (isConnected) {
-      console.log("Already connected");
-      return; // Already connected
-    }
-
-    autoConnectAttemptedRef.current = true;
-
-    // Check if peer is ready, if not, retry after a short delay (max 10 attempts)
-    let retryCount = 0;
-    const maxRetries = 10;
-
-    const tryAutoConnect = () => {
-      const peer = peerRef.current;
-      if (peer && peer.id) {
-        console.log("Peer is ready, connecting to room");
-        connectToRoom(initialRoomCode);
-      } else if (retryCount < maxRetries) {
-        retryCount++;
-        setTimeout(tryAutoConnect, 200);
-      } else {
-        console.log("Auto-connect: Peer not ready after multiple attempts");
-        autoConnectAttemptedRef.current = false; // Allow retry later
+    const timeoutId = setTimeout(() => {
+      if (autoConnectAttemptedRef.current && isConnected) {
+        console.log("Auto-connect already attempted");
+        return; // Already attempted auto-connect
       }
-    };
 
-    // Start trying to connect after a small delay to ensure component is fully mounted
-    const timeoutId = setTimeout(tryAutoConnect, 100);
+      const initialRoomCode = getInitialRoomCode();
+      if (!initialRoomCode) {
+        console.log("No valid room code in URL");
+        return; // No valid room code in URL
+      }
+
+      if (isConnected) {
+        console.log("Already connected");
+        return; // Already connected
+      }
+
+      autoConnectAttemptedRef.current = true;
+      let retryCount = 0;
+      const maxRetries = 10;
+
+      const tryAutoConnect = () => {
+        const peer = peerRef.current;
+        if (peer && peer.id) {
+          console.log("Peer is ready, connecting to room");
+          connectToRoom(initialRoomCode);
+        } else if (retryCount < maxRetries) {
+          retryCount++;
+          setTimeout(tryAutoConnect, 200);
+        } else {
+          console.log("Auto-connect: Peer not ready after multiple attempts");
+          autoConnectAttemptedRef.current = false; // Allow retry later
+          return;
+        }
+      };
+
+      tryAutoConnect();
+    }, 3000);
 
     return () => {
       clearTimeout(timeoutId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount - intentionally exclude dependencies
+  }, []);
 
   // Notify parent when connection status changes
   useEffect(() => {
@@ -162,9 +163,8 @@ const ConnectRoomSection = ({
         type="text"
         id="roomCodeInput"
         value={roomCode}
-        onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+        onChange={(e) => setRoomCode(e.target.value)}
         placeholder="ABC123"
-        maxLength={6}
         disabled={isConnected}
         className="px-2.5 py-1.5 border border-[#444] rounded bg-[#333] text-sm w-30 uppercase focus:outline-none focus:border-[#3a7bfd] disabled:opacity-50"
       />

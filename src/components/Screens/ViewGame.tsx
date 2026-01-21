@@ -24,9 +24,6 @@ function ViewGame() {
   const [peerId, setPeerId] = useState<string | null>(null);
   const [isShowResultDialog, setIsShowResultDialog] = useState(false);
   const [viewerWon, setViewerWon] = useState(false);
-  // const [playerGameState, setPlayerGameState] = useState<
-  //   "ALIVE" | "DIED" | "ENDED"
-  // >("ALIVE");
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const peerRef = useRef<Peer | null>(null);
