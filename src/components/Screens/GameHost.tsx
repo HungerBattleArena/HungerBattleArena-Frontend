@@ -1,13 +1,11 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { redirect, useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import Peer from "peerjs";
 import HostLostResultDialog from "../Dialog/HostLostResultDialog";
 import HostWinResultDialog from "../Dialog/HostWinResultDialog";
-import { useAppSelector } from "../../store/hooks";
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer["connect"]>;
-const FIGHTER_PEER_ROOM_ID = "fighter-peer-room-id";
 
 interface PeerJSConfig {
   host?: string;
@@ -17,14 +15,9 @@ interface PeerJSConfig {
 }
 
 const GameHost = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const roomId = searchParams.get("roomId");
+  const roomId = searchParams.get("room");
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
-  const gameState = useAppSelector((state) => state.game.gameState);
-  const [logs, setLogs] = useState<string[]>([]);
-
   const [showPlayerDiedDialog, setShowPlayerDiedDialog] = useState(false);
   const [playerName, setPlayerName] = useState<string | undefined>(undefined);
   const [showGameEndedDialog, setShowGameEndedDialog] = useState(false);
@@ -42,11 +35,6 @@ const GameHost = () => {
   const MAX_RETRY_DELAY = 10000; // 10 seconds
   const CONNECTION_TIMEOUT = 15000; // 15 seconds
 
-  const addLog = useCallback((message: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setLogs((prev) => [...prev.slice(-49), `[${timestamp}] ${message}`]);
-  }, []);
-
   useEffect(() => {
     if (iframeRef.current) {
       iframeRef.current.focus();
@@ -56,32 +44,25 @@ const GameHost = () => {
   useEffect(() => {
     if (!roomId) return;
 
-    const config: PeerJSConfig = {
+    const windowWithConfig = window as typeof window & {
+      PEERJS_CONFIG?: PeerJSConfig;
+    };
+    const config: PeerJSConfig = windowWithConfig.PEERJS_CONFIG || {
       host: "peer.hedos.finance",
       path: "/",
       secure: true,
     };
 
-    const connectToRoom = (
-      peer: Peer,
-      hostPeerId: string,
-      retryCount: number = 0,
-    ) => {
+    const connectToRoom = (peer: Peer, hostPeerId: string, retryCount: number = 0) => {
       if (isConnectingRef.current) return;
 
       if (retryCount >= MAX_RETRIES) {
-        console.error(
-          `Max retries (${MAX_RETRIES}) reached. Connection failed.`,
-        );
-        addLog(`Max retries reached while connecting to ${hostPeerId}.`);
+        console.error(`Max retries (${MAX_RETRIES}) reached. Connection failed.`);
         isConnectingRef.current = false;
         return;
       }
 
       isConnectingRef.current = true;
-      addLog(
-        `Connecting to ${hostPeerId} (attempt ${retryCount + 1}/${MAX_RETRIES})`,
-      );
 
       if (dataConnectionRef.current) {
         dataConnectionRef.current.close();
@@ -96,10 +77,7 @@ const GameHost = () => {
           dataConnection.close();
           isConnectingRef.current = false;
 
-          const delay = Math.min(
-            INITIAL_RETRY_DELAY * Math.pow(2, retryCount),
-            MAX_RETRY_DELAY,
-          );
+          const delay = Math.min(INITIAL_RETRY_DELAY * Math.pow(2, retryCount), MAX_RETRY_DELAY);
           retryTimeoutRef.current = setTimeout(() => {
             retryCountRef.current = retryCount + 1;
             connectToRoom(peer, hostPeerId, retryCount + 1);
@@ -112,7 +90,6 @@ const GameHost = () => {
         setIsConnected(true);
         isConnectingRef.current = false;
         retryCountRef.current = 0;
-        addLog(`Connected to ${hostPeerId}.`);
       });
 
       dataConnection.on("error", (err) => {
@@ -120,15 +97,8 @@ const GameHost = () => {
         console.error("Data connection error:", err);
         setIsConnected(false);
         isConnectingRef.current = false;
-        addLog(
-          `Connection error with ${hostPeerId}: ${err instanceof Error ? err.message : String(err)
-          }`,
-        );
 
-        const delay = Math.min(
-          INITIAL_RETRY_DELAY * Math.pow(2, retryCount),
-          MAX_RETRY_DELAY,
-        );
+        const delay = Math.min(INITIAL_RETRY_DELAY * Math.pow(2, retryCount), MAX_RETRY_DELAY);
         retryTimeoutRef.current = setTimeout(() => {
           retryCountRef.current = retryCount + 1;
           connectToRoom(peer, hostPeerId, retryCount + 1);
@@ -140,17 +110,15 @@ const GameHost = () => {
         setIsConnected(false);
         dataConnectionRef.current = null;
         isConnectingRef.current = false;
-        addLog(`Connection to ${hostPeerId} closed.`);
       });
     };
 
-    const peer = new Peer(FIGHTER_PEER_ROOM_ID, config);
+    const peer = new Peer(null as unknown as string, config);
     peerRef.current = peer;
 
     peer.on("open", () => {
       const hostPeerId = "room-" + roomId;
       retryCountRef.current = 0;
-      addLog(`Peer opened. Connecting to ${hostPeerId}.`);
       connectToRoom(peer, hostPeerId, 0);
     });
 
@@ -163,12 +131,8 @@ const GameHost = () => {
         err.type === "peer-unavailable"
       ) {
         setIsConnected(false);
-        addLog("Peer unavailable. Waiting for host to come online.");
       } else {
         console.error("PeerJS error:", err);
-        addLog(
-          `PeerJS error: ${err instanceof Error ? err.message : String(err)}`,
-        );
       }
     });
 
@@ -185,7 +149,7 @@ const GameHost = () => {
       retryCountRef.current = 0;
       peer.destroy();
     };
-  }, [addLog, roomId]);
+  }, [roomId]);
 
   useEffect(() => {
     if (!isConnected) return;
@@ -197,90 +161,56 @@ const GameHost = () => {
       try {
         let message: { type?: string; playerName?: string } | null = null;
 
-        if (typeof data === "string") {
-          if (data === "player-died" || data === "game-ended") {
-            if (data === "player-died") {
+        if (typeof data === 'string') {
+          if (data === 'player-died' || data === 'game-ended') {
+            if (data === 'player-died') {
               setShowPlayerDiedDialog(true);
-              addLog("Received: player-died");
             } else {
               setShowGameEndedDialog(true);
-              addLog("Received: game-ended");
             }
             return;
           }
 
           try {
-            message = JSON.parse(data) as {
-              type?: string;
-              playerName?: string;
-            };
+            message = JSON.parse(data) as { type?: string; playerName?: string };
           } catch {
             return;
           }
-        } else if (typeof data === "object" && data !== null) {
+        }
+        else if (typeof data === 'object' && data !== null) {
           message = data as { type?: string; playerName?: string };
         } else {
           return;
         }
 
-        if (message?.type === "player-died") {
+        if (message?.type === 'player-died') {
           setPlayerName(message.playerName);
           setShowPlayerDiedDialog(true);
-          addLog(
-            `Player died: ${message.playerName ? message.playerName : "Unknown"}`,
-          );
-        } else if (message?.type === "game-ended") {
+        } else if (message?.type === 'game-ended') {
           setWinnerName(message.playerName);
           setShowGameEndedDialog(true);
-          addLog(
-            `Game ended. Winner: ${message.playerName ? message.playerName : "Unknown"
-            }`,
-          );
         }
       } catch (error) {
-        console.error("Error processing message from peer server:", error);
-        addLog("Error processing message from peer server.");
+        console.error('Error processing message from peer server:', error);
       }
     };
 
-    dataConnection.on("data", handleData);
+    dataConnection.on('data', handleData);
 
     return () => {
       if (dataConnection) {
-        dataConnection.off("data", handleData);
+        dataConnection.off('data', handleData);
       }
     };
-  }, [addLog, isConnected]);
-
-  if (fighterRoom.match_id === null || gameState.role !== "FIGHTER") {
-    redirect("/");
-  }
+  }, [isConnected]);
 
   return (
     <div className="w-screen h-screen overflow-hidden relative">
-      <div className="absolute top-4 left-4 z-10 bg-black/70 text-white p-3 rounded-md max-w-sm max-h-64 overflow-y-auto text-sm space-y-1">
-        <div className="font-semibold">Connection Log</div>
-        {logs.length === 0 ? (
-          <div className="text-gray-300">Waiting for events...</div>
-        ) : (
-          logs
-            .slice()
-            .reverse()
-            .map((entry, idx) => (
-              <div
-                key={`${entry}-${idx}`}
-                className="whitespace-pre-wrap leading-tight"
-              >
-                {entry}
-              </div>
-            ))
-        )}
-      </div>
-
       <iframe
         ref={iframeRef}
-        src={`https://game.a-star.group?room=${roomId}`}
-        // src={`http://localhost:8080?room=${roomId}`}
+        // src={`https://game.a-star.group?room=${roomId}`}
+        //Must be room
+        src={`http://localhost:59908?room=${roomId}`}
         className="w-full h-full border-0"
         title="Game Host"
         allowFullScreen
@@ -292,7 +222,6 @@ const GameHost = () => {
         onClose={() => {
           setShowPlayerDiedDialog(false);
           setPlayerName(undefined);
-          navigate('/');
         }}
         playerName={playerName}
       />
@@ -302,7 +231,6 @@ const GameHost = () => {
         onClose={() => {
           setShowGameEndedDialog(false);
           setWinnerName(undefined);
-          navigate('/');
         }}
         playerName={winnerName}
       />

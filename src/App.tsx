@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { createNetworkConfig, SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "react-redux";
-import { store } from "./store/store";
+import { PersistGate } from "redux-persist/integration/react";
+import { store, persistor } from "./store/store";
 import MainMenu from "./components/Screens/MainMenu";
 import FighterRoom from "./components/Screens/FighterRoom";
 import ViewerRooms from "./components/Screens/ViewerRooms";
@@ -24,18 +25,20 @@ function App() {
       <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
         <WalletProvider autoConnect={true}>
           <Provider store={store}>
-            <BrowserRouter>
-              <div className="relative w-screen h-screen overflow-hidden">
-                <Routes>
-                  <Route path="/" element={<MainMenu />} />
-                  <Route path="/fighter-room" element={<FighterRoom />} />
-                  <Route path="/viewer-rooms" element={<ViewerRooms />} />
-                  <Route path="/viewer-bet" element={<ViewerBet />} />
-                  <Route path="/view-game" element={<ViewGame />} />
-                  <Route path="/game" element={<GameHost />} />
-                </Routes>
-              </div>
-            </BrowserRouter>
+            <PersistGate loading={null} persistor={persistor}>
+              <BrowserRouter>
+                <div className="relative w-screen h-screen overflow-hidden">
+                  <Routes>
+                    <Route path="/" element={<MainMenu />} />
+                    <Route path="/fighter-room" element={<FighterRoom />} />
+                    <Route path="/viewer-rooms" element={<ViewerRooms />} />
+                    <Route path="/viewer-bet" element={<ViewerBet />} />
+                    <Route path="/view-game" element={<ViewGame />} />
+                    <Route path="/game" element={<GameHost />} />
+                  </Routes>
+                </div>
+              </BrowserRouter>
+            </PersistGate>
           </Provider>
           <ToastNotifier />
         </WalletProvider>

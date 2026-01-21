@@ -49,7 +49,7 @@ export default function FighterRoom() {
     setFighterRoomAction({ ...fighterRoom, status: 'ended' });
     setGameStateAction({ role: 'FIGHTER' });
     await startMatch();
-    navigate(`/game?roomId=${newRoomId}`);
+    navigate(`/game?room=${newRoomId}`);
   };
 
   return (
