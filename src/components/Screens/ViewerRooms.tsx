@@ -40,7 +40,6 @@ export default function ViewerRooms() {
       selectRoom(foundRoom);
       return;
     }
-    // navigate('/view-game?room=' + searchQuery);
   };
 
   useEffect(() => {
