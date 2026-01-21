@@ -88,6 +88,7 @@ function ViewGame() {
     });
 
     peer.on('error', (err) => {
+      console.log('aaaaa');
       if (err && typeof err === 'object' && 'type' in err && err.type === 'peer-unavailable') {
         setIsConnected(false);
       }

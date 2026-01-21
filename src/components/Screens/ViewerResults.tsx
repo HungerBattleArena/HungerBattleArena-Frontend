@@ -84,9 +84,8 @@ export default function ViewerResults({ victory, isOpen }: ViewerResultsProps) {
 
       <div className="flex flex-col md:flex-row gap-12 w-full max-w-5xl">
         <div
-          className={`w-full md:w-1/2 glass-panel p-8 border-l-4 ${
-            userWon ? 'border-cyan-500 win-glow-savior' : 'border-pink-500 win-glow-doomer'
-          } transition duration-1000`}
+          className={`w-full md:w-1/2 glass-panel p-8 border-l-4 ${userWon ? 'border-cyan-500 win-glow-savior' : 'border-pink-500 win-glow-doomer'
+            } transition duration-1000`}
         >
           <h3 className="text-2xl text-cyan-400 mb-6 border-b border-gray-700 pb-2">POOL SUMMARY</h3>
           <div className="space-y-4 font-mono text-sm">
@@ -114,7 +113,7 @@ export default function ViewerResults({ victory, isOpen }: ViewerResultsProps) {
             </div>
             <div className="flex justify-between items-end">
               <span className="text-gray-400 text-sm">PNL</span>
-              <span className={`font-mono text-xl ${pnl >= 0 ? 'text-green-400' : 'text-red-500'}`}>{pnl.toLocaleString()}</span>
+              <span className={`font-mono text-xl ${pnl >= 0 ? 'text-green-400' : 'text-red-500'}`}>{previewReward?.toLocaleString()}</span>
             </div>
             {pnl > 0 && (
               <button className="btn-cyber px-10 py-3 text-lg font-bold" onClick={handleClaim}>
