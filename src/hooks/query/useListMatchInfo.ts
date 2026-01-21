@@ -34,7 +34,7 @@ const useListMatchInfo = () => {
 
         const decode = bcs.vector(bcs.Address);
         const [bytes] = result.results?.[0]?.returnValues?.[0] || [];
-        const decodedMatchIds = decode.parse(Uint8Array.from(bytes || []));
+        const decodedMatchIds = decode.parse(Uint8Array.from(bytes || [])).reverse();
 
         for (const matchId of decodedMatchIds) {
           const matchInfo = await fetchMatchView(client, matchId, currentAccount.address);
@@ -51,9 +51,9 @@ const useListMatchInfo = () => {
     },
     // initialData: matchInfos,
     enabled: !!currentAccount?.address,
-    staleTime: 60000,
-    refetchInterval: Infinity,
-    refetchOnWindowFocus: true,
+    staleTime: 0,
+    refetchInterval: 10000,
+    // refetchOnWindowFocus: true,
   });
 
   return { ...query, data: query.data || matchInfos };
