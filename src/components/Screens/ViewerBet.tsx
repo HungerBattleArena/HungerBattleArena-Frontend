@@ -75,17 +75,17 @@ export default function ViewerBet() {
     return null;
   }
 
-  if (showBetLockedDialog) {
+  if (showBetLockedDialog && matchInfo) {
     return (
       <BetLockedDialog
         isOpen={showBetLockedDialog}
         roomName={selectedRoom.name}
         yourSide={data?.side || selectedBetSide || 'NONE'}
-        roomPool={Number(selectedRoom.total_pool)}
-        winAmount={Number(selectedRoom.win_bets_total)}
-        winBettors={Number(selectedRoom.win_bettors_count)}
-        loseAmount={Number(selectedRoom.lose_bets_total)}
-        loseBettors={Number(selectedRoom.lose_bettors_count)}
+        roomPool={Number(matchInfo.total_pool)}
+        winAmount={Number(matchInfo.win_bets_total)}
+        winBettors={Number(matchInfo.win_bettors_count)}
+        loseAmount={Number(matchInfo.lose_bets_total)}
+        loseBettors={Number(matchInfo.lose_bettors_count)}
       />
     );
   }

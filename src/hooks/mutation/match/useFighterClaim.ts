@@ -41,7 +41,8 @@ const useFighterClaim = () => {
         toast.success("Fighter reward claimed");
         return result;
       } catch (error) {
-        throw new Error("Failed to end match", { cause: error });
+        toast.error("Failed to claim fighter reward");
+        throw new Error("Failed to claim fighter reward", { cause: error });
       }
     },
   });
