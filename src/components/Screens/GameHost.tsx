@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Peer from "peerjs";
 import HostLostResultDialog from "../Dialog/HostLostResultDialog";
 import HostWinResultDialog from "../Dialog/HostWinResultDialog";
@@ -23,6 +23,7 @@ const GameHost = () => {
   const [showGameEndedDialog, setShowGameEndedDialog] = useState(false);
   const [winnerName, setWinnerName] = useState<string | undefined>(undefined);
   const [isConnected, setIsConnected] = useState(false);
+  const navigate = useNavigate();
 
   const peerRef = useRef<Peer | null>(null);
   const dataConnectionRef = useRef<DataConnection | null>(null);
@@ -208,9 +209,9 @@ const GameHost = () => {
     <div className="w-screen h-screen overflow-hidden relative">
       <iframe
         ref={iframeRef}
-        src={`https://game.a-star.group?room=${roomId}`}
+        // src={`https://game.a-star.group?room=${roomId}`}
         //Must be room
-        // src={`http://localhost:59908?room=${roomId}`}
+        src={`http://localhost:53050?room=${roomId}`}
         className="w-full h-full border-0"
         title="Game Host"
         allowFullScreen
@@ -222,6 +223,7 @@ const GameHost = () => {
         onClose={() => {
           setShowPlayerDiedDialog(false);
           setPlayerName(undefined);
+          navigate('/');
         }}
         playerName={playerName}
       />
@@ -231,6 +233,7 @@ const GameHost = () => {
         onClose={() => {
           setShowGameEndedDialog(false);
           setWinnerName(undefined);
+          navigate('/');
         }}
         playerName={winnerName}
       />
