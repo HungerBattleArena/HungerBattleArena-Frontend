@@ -4,9 +4,10 @@ import { useAppSelector } from '../../store/hooks';
 
 interface ViewerResultsProps {
   victory: boolean;
+  isOpen: boolean;
 }
 
-export default function ViewerResults({ victory }: ViewerResultsProps) {
+export default function ViewerResults({ victory, isOpen }: ViewerResultsProps) {
   const navigate = useNavigate();
   const gameState = useAppSelector((state) => state.game.gameState);
   const selectedRoom = useAppSelector((state) => state.game.selectedRoom);
@@ -28,6 +29,10 @@ export default function ViewerResults({ victory }: ViewerResultsProps) {
   const share = totalBetSideWin > 0 ? userBet / totalBetSideWin : 0;
   const userPayout = userWon ? Math.floor(share * viewerWinPool) : 0;
   const pnl = userPayout - userBet;
+
+  function handleClaim() {
+    console.log('Claiming payout of', userPayout);
+  }
 
   useEffect(() => {
     // Animate values
@@ -54,6 +59,8 @@ export default function ViewerResults({ victory }: ViewerResultsProps) {
     animate('viewerPool', viewerWinPool, 1000);
     animate('userPayout', userPayout, 1500);
   }, [totalPool, fighterReward, viewerWinPool, userPayout]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="absolute inset-0 bg-black/95 pointer-events-auto z-60 flex flex-col items-center justify-center fade-in">
@@ -111,7 +118,11 @@ export default function ViewerResults({ victory }: ViewerResultsProps) {
               <span className="text-gray-400 text-sm">PNL</span>
               <span className={`font-mono text-xl ${pnl >= 0 ? 'text-green-400' : 'text-red-500'}`}>{pnl.toLocaleString()}</span>
             </div>
-            {pnl > 0 && <button className="btn-cyber px-10 py-3 text-lg font-bold">Claim</button>}
+            {pnl > 0 && (
+              <button className="btn-cyber px-10 py-3 text-lg font-bold" onClick={handleClaim}>
+                Claim
+              </button>
+            )}
           </div>
         </div>
       </div>

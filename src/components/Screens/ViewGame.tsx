@@ -2,10 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import Peer from 'peerjs';
 import ConnectRoomSection from '../Section/ConnectRoomSection';
 import ViewerItems from '../Section/ViewerItems';
-import ViewerLostResultDialog from '../Dialog/ViewerLostResultDialog';
-import ViewerWinResultDialog from '../Dialog/ViewerWinResultDialog';
-import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
+import RefundDialog from '../Dialog/RefundDialog';
+import ViewerResults from './ViewerResults';
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer['connect']>;
@@ -21,9 +20,10 @@ interface PeerJSConfig {
 function ViewGame() {
   const [isConnected, setIsConnected] = useState(false);
   const [currentRoomCode, setCurrentRoomCode] = useState<string | null>(null);
+  const [isRefundDialogOpen, setIsRefundDialogOpen] = useState(false);
   const [peerId, setPeerId] = useState<string | null>(null);
-  const [showPlayerDiedDialog, setShowPlayerDiedDialog] = useState(false);
-  const [showGameEndedDialog, setShowGameEndedDialog] = useState(false);
+  const [isShowResultDialog, setIsShowResultDialog] = useState(false);
+  const [viewerWon, setViewerWon] = useState(false);
   // const [playerGameState, setPlayerGameState] = useState<
   //   "ALIVE" | "DIED" | "ENDED"
   // >("ALIVE");
@@ -34,8 +34,8 @@ function ViewGame() {
   const pendingStreamRef = useRef<MediaStream | null>(null);
   const currentRoomCodeRef = useRef<string | null>(null);
 
-  const navigate = useNavigate();
   const gameState = useAppSelector((state) => state.game.gameState);
+  const selectedRoom = useAppSelector((state) => state.game.selectedRoom);
 
   const viewerBetSide = gameState.faction;
 
@@ -120,6 +120,7 @@ function ViewGame() {
         if (videoRef.current && videoRef.current.srcObject === pendingStreamRef.current) {
           videoRef.current.srcObject = null;
           // TODO: display refund dialog here
+          setIsRefundDialogOpen(true);
         }
       });
     });
@@ -150,19 +151,19 @@ function ViewGame() {
           if (data === 'player-died' || data === 'game-ended') {
             if (data === 'player-died') {
               if (viewerBetSide == 'WIN') {
-                setShowPlayerDiedDialog(false);
-                setShowGameEndedDialog(true);
+                setIsShowResultDialog(true);
+                setViewerWon(false);
               } else if (viewerBetSide == 'LOSE') {
-                setShowGameEndedDialog(false);
-                setShowPlayerDiedDialog(true);
+                setIsShowResultDialog(true);
+                setViewerWon(true);
               }
             } else if (data === 'game-ended') {
               if (viewerBetSide == 'LOSE') {
-                setShowGameEndedDialog(false);
-                setShowPlayerDiedDialog(true);
+                setIsShowResultDialog(true);
+                setViewerWon(false);
               } else if (viewerBetSide == 'WIN') {
-                setShowPlayerDiedDialog(false);
-                setShowGameEndedDialog(true);
+                setIsShowResultDialog(true);
+                setViewerWon(true);
               }
             }
             return;
@@ -184,19 +185,19 @@ function ViewGame() {
 
         if (message?.type === 'player-died') {
           if (viewerBetSide == 'WIN') {
-            setShowPlayerDiedDialog(false);
-            setShowGameEndedDialog(true);
+            setIsShowResultDialog(true);
+            setViewerWon(false);
           } else if (viewerBetSide == 'LOSE') {
-            setShowGameEndedDialog(false);
-            setShowPlayerDiedDialog(true);
+            setIsShowResultDialog(true);
+            setViewerWon(true);
           }
         } else if (message?.type === 'game-ended') {
           if (viewerBetSide == 'LOSE') {
-            setShowGameEndedDialog(false);
-            setShowPlayerDiedDialog(true);
+            setIsShowResultDialog(true);
+            setViewerWon(false);
           } else if (viewerBetSide == 'WIN') {
-            setShowPlayerDiedDialog(false);
-            setShowGameEndedDialog(true);
+            setIsShowResultDialog(true);
+            setViewerWon(true);
           }
         }
       } catch (error) {
@@ -213,8 +214,6 @@ function ViewGame() {
     };
   }, [isConnected, viewerBetSide]);
 
-  console.log('🚀 ~ ViewGame ~ showPlayerDiedDialog:', showPlayerDiedDialog);
-  console.log('🚀 ~ ViewGame ~ showGameEndedDialog:', showGameEndedDialog);
   return (
     <div className="flex flex-col h-screen bg-[#111] text-[#eee] font-sans relative">
       {/* Room Selector */}
@@ -231,18 +230,16 @@ function ViewGame() {
 
       <ViewerItems onSendMessageToGame={handleSendMessageToGame} />
 
-      <ViewerLostResultDialog
-        isOpen={showPlayerDiedDialog}
-        onClose={() => {
-          navigate('/viewer-rooms');
-        }}
-      />
+      <ViewerResults isOpen={isShowResultDialog} victory={viewerWon} />
 
-      <ViewerWinResultDialog
-        isOpen={showGameEndedDialog}
-        onClose={() => {
-          navigate('/viewer-rooms');
-        }}
+      <RefundDialog
+        isOpen={isRefundDialogOpen}
+        onClose={() => setIsRefundDialogOpen(false)}
+        yourSide={gameState.faction}
+        yourBet={gameState.userBetAmount}
+        roomName={selectedRoom?.name}
+        matchId=""
+        roomPool={selectedRoom?.total_pool}
       />
     </div>
   );
