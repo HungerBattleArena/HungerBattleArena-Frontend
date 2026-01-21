@@ -1,16 +1,19 @@
 interface RefundDialogProps {
   isOpen: boolean;
-  roomName: string;
+  roomName: string | undefined;
   yourBet: number;
-  yourSide: 'WIN' | 'LOSE';
-  roomPool: number;
+  yourSide: string | null;
+  roomPool: string | undefined;
   matchId: string;
-  onRefund: () => void;
   onClose: () => void;
 }
 
-export default function RefundDialog({ isOpen, roomName, yourBet, yourSide, roomPool, matchId, onRefund, onClose }: RefundDialogProps) {
+export default function RefundDialog({ isOpen, roomName, yourBet, yourSide, roomPool, matchId, onClose }: RefundDialogProps) {
   if (!isOpen) return null;
+
+  function onRefund() {
+    console.log('Refund requested for match:', matchId);
+  }
 
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-50 bg-black/95">
@@ -47,7 +50,7 @@ export default function RefundDialog({ isOpen, roomName, yourBet, yourSide, room
 
           <div className="flex justify-between items-center">
             <span className="text-gray-400 uppercase tracking-wide text-sm">Total Room Pool</span>
-            <span className="text-white font-mono text-lg">{roomPool.toLocaleString()}</span>
+            <span className="text-white font-mono text-lg">{roomPool ? Number(roomPool).toLocaleString() : ''}</span>
           </div>
         </div>
 
