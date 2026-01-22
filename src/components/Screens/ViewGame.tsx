@@ -200,7 +200,6 @@ function ViewGame() {
         yourSide={gameState.faction}
         yourBet={gameState.userBetAmount}
         roomName={selectedRoom?.name}
-        matchId=""
         roomPool={selectedRoom?.total_pool}
       />
     </div>

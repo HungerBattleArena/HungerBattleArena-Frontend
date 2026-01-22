@@ -1,20 +1,27 @@
+import { useSearchParams } from "react-router-dom";
+import useUserRefund from "../../hooks/mutation/viewer/useUserRefund";
+import useMatchInfo from "../../hooks/query/useMatchInfo";
+
 interface RefundDialogProps {
   isOpen: boolean;
   roomName: string | undefined;
   yourBet: number;
   yourSide: string | null;
   roomPool: string | undefined;
-  matchId: string;
   onClose: () => void;
 }
 
-export default function RefundDialog({ isOpen, roomName, yourBet, yourSide, roomPool, matchId, onClose }: RefundDialogProps) {
+export default function RefundDialog({ isOpen, roomName, yourBet, yourSide, roomPool, onClose }: RefundDialogProps) {
+  const [searchParams] = useSearchParams();
+  const matchId = searchParams.get('room');
+  const { data: selectedRoom } = useMatchInfo(matchId || undefined);
+  const { mutateAsync: refundBet } = useUserRefund();
+
+  const handleRefund = async () => {
+    await refundBet({ matchId: selectedRoom?.match_id || '', vaultId: selectedRoom?.vault_id || '' });
+  };
+
   if (!isOpen) return null;
-
-  function onRefund() {
-    console.log('Refund requested for match:', matchId);
-  }
-
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-50 bg-black/95">
       <div className="glass-panel w-full max-w-2xl p-8 relative fade-in">
@@ -71,7 +78,7 @@ export default function RefundDialog({ isOpen, roomName, yourBet, yourSide, room
           >
             Cancel
           </button>
-          <button className="flex-1 btn-cyber py-3 rounded-lg font-bold uppercase tracking-wider" onClick={onRefund}>
+          <button className="flex-1 btn-cyber py-3 rounded-lg font-bold uppercase tracking-wider" onClick={handleRefund}>
             Confirm Refund
           </button>
         </div>
