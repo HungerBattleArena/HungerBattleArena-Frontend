@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '../../store/hooks';
-import { setSelectedRoom } from '../../store/gameSlice';
 import useListMatchInfo from '../../hooks/query/useListMatchInfo';
 import usePagination from '../../hooks/usePagination';
+import { setSelectedRoom } from '../../store/gameSlice';
+import { useAppDispatch } from '../../store/hooks';
+import type { TMatchInfo } from '../../types/game';
 
 export default function ViewerRooms() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,32 +13,23 @@ export default function ViewerRooms() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { data: activeRooms, isLoading } = useListMatchInfo();
-  // ...existing code...
-  const filteredRooms =
-    activeRooms?.filter((room) => {
-      if (!room?.match_id || !room?.name) return false;
-      if (debouncedSearchQuery.trim() === '' || !debouncedSearchQuery) return true;
-      return (
-        room.match_id.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase()) ||
-        room.name.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase())
-      );
-    }) || [];
-  // ...existing code...
+
+  const filteredRooms = useMemo(() => {
+    if (!activeRooms) return [];
+    const result = activeRooms.filter((room) => {
+      return room.match_id.toUpperCase().indexOf(debouncedSearchQuery.trim().toUpperCase()) > -1 || room.name.toUpperCase().indexOf(debouncedSearchQuery.trim().toUpperCase()) > -1;
+    });
+
+    return result;
+  }, [debouncedSearchQuery, activeRooms]);
 
   const { data: paginatedRooms, currentPage, maxPage, next, prev } = usePagination(filteredRooms, { itemPerPage: 6 });
-  console.log('🚀 ~ debouncedSearchQuery:', debouncedSearchQuery);
-  console.log('🚀 ~ debouncedSearchQuery length:', debouncedSearchQuery.length);
-  console.log('🚀 ~ searchQuery:', searchQuery);
-  console.log('🚀 ~ activeRooms:', activeRooms);
-  console.log('🚀 ~ activeRooms[0]:', activeRooms[0]);
-  console.log('🚀 ~ filteredRooms:', filteredRooms);
-  console.log('🚀 ~ paginatedRooms:', paginatedRooms);
 
   const setSelectedRoomAction = (room: Parameters<typeof setSelectedRoom>[0]) => {
     dispatch(setSelectedRoom(room));
   };
 
-  const selectRoom = (room: (typeof activeRooms)[0]) => {
+  const selectRoom = (room: TMatchInfo) => {
     if (room.status === 'ended' || room.status === 'in_game') return;
     setSelectedRoomAction(room);
     navigate(`/viewer-bet?room=${room.match_id}`);
@@ -46,7 +38,7 @@ export default function ViewerRooms() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const searchTerm = searchQuery.trim().toLowerCase();
-    const foundRoom = activeRooms.find((room) => room.match_id.toLowerCase() === searchTerm || room.name.toLowerCase() === searchTerm);
+    const foundRoom = activeRooms?.find((room) => room.match_id.toLowerCase() === searchTerm || room.name.toLowerCase() === searchTerm);
 
     if (foundRoom) {
       selectRoom(foundRoom);
@@ -96,15 +88,6 @@ export default function ViewerRooms() {
           </button>
         </form>
       </div>
-      {/* {isLoading || isFetching && (
-        <div className="w-full max-w-7xl p-4 flex flex-col items-center justify-center py-24">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
-            <div className="absolute inset-0 w-16 h-16 border-4 border-cyan-500/20 rounded-full animate-pulse"></div>
-          </div>
-          <div className="mt-6 text-cyan-400 font-bold uppercase tracking-wider animate-pulse">Loading Rooms...</div>
-        </div>
-      )} */}
 
       {isLoading ? (
         <div className="w-full max-w-7xl p-4 flex flex-col items-center justify-center py-24">
@@ -117,12 +100,7 @@ export default function ViewerRooms() {
       ) : (
         <>
           <div className="w-full max-w-7xl p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredRooms.length === 0 ? (
-              <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-500">
-                <div className="text-2xl mb-2">No rooms found</div>
-                <div className="text-sm">Try searching with a different Room ID or Name</div>
-              </div>
-            ) : (
+            {
               paginatedRooms.map((room) => {
                 const isEnded = room.status === 'ended';
                 const isInGame = room.status === 'in_game';
@@ -169,7 +147,7 @@ export default function ViewerRooms() {
                   </div>
                 );
               })
-            )}
+            }
           </div>
 
           {filteredRooms.length > 0 && maxPage > 1 && (

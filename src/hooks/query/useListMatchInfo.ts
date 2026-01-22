@@ -11,15 +11,17 @@ const useListMatchInfo = () => {
   const { client } = useSuiClientContext();
   const currentAccount = useCurrentAccount();
 
-  const matchInfos: TMatchInfo[] = [];
+  // const matchInfos: TMatchInfo[] = [];
 
   const query = useQuery({
     queryKey: ['rooms-info'],
     queryFn: async () => {
+      const endedResult: TMatchInfo[] = [];
+
       try {
         if (!currentAccount?.address) {
           console.error('No account connected');
-          return matchInfos;
+          return endedResult;
         }
 
         const tx = new Transaction();
@@ -44,15 +46,16 @@ const useListMatchInfo = () => {
               return await fetchMatchView(client, matchId, currentAccount.address);
             },
           });
+
           if (matchInfo) {
-            matchInfos.push(matchInfo);
+            endedResult.push(matchInfo);
           }
         }
 
-        return matchInfos;
+        return endedResult;
       } catch (error) {
         console.error('Error fetching rooms info:', error);
-        return matchInfos;
+        return endedResult;
       }
     },
     // initialData: matchInfos,
@@ -62,7 +65,7 @@ const useListMatchInfo = () => {
     // refetchOnWindowFocus: true,
   });
 
-  return { ...query, data: query.data || matchInfos };
+  return { ...query, data: query.data };
 };
 
 export default useListMatchInfo;
