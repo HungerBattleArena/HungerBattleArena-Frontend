@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import useOpenRoom from '../../hooks/mutation/match/useOpenRoom';
@@ -7,6 +7,7 @@ import { setFighterRoom, setGameState } from '../../store/gameSlice';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { cn } from '../../utils/utils';
 import RoomInfo from '../Section/FighterRoom/RoomInfo';
+import useCancelMatch from '../../hooks/mutation/match/useCancelMatch';
 
 export default function FighterRoom() {
   const [roomName, setRoomName] = useState('');
@@ -17,6 +18,7 @@ export default function FighterRoom() {
   const dispatch = useAppDispatch();
   const { mutateAsync: openRoom } = useOpenRoom();
   const { mutateAsync: startMatch } = useStartMatch();
+  const { mutate: cancelMatch } = useCancelMatch();
   const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
   const setFighterRoomAction = (room: Parameters<typeof setFighterRoom>[0]) => {
     dispatch(setFighterRoom(room));
@@ -52,6 +54,49 @@ export default function FighterRoom() {
     await startMatch();
     navigate(`/game?room=${matchId}`);
   };
+
+  // Warn user before closing window or redirecting when room is open
+  useEffect(() => {
+    if (!isOpenRoom) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      return '';
+    };
+
+    const handlePageHide = (e: PageTransitionEvent) => {
+      // This fires when the page is actually being unloaded (user confirmed)
+      if (e.persisted === false) {
+        // persisted = false means the page is being unloaded (not cached)
+        cancelMatch({ matchId })
+      }
+    };
+
+    const handlePopState = () => {
+      if (isOpenRoom) {
+        const confirmLeave = window.confirm(
+          'You have an open room. Are you sure you want to leave?'
+        );
+        if (confirmLeave) {
+          cancelMatch({ matchId })
+        }
+      }
+    };
+
+    // Push a state to enable popstate detection
+    window.history.pushState(null, '', window.location.href);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('popstate', handlePopState);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpenRoom]);
 
   return (
     <div className="absolute inset-0 bg-black/90 pointer-events-auto z-50 flex items-center justify-center">

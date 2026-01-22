@@ -15,7 +15,8 @@ export const handleCancelMatch = async (matchId: string) => {
   const response = await fetch(`${API_URL}${API_END_POINTS.cancelMatch}`, {
     method: 'POST',
     body: JSON.stringify({ matchId }),
-    headers: { "Content-Type": "application/json" }
+    headers: { "Content-Type": "application/json" },
+    keepalive: true,
   });
 
   return response.json();

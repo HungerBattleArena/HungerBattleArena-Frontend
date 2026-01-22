@@ -5,6 +5,7 @@ import ViewerItems from '../Section/ViewerItems';
 import { useAppSelector } from '../../store/hooks';
 import RefundDialog from '../Dialog/RefundDialog';
 import ViewerResults from './ViewerResults';
+import { toast } from 'react-toastify';
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer['connect']>;
@@ -107,10 +108,12 @@ function ViewGame() {
 
       call.on('error', (err) => {
         console.log('Call error: ' + err);
+        toast.error('Call error: ' + err);
       });
 
       call.on('close', () => {
         console.log('Call closed');
+        toast.error('Call closed');
         if (videoRef.current && videoRef.current.srcObject === pendingStreamRef.current) {
           videoRef.current.srcObject = null;
           // TODO: display refund dialog here

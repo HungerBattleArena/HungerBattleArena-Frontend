@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Peer from 'peerjs';
 import HostLostResultDialog from '../Dialog/HostLostResultDialog';
 import HostWinResultDialog from '../Dialog/HostWinResultDialog';
+import useCancelMatch from '../../hooks/mutation/match/useCancelMatch';
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer['connect']>;
@@ -23,6 +24,7 @@ const GameHost = () => {
   const [showGameEndedDialog, setShowGameEndedDialog] = useState(false);
   const [winnerName, setWinnerName] = useState<string | undefined>(undefined);
   const [isConnected, setIsConnected] = useState(false);
+  const { mutate: cancelMatch } = useCancelMatch();
   const navigate = useNavigate();
 
   const peerRef = useRef<Peer | null>(null);
@@ -36,11 +38,11 @@ const GameHost = () => {
   const MAX_RETRY_DELAY = 10000; // 10 seconds
   const CONNECTION_TIMEOUT = 15000; // 15 seconds
 
-  useEffect(() => {
-    if (iframeRef.current) {
-      iframeRef.current.focus();
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (iframeRef.current) {
+  //     iframeRef.current.focus();
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (!roomId) return;
@@ -197,6 +199,49 @@ const GameHost = () => {
         dataConnection.off('data', handleData);
       }
     };
+  }, [isConnected]);
+
+  // Warn user before closing window or redirecting when room is open
+  useEffect(() => {
+    if (!isConnected) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      return '';
+    };
+
+    const handlePageHide = (e: PageTransitionEvent) => {
+      // This fires when the page is actually being unloaded (user confirmed)
+      if (e.persisted === false) {
+        // persisted = false means the page is being unloaded (not cached)
+        cancelMatch({ matchId: roomId || '' })
+      }
+    };
+
+    const handlePopState = () => {
+      if (isConnected) {
+        const confirmLeave = window.confirm(
+          'You have an open room. Are you sure you want to leave?'
+        );
+        if (confirmLeave) {
+          cancelMatch({ matchId: roomId || '' })
+        }
+      }
+    };
+
+    // Push a state to enable popstate detection
+    window.history.pushState(null, '', window.location.href);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('popstate', handlePopState);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
   return (
