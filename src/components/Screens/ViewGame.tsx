@@ -6,6 +6,7 @@ import { useAppSelector } from '../../store/hooks';
 import RefundDialog from '../Dialog/RefundDialog';
 import ViewerResults from './ViewerResults';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer['connect']>;
@@ -25,7 +26,7 @@ function ViewGame() {
   const [peerId, setPeerId] = useState<string | null>(null);
   const [isShowResultDialog, setIsShowResultDialog] = useState(false);
   const [viewerWon, setViewerWon] = useState(false);
-
+  const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const peerRef = useRef<Peer | null>(null);
   const dataConnectionRef = useRef<DataConnection | null>(null);
@@ -107,13 +108,10 @@ function ViewGame() {
       });
 
       call.on('error', (err) => {
-        console.log('Call error: ' + err);
         toast.error('Call error: ' + err);
       });
 
       call.on('close', () => {
-        console.log('Call closed');
-        toast.error('Call closed');
         if (videoRef.current && videoRef.current.srcObject === pendingStreamRef.current) {
           videoRef.current.srcObject = null;
           setIsRefundDialogOpen(true);
@@ -174,8 +172,6 @@ function ViewGame() {
     };
   }, [isConnected, viewerBetSide]);
 
-  console.log('🚀 ~ isShowResultDialog:', isShowResultDialog);
-  console.log('🚀 ~ viewerWon:', viewerWon);
   return (
     <div className="flex flex-col h-screen bg-[#111] text-[#eee] font-sans relative">
       {/* Room Selector */}
@@ -196,7 +192,11 @@ function ViewGame() {
 
       <RefundDialog
         isOpen={isRefundDialogOpen}
-        onClose={() => setIsRefundDialogOpen(false)}
+        onClose={() => {
+          setIsRefundDialogOpen(false);
+          navigate('/');
+
+        }}
         yourSide={gameState.faction}
         yourBet={gameState.userBetAmount}
         roomName={selectedRoom?.name}

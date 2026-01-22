@@ -19,6 +19,7 @@ export default function RefundDialog({ isOpen, roomName, yourBet, yourSide, room
 
   const handleRefund = async () => {
     await refundBet({ matchId: selectedRoom?.match_id || '', vaultId: selectedRoom?.vault_id || '' });
+    onClose();
   };
 
   if (!isOpen) return null;

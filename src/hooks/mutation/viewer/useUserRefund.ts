@@ -30,7 +30,6 @@ const useUserRefund = () => {
           transaction: tx,
         });
 
-        console.log(result);
         toast.success("Bet refunded");
         return result;
       } catch (error) {
