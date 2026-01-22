@@ -92,7 +92,7 @@ export default function ViewerRooms() {
         </form>
       </div>
 
-      <div className="w-full flex-1 overflow-y-auto">
+      <div className="w-full flex-1 overflow-y-auto flex flex-col items-center">
         {isLoading ? (
           <div className="w-full max-w-7xl p-4 flex flex-col items-center justify-center py-24">
             <div className="relative">
@@ -155,7 +155,7 @@ export default function ViewerRooms() {
             </div>
 
             {filteredRooms.length > 0 && maxPage > 1 && (
-              <div className="w-full max-w-7xl px-8 py-4 flex justify-center items-center gap-4">
+              <div className="w-full max-w-7xl px-8 py-4 flex justify-center items-center gap-4 mx-auto">
                 <button
                   onClick={prev}
                   disabled={currentPage === 1}
