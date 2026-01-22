@@ -4,6 +4,8 @@ import Peer from 'peerjs';
 import HostLostResultDialog from '../Dialog/HostLostResultDialog';
 import HostWinResultDialog from '../Dialog/HostWinResultDialog';
 import useCancelMatch from '../../hooks/mutation/match/useCancelMatch';
+import { API_URL } from '../../services/constant';
+import { API_END_POINTS } from '../../services/api';
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer['connect']>;
@@ -197,7 +199,7 @@ const GameHost = () => {
 
   // Warn user before closing window or redirecting when room is open
   useEffect(() => {
-    if (!isConnected || showGameEndedDialog || showPlayerDiedDialog) return;
+    if (!isConnected || showGameEndedDialog || showPlayerDiedDialog || !roomId) return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -206,19 +208,37 @@ const GameHost = () => {
 
     const handlePageHide = (e: PageTransitionEvent) => {
       // This fires when the page is actually being unloaded (user confirmed)
-      if (e.persisted === false) {
-        // persisted = false means the page is being unloaded (not cached)
-        cancelMatch({ matchId: roomId || '' })
+      if (e.persisted === false && roomId) {
+        const url = `${API_URL}${API_END_POINTS.cancelMatch}`;
+        const data = JSON.stringify({ matchId: roomId });
+
+        // Try fetch with keepalive first (supports headers, works during unload)
+        fetch(url, {
+          method: 'POST',
+          body: data,
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+        }).catch(() => {
+          // If fetch fails, try sendBeacon as fallback (guaranteed to send)
+          const blob = new Blob([data], { type: 'application/json' });
+          navigator.sendBeacon(url, blob);
+        });
+
+        // Also try the mutation (may not complete during unload but worth trying)
+        cancelMatch({ matchId: roomId });
       }
     };
 
     const handlePopState = () => {
-      if (isConnected) {
+      if (isConnected && roomId) {
         const confirmLeave = window.confirm(
           'You have an open room. Are you sure you want to leave?'
         );
         if (confirmLeave) {
-          cancelMatch({ matchId: roomId || '' })
+          cancelMatch({ matchId: roomId });
+        } else {
+          // Push the current state back to prevent navigation
+          window.history.pushState(null, '', window.location.href);
         }
       }
     };
@@ -236,7 +256,7 @@ const GameHost = () => {
       window.removeEventListener('popstate', handlePopState);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected, showGameEndedDialog, showPlayerDiedDialog]);
+  }, [isConnected, showGameEndedDialog, showPlayerDiedDialog, roomId]);
 
   return (
     <div className="w-screen h-screen overflow-hidden relative">
