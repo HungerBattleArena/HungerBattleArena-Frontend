@@ -1,23 +1,22 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { createNetworkConfig, SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "./store/store";
-import MainMenu from "./components/Screens/MainMenu";
-import FighterRoom from "./components/Screens/FighterRoom";
-import ViewerRooms from "./components/Screens/ViewerRooms";
-import ViewerBet from "./components/Screens/ViewerBet";
-import GameHost from "./components/Screens/GameHost";
-import ViewGame from "./components/Screens/ViewGame";
-import { ToastNotifier } from "./components/Provider/ToastProvider";
-import "@mysten/dapp-kit/dist/index.css";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { createNetworkConfig, SuiClientProvider, WalletProvider } from '@mysten/dapp-kit';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, persistor } from './store/store';
+import MainMenu from './components/Screens/MainMenu';
+import FighterRoom from './components/Screens/FighterRoom';
+import ViewerRooms from './components/Screens/ViewerRooms';
+import ViewerBet from './components/Screens/ViewerBet';
+import GameHost from './components/Screens/GameHost';
+import ViewGame from './components/Screens/ViewGame';
+import { ToastNotifier } from './components/Provider/ToastProvider';
+import '@mysten/dapp-kit/dist/index.css';
+import { queryClient } from './constants';
 
 const { networkConfig } = createNetworkConfig({
-  testnet: { url: "https://rpc-testnet.onelabs.cc:443" },
+  testnet: { url: 'https://rpc-testnet.onelabs.cc:443' },
 });
-
-const queryClient = new QueryClient();
 
 function App() {
   return (

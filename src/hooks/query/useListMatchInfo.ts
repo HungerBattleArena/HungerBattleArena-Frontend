@@ -5,6 +5,7 @@ import { useCurrentAccount, useSuiClientContext } from '@mysten/dapp-kit';
 import { bcs } from '@mysten/sui/bcs';
 import type { TMatchInfo } from '../../types/game';
 import { fetchMatchView } from '../../utils/helper';
+import { queryClient } from '../../constants';
 
 const useListMatchInfo = () => {
   const { client } = useSuiClientContext();
@@ -37,7 +38,12 @@ const useListMatchInfo = () => {
         const decodedMatchIds = decode.parse(Uint8Array.from(bytes || [])).reverse();
 
         for (const matchId of decodedMatchIds) {
-          const matchInfo = await fetchMatchView(client, matchId, currentAccount.address);
+          const matchInfo = await queryClient.ensureQueryData({
+            queryKey: ['match-info', matchId],
+            queryFn: async () => {
+              return await fetchMatchView(client, matchId, currentAccount.address);
+            },
+          });
           if (matchInfo) {
             matchInfos.push(matchInfo);
           }
