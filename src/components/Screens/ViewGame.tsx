@@ -26,6 +26,7 @@ function ViewGame() {
   const [peerId, setPeerId] = useState<string | null>(null);
   const [isShowResultDialog, setIsShowResultDialog] = useState(false);
   const [viewerWon, setViewerWon] = useState(false);
+  const [, setRerenderTrigger] = useState(0);
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const peerRef = useRef<Peer | null>(null);
@@ -137,9 +138,8 @@ function ViewGame() {
     if (!dataConnection) return;
 
     const handleData = (data: unknown) => {
+      console.log("🚀 ~ handleData ~ data:", data)
       try {
-        console.log('🚀 ~ data:', data);
-
         if (data === 'player-died') {
           if (viewerBetSide == 'WIN') {
             setIsShowResultDialog(true);
@@ -169,7 +169,25 @@ function ViewGame() {
         dataConnection.off('data', handleData);
       }
     };
-  }, [isConnected, viewerBetSide]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected]);
+
+  // Force rerender every 1 second for the first 10 seconds
+  useEffect(() => {
+    let secondsElapsed = 0;
+    const interval = setInterval(() => {
+      secondsElapsed += 1;
+      setRerenderTrigger((prev) => prev + 1);
+
+      if (secondsElapsed >= 10) {
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col h-screen bg-[#111] text-[#eee] font-sans relative">
