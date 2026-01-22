@@ -21,6 +21,9 @@ export default function ViewerRooms() {
   });
 
   const { data: paginatedRooms, currentPage, maxPage, next, prev } = usePagination(filteredRooms, { itemPerPage: 6 });
+  console.log('🚀 ~ activeRooms:', activeRooms);
+  console.log('🚀 ~ filteredRooms:', filteredRooms);
+  console.log('🚀 ~ paginatedRooms:', paginatedRooms);
 
   const setSelectedRoomAction = (room: Parameters<typeof setSelectedRoom>[0]) => {
     dispatch(setSelectedRoom(room));
