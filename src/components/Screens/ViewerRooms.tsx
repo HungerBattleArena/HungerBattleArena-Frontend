@@ -12,16 +12,24 @@ export default function ViewerRooms() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { data: activeRooms, isLoading } = useListMatchInfo();
-  const filteredRooms = activeRooms.filter((room) => {
-    if (debouncedSearchQuery.trim() === '') return true;
-    return (
-      room.match_id.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase()) ||
-      room.name.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase())
-    );
-  });
+  // ...existing code...
+  const filteredRooms =
+    activeRooms?.filter((room) => {
+      if (!room?.match_id || !room?.name) return false;
+      if (debouncedSearchQuery.trim() === '') return true;
+      return (
+        room.match_id.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase()) ||
+        room.name.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase())
+      );
+    }) || [];
+  // ...existing code...
 
   const { data: paginatedRooms, currentPage, maxPage, next, prev } = usePagination(filteredRooms, { itemPerPage: 6 });
+  console.log('🚀 ~ debouncedSearchQuery:', debouncedSearchQuery);
+  console.log('🚀 ~ debouncedSearchQuery length:', debouncedSearchQuery.length);
+  console.log('🚀 ~ searchQuery:', searchQuery);
   console.log('🚀 ~ activeRooms:', activeRooms);
+  console.log('🚀 ~ activeRooms[0]:', activeRooms[0]);
   console.log('🚀 ~ filteredRooms:', filteredRooms);
   console.log('🚀 ~ paginatedRooms:', paginatedRooms);
 
