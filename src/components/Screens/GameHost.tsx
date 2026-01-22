@@ -38,12 +38,6 @@ const GameHost = () => {
   const MAX_RETRY_DELAY = 10000; // 10 seconds
   const CONNECTION_TIMEOUT = 15000; // 15 seconds
 
-  // useEffect(() => {
-  //   if (iframeRef.current) {
-  //     iframeRef.current.focus();
-  //   }
-  // }, []);
-
   useEffect(() => {
     if (!roomId) return;
 
@@ -203,7 +197,7 @@ const GameHost = () => {
 
   // Warn user before closing window or redirecting when room is open
   useEffect(() => {
-    if (!isConnected) return;
+    if (!isConnected || showGameEndedDialog || showPlayerDiedDialog) return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -242,7 +236,7 @@ const GameHost = () => {
       window.removeEventListener('popstate', handlePopState);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected]);
+  }, [isConnected, showGameEndedDialog, showPlayerDiedDialog]);
 
   return (
     <div className="w-screen h-screen overflow-hidden relative">
