@@ -7,6 +7,7 @@ import usePlaceBet from '../../hooks/mutation/viewer/usePlaceBet';
 import { toast } from 'react-toastify';
 import useMatchInfo from '../../hooks/query/useMatchInfo';
 import useGetUserBet from '../../hooks/query/useGetUserBet';
+import RefundDialog from '../Dialog/RefundDialog';
 
 export default function ViewerBet() {
   const [selectedBetSide, setSelectedBetSide] = useState<'WIN' | 'LOSE' | null>(null);
@@ -86,6 +87,21 @@ export default function ViewerBet() {
         winBettors={Number(matchInfo.win_bettors_count)}
         loseAmount={Number(matchInfo.lose_bets_total)}
         loseBettors={Number(matchInfo.lose_bettors_count)}
+      />
+    );
+  }
+
+  if (matchInfo?.status == 'ended') {
+    return (
+      <RefundDialog
+        isOpen={true}
+        roomName={selectedRoom.name}
+        yourBet={data?.amount || 0}
+        yourSide={selectedBetSide}
+        roomPool={matchInfo.total_pool}
+        onClose={() => {
+          navigate('/');
+        }}
       />
     );
   }

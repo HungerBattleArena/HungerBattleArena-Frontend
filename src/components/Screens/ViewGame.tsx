@@ -90,7 +90,6 @@ function ViewGame() {
     });
 
     peer.on('error', (err) => {
-      console.log('aaaaa');
       if (err && typeof err === 'object' && 'type' in err && err.type === 'peer-unavailable') {
         setIsConnected(false);
       }
@@ -188,14 +187,13 @@ function ViewGame() {
 
       <ViewerItems onSendMessageToGame={handleSendMessageToGame} />
 
-      <ViewerResults isOpen={isShowResultDialog} victory={viewerWon} />
+      <ViewerResults isOpen={isShowResultDialog} isVictory={viewerWon} />
 
       <RefundDialog
         isOpen={isRefundDialogOpen}
         onClose={() => {
           setIsRefundDialogOpen(false);
           navigate('/');
-
         }}
         yourSide={gameState.faction}
         yourBet={gameState.userBetAmount}
