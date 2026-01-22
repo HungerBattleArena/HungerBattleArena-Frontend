@@ -26,15 +26,15 @@ const BetLockedDialog: React.FC<BetLockedDialogProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="absolute inset-0 bg-black/90 backdrop-blur-xl pointer-events-auto z-50 flex items-center justify-center fade-in">
-      <div className="glass-panel w-full max-w-5xl p-10 relative fade-in">
+    <div className="absolute inset-0 bg-black/90 backdrop-blur-xl pointer-events-auto z-50 flex items-center justify-center overflow-y-auto fade-in md:p-8">
+      <div className="glass-panel w-full max-w-5xl p-10 relative fade-in my-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-5xl font-black text-white mb-2 font-tech" style={{ textShadow: '0 0 20px rgba(255, 255, 255, 0.5)' }}>
+          <div className="flex flex-col md:flex-row items-center justify-between mb-4">
+            <h2 className="text-5xl font-black text-white font-tech" style={{ textShadow: '0 0 20px rgba(255, 255, 255, 0.5)' }}>
               BET LOCKED
             </h2>
-            <div className="flex items-center justify-end gap-4 mb-8">
+            <div className="flex items-center justify-end gap-4">
               <span className="text-gray-400 text-sm uppercase tracking-wider">ROOM</span>
               <div className="flex items-center gap-3">
                 <span className="text-white text-2xl font-bold">{roomName}</span>
@@ -43,10 +43,13 @@ const BetLockedDialog: React.FC<BetLockedDialogProps> = ({
           </div>
           <div className="flex items-center justify-between gap-3">
             <p className="text-gray-400 text-lg">Waiting for the fighter to start the match.</p>
-            <div className="relative w-12 h-12">
-              <div className="absolute inset-0 rounded-full border-4 border-gray-700" style={{ borderTopColor: 'transparent' }}></div>
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 p-1 shrink-0">
               <div
-                className="absolute inset-0 rounded-full border-4 border-transparent animate-spin"
+                className="absolute inset-1 rounded-full border-2 sm:border-3 md:border-4 border-gray-700"
+                style={{ borderTopColor: 'transparent' }}
+              ></div>
+              <div
+                className="absolute inset-1 rounded-full border-2 sm:border-3 md:border-4 border-transparent animate-spin"
                 style={{
                   borderTopColor: '#06b6d4',
                   borderRightColor: '#06b6d4',

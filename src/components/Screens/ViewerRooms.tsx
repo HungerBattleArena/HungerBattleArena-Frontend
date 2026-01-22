@@ -17,7 +17,10 @@ export default function ViewerRooms() {
   const filteredRooms = useMemo(() => {
     if (!activeRooms) return [];
     const result = activeRooms.filter((room) => {
-      return room.match_id.toUpperCase().indexOf(debouncedSearchQuery.trim().toUpperCase()) > -1 || room.name.toUpperCase().indexOf(debouncedSearchQuery.trim().toUpperCase()) > -1;
+      return (
+        room.match_id.toUpperCase().indexOf(debouncedSearchQuery.trim().toUpperCase()) > -1 ||
+        room.name.toUpperCase().indexOf(debouncedSearchQuery.trim().toUpperCase()) > -1
+      );
     });
 
     return result;
@@ -55,7 +58,7 @@ export default function ViewerRooms() {
   }, [searchQuery]);
 
   return (
-    <div className="bg-black/95 pointer-events-auto flex flex-col min-h-screen items-center fade-in pt-2">
+    <div className="bg-black/95 pointer-events-auto flex flex-col h-screen overflow-hidden items-center fade-in pt-2">
       <div className="w-full max-w-7xl px-8 mb-4 flex flex-col gap-4 border-b border-gray-800">
         <button
           className="self-start text-xl text-gray-400 hover:text-white flex items-center gap-2 font-tech"
@@ -89,27 +92,28 @@ export default function ViewerRooms() {
         </form>
       </div>
 
-      {isLoading ? (
-        <div className="w-full max-w-7xl p-4 flex flex-col items-center justify-center py-24">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
-            <div className="absolute inset-0 w-16 h-16 border-4 border-cyan-500/20 rounded-full animate-pulse"></div>
+      <div className="w-full flex-1 overflow-y-auto">
+        {isLoading ? (
+          <div className="w-full max-w-7xl p-4 flex flex-col items-center justify-center py-24">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 w-16 h-16 border-4 border-cyan-500/20 rounded-full animate-pulse"></div>
+            </div>
+            <div className="mt-6 text-cyan-400 font-bold uppercase tracking-wider animate-pulse">Loading Rooms...</div>
           </div>
-          <div className="mt-6 text-cyan-400 font-bold uppercase tracking-wider animate-pulse">Loading Rooms...</div>
-        </div>
-      ) : (
-        <>
-          <div className="w-full max-w-7xl p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {
-              paginatedRooms.map((room) => {
+        ) : (
+          <>
+            <div className="w-full max-w-7xl p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginatedRooms.map((room) => {
                 const isEnded = room.status === 'ended';
                 const isInGame = room.status === 'in_game';
 
                 return (
                   <div
                     key={room.match_id}
-                    className={`room-card glass-panel p-2 flex flex-col gap-4 relative transition-transform ${isEnded ? 'opacity-50 cursor-not-allowed' : isInGame ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-105'
-                      }`}
+                    className={`room-card glass-panel p-2 flex flex-col gap-4 relative transition-transform ${
+                      isEnded ? 'opacity-50 cursor-not-allowed' : isInGame ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-105'
+                    }`}
                     onClick={() => selectRoom(room)}
                   >
                     <div className="flex justify-between items-start mb-2">
@@ -138,41 +142,42 @@ export default function ViewerRooms() {
                         {room.status === 'created' ? 'BETTING OPEN' : 'BETTING CLOSED'}
                       </div>
                       <div
-                        className={`text-xs font-semibold ${room.status === 'created' ? 'text-green-400' : room.status === 'in_game' ? 'text-yellow-400' : 'text-red-400'
-                          }`}
+                        className={`text-xs font-semibold ${
+                          room.status === 'created' ? 'text-green-400' : room.status === 'in_game' ? 'text-yellow-400' : 'text-red-400'
+                        }`}
                       >
                         {room.status === 'created' ? 'OPEN' : room.status === 'in_game' ? 'IN GAME' : 'ENDED'}
                       </div>
                     </div>
                   </div>
                 );
-              })
-            }
-          </div>
-
-          {filteredRooms.length > 0 && maxPage > 1 && (
-            <div className="w-full max-w-7xl px-8 py-4 flex justify-center items-center gap-4">
-              <button
-                onClick={prev}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded border border-cyan-500/50 hover:border-cyan-500 transition-all text-sm font-bold uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                ‹ PREV
-              </button>
-              <div className="text-white font-mono">
-                Page {currentPage} of {maxPage}
-              </div>
-              <button
-                onClick={next}
-                disabled={currentPage === maxPage}
-                className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded border border-cyan-500/50 hover:border-cyan-500 transition-all text-sm font-bold uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                NEXT ›
-              </button>
+              })}
             </div>
-          )}
-        </>
-      )}
+
+            {filteredRooms.length > 0 && maxPage > 1 && (
+              <div className="w-full max-w-7xl px-8 py-4 flex justify-center items-center gap-4">
+                <button
+                  onClick={prev}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded border border-cyan-500/50 hover:border-cyan-500 transition-all text-sm font-bold uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  ‹ PREV
+                </button>
+                <div className="text-white font-mono">
+                  Page {currentPage} of {maxPage}
+                </div>
+                <button
+                  onClick={next}
+                  disabled={currentPage === maxPage}
+                  className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded border border-cyan-500/50 hover:border-cyan-500 transition-all text-sm font-bold uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  NEXT ›
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
