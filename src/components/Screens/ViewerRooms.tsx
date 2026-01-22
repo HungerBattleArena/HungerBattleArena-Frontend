@@ -13,7 +13,7 @@ export default function ViewerRooms() {
   const dispatch = useAppDispatch();
   const { data: activeRooms, isLoading } = useListMatchInfo();
   const filteredRooms = activeRooms.filter((room) => {
-    if (debouncedSearchQuery.trim() === '') return true;
+    if (debouncedSearchQuery.trim() === '' || !debouncedSearchQuery) return true;
     return (
       room.match_id.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase()) ||
       room.name.toUpperCase().includes(debouncedSearchQuery.trim().toUpperCase())
@@ -122,9 +122,8 @@ export default function ViewerRooms() {
                 return (
                   <div
                     key={room.match_id}
-                    className={`room-card glass-panel p-2 flex flex-col gap-4 relative transition-transform ${
-                      isEnded ? 'opacity-50 cursor-not-allowed' : isInGame ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-105'
-                    }`}
+                    className={`room-card glass-panel p-2 flex flex-col gap-4 relative transition-transform ${isEnded ? 'opacity-50 cursor-not-allowed' : isInGame ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-105'
+                      }`}
                     onClick={() => selectRoom(room)}
                   >
                     <div className="flex justify-between items-start mb-2">
@@ -153,9 +152,8 @@ export default function ViewerRooms() {
                         {room.status === 'created' ? 'BETTING OPEN' : 'BETTING CLOSED'}
                       </div>
                       <div
-                        className={`text-xs font-semibold ${
-                          room.status === 'created' ? 'text-green-400' : room.status === 'in_game' ? 'text-yellow-400' : 'text-red-400'
-                        }`}
+                        className={`text-xs font-semibold ${room.status === 'created' ? 'text-green-400' : room.status === 'in_game' ? 'text-yellow-400' : 'text-red-400'
+                          }`}
                       >
                         {room.status === 'created' ? 'OPEN' : room.status === 'in_game' ? 'IN GAME' : 'ENDED'}
                       </div>
