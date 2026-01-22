@@ -116,7 +116,6 @@ function ViewGame() {
         toast.error('Call closed');
         if (videoRef.current && videoRef.current.srcObject === pendingStreamRef.current) {
           videoRef.current.srcObject = null;
-          // TODO: display refund dialog here
           setIsRefundDialogOpen(true);
         }
       });
@@ -142,45 +141,9 @@ function ViewGame() {
 
     const handleData = (data: unknown) => {
       try {
-        let message: { type?: string; playerName?: string } | null = null;
+        console.log('🚀 ~ data:', data);
 
-        if (typeof data === 'string') {
-          if (data === 'player-died' || data === 'game-ended') {
-            if (data === 'player-died') {
-              if (viewerBetSide == 'WIN') {
-                setIsShowResultDialog(true);
-                setViewerWon(false);
-              } else if (viewerBetSide == 'LOSE') {
-                setIsShowResultDialog(true);
-                setViewerWon(true);
-              }
-            } else if (data === 'game-ended') {
-              if (viewerBetSide == 'LOSE') {
-                setIsShowResultDialog(true);
-                setViewerWon(false);
-              } else if (viewerBetSide == 'WIN') {
-                setIsShowResultDialog(true);
-                setViewerWon(true);
-              }
-            }
-            return;
-          }
-
-          try {
-            message = JSON.parse(data) as {
-              type?: string;
-              playerName?: string;
-            };
-          } catch {
-            return;
-          }
-        } else if (typeof data === 'object' && data !== null) {
-          message = data as { type?: string; playerName?: string };
-        } else {
-          return;
-        }
-
-        if (message?.type === 'player-died') {
+        if (data === 'player-died') {
           if (viewerBetSide == 'WIN') {
             setIsShowResultDialog(true);
             setViewerWon(false);
@@ -188,7 +151,7 @@ function ViewGame() {
             setIsShowResultDialog(true);
             setViewerWon(true);
           }
-        } else if (message?.type === 'game-ended') {
+        } else if (data === 'game-ended') {
           if (viewerBetSide == 'LOSE') {
             setIsShowResultDialog(true);
             setViewerWon(false);
@@ -211,6 +174,8 @@ function ViewGame() {
     };
   }, [isConnected, viewerBetSide]);
 
+  console.log('🚀 ~ isShowResultDialog:', isShowResultDialog);
+  console.log('🚀 ~ viewerWon:', viewerWon);
   return (
     <div className="flex flex-col h-screen bg-[#111] text-[#eee] font-sans relative">
       {/* Room Selector */}
