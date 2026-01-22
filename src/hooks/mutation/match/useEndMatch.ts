@@ -22,6 +22,7 @@ const useEndMatch = () => {
       }
 
       try {
+        console.log("🚀 ~ mutationFn ~ matchId:", { matchId, isWin })
         const result = await handleEndMatch(matchId, isWin);
         setFighterRoomAction(defaultFighterRoom);
 
