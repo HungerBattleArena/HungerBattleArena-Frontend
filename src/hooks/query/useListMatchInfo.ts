@@ -39,18 +39,22 @@ const useListMatchInfo = () => {
         const [bytes] = result.results?.[0]?.returnValues?.[0] || [];
         const decodedMatchIds = decode.parse(Uint8Array.from(bytes || [])).reverse();
 
-        for (const matchId of decodedMatchIds) {
-          const matchInfo = await queryClient.ensureQueryData({
-            queryKey: ['match-info', matchId],
-            queryFn: async () => {
-              return await fetchMatchView(client, matchId, currentAccount.address);
-            },
-          });
+        const results = await Promise.allSettled(
+          decodedMatchIds.map((matchId) =>
+            queryClient.ensureQueryData({
+              queryKey: ['match-info', matchId],
+              queryFn: async () => {
+                return await fetchMatchView(client, matchId, currentAccount.address);
+              },
+            })
+          )
+        );
 
-          if (matchInfo) {
-            endedResult.push(matchInfo);
+        results.forEach((result) => {
+          if (result.status === 'fulfilled' && result.value) {
+            endedResult.push(result.value);
           }
-        }
+        });
 
         return endedResult;
       } catch (error) {
