@@ -11,7 +11,7 @@ export default function ViewerRooms() {
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { data: activeRooms, isFetching, isLoading } = useListMatchInfo();
+  const { data: activeRooms } = useListMatchInfo();
 
   const filteredRooms = activeRooms.filter(
     (room) =>
@@ -84,8 +84,7 @@ export default function ViewerRooms() {
           </button>
         </form>
       </div>
-
-      {isLoading || isFetching ? (
+      {/* {isLoading || isFetching && (
         <div className="w-full max-w-7xl p-4 flex flex-col items-center justify-center py-24">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
@@ -93,89 +92,89 @@ export default function ViewerRooms() {
           </div>
           <div className="mt-6 text-cyan-400 font-bold uppercase tracking-wider animate-pulse">Loading Rooms...</div>
         </div>
-      ) : (
-        <>
-          <div className="w-full max-w-7xl p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredRooms.length === 0 ? (
-              <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-500">
-                <div className="text-2xl mb-2">No rooms found</div>
-                <div className="text-sm">Try searching with a different Room ID or Name</div>
-              </div>
-            ) : (
-              paginatedRooms.map((room) => {
-                const isEnded = room.status === 'ended';
-                const isInGame = room.status === 'in_game';
+      )} */}
 
-                return (
-                  <div
-                    key={room.match_id}
-                    className={`room-card glass-panel p-2 flex flex-col gap-4 relative transition-transform ${
-                      isEnded ? 'opacity-50 cursor-not-allowed' : isInGame ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-105'
-                    }`}
-                    onClick={() => selectRoom(room)}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-2xl text-white font-bold">{room.name}</h3>
-                      <div className="text-right">
-                        <div className="text-xs text-gray-500">TOTAL BET</div>
-                        <div className="text-gold-400 font-bold">{room.total_bet_viewers.toLocaleString()}</div>
-                      </div>
-                    </div>
+      <>
+        <div className="w-full max-w-7xl p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredRooms.length === 0 ? (
+            <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-500">
+              <div className="text-2xl mb-2">No rooms found</div>
+              <div className="text-sm">Try searching with a different Room ID or Name</div>
+            </div>
+          ) : (
+            paginatedRooms.map((room) => {
+              const isEnded = room.status === 'ended';
+              const isInGame = room.status === 'in_game';
 
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="bg-black/40 p-3 rounded border border-cyan-500/30">
-                        <div className="text-cyan-400">WIN</div>
-                        <div className="text-white font-bold">{room.win_bets_total.toLocaleString()}</div>
-                        <div className="text-xs text-gray-500">{room.win_bettors_count} bettors</div>
-                      </div>
-                      <div className="bg-black/40 p-3 rounded border border-pink-500/30">
-                        <div className="text-pink-400">LOSE</div>
-                        <div className="text-white font-bold">{room.lose_bets_total.toLocaleString()}</div>
-                        <div className="text-xs text-gray-500">{room.lose_bettors_count} bettors</div>
-                      </div>
-                    </div>
-
-                    <div className="mt-auto pt-4 border-t border-gray-800 flex justify-between items-center">
-                      <div className={`status-pill ${room.status === 'created' ? 'open' : 'closed'}`}>
-                        {room.status === 'created' ? 'BETTING OPEN' : 'BETTING CLOSED'}
-                      </div>
-                      <div
-                        className={`text-xs font-semibold ${
-                          room.status === 'created' ? 'text-green-400' : room.status === 'in_game' ? 'text-yellow-400' : 'text-red-400'
-                        }`}
-                      >
-                        {room.status === 'created' ? 'OPEN' : room.status === 'in_game' ? 'IN GAME' : 'ENDED'}
-                      </div>
+              return (
+                <div
+                  key={room.match_id}
+                  className={`room-card glass-panel p-2 flex flex-col gap-4 relative transition-transform ${
+                    isEnded ? 'opacity-50 cursor-not-allowed' : isInGame ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-105'
+                  }`}
+                  onClick={() => selectRoom(room)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-2xl text-white font-bold">{room.name}</h3>
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500">TOTAL BET</div>
+                      <div className="text-gold-400 font-bold">{room.total_bet_viewers.toLocaleString()}</div>
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
 
-          {filteredRooms.length > 0 && maxPage > 1 && (
-            <div className="w-full max-w-7xl px-8 py-4 flex justify-center items-center gap-4">
-              <button
-                onClick={prev}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded border border-cyan-500/50 hover:border-cyan-500 transition-all text-sm font-bold uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                ‹ PREV
-              </button>
-              <div className="text-white font-mono">
-                Page {currentPage} of {maxPage}
-              </div>
-              <button
-                onClick={next}
-                disabled={currentPage === maxPage}
-                className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded border border-cyan-500/50 hover:border-cyan-500 transition-all text-sm font-bold uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                NEXT ›
-              </button>
-            </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="bg-black/40 p-3 rounded border border-cyan-500/30">
+                      <div className="text-cyan-400">WIN</div>
+                      <div className="text-white font-bold">{room.win_bets_total.toLocaleString()}</div>
+                      <div className="text-xs text-gray-500">{room.win_bettors_count} bettors</div>
+                    </div>
+                    <div className="bg-black/40 p-3 rounded border border-pink-500/30">
+                      <div className="text-pink-400">LOSE</div>
+                      <div className="text-white font-bold">{room.lose_bets_total.toLocaleString()}</div>
+                      <div className="text-xs text-gray-500">{room.lose_bettors_count} bettors</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-auto pt-4 border-t border-gray-800 flex justify-between items-center">
+                    <div className={`status-pill ${room.status === 'created' ? 'open' : 'closed'}`}>
+                      {room.status === 'created' ? 'BETTING OPEN' : 'BETTING CLOSED'}
+                    </div>
+                    <div
+                      className={`text-xs font-semibold ${
+                        room.status === 'created' ? 'text-green-400' : room.status === 'in_game' ? 'text-yellow-400' : 'text-red-400'
+                      }`}
+                    >
+                      {room.status === 'created' ? 'OPEN' : room.status === 'in_game' ? 'IN GAME' : 'ENDED'}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
           )}
-        </>
-      )}
+        </div>
+
+        {filteredRooms.length > 0 && maxPage > 1 && (
+          <div className="w-full max-w-7xl px-8 py-4 flex justify-center items-center gap-4">
+            <button
+              onClick={prev}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded border border-cyan-500/50 hover:border-cyan-500 transition-all text-sm font-bold uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              ‹ PREV
+            </button>
+            <div className="text-white font-mono">
+              Page {currentPage} of {maxPage}
+            </div>
+            <button
+              onClick={next}
+              disabled={currentPage === maxPage}
+              className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded border border-cyan-500/50 hover:border-cyan-500 transition-all text-sm font-bold uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              NEXT ›
+            </button>
+          </div>
+        )}
+      </>
     </div>
   );
 }
