@@ -6,11 +6,11 @@ import useClaimViewerReward from '../../hooks/mutation/viewer/useClaimViewerRewa
 import useMatchInfo from '../../hooks/query/useMatchInfo';
 
 interface ViewerResultsProps {
-  victory: boolean;
+  isVictory: boolean;
   isOpen: boolean;
 }
 
-export default function ViewerResults({ victory, isOpen }: ViewerResultsProps) {
+export default function ViewerResults({ isVictory, isOpen }: ViewerResultsProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const matchId = searchParams.get('room');
@@ -26,17 +26,15 @@ export default function ViewerResults({ victory, isOpen }: ViewerResultsProps) {
     userPayout: 0,
   });
 
-  const winningSide = victory ? 'WIN' : 'LOSE';
-  const userWon = gameState.faction === winningSide;
   const totalPool = parseInt(selectedRoom?.total_bet_viewers || '0', 10);
-  const fighterReward = victory ? Math.floor(totalPool * 0.15) : 0;
+  const fighterReward = isVictory ? Math.floor(totalPool * 0.15) : 0;
   const viewerWinPool = totalPool - fighterReward;
   const userBet = gameState.userBetAmount || 0;
   const totalBetSideWin =
-    winningSide === 'WIN' ? parseInt(selectedRoom?.win_bets_total || '0', 10) : parseInt(selectedRoom?.lose_bets_total || '0', 10);
+    isVictory === true ? parseInt(selectedRoom?.win_bets_total || '0', 10) : parseInt(selectedRoom?.lose_bets_total || '0', 10);
   const share = totalBetSideWin > 0 ? userBet / totalBetSideWin : 0;
-  const userPayout = userWon ? Math.floor(share * viewerWinPool) : 0;
-  const pnl = userWon ? userBet : -userBet;
+  const userPayout = isVictory ? Math.floor(share * viewerWinPool) : 0;
+  const pnl = isVictory ? userBet : -userBet;
 
   const handleClaim = async () => {
     await claimReward({ vaultId: selectedRoom?.vault_id || '' });
@@ -73,19 +71,20 @@ export default function ViewerResults({ victory, isOpen }: ViewerResultsProps) {
   return (
     <div className="absolute inset-0 bg-black/95 pointer-events-auto z-60 flex flex-col items-center justify-center fade-in">
       <h1
-        className={`text-6xl md:text-8xl font-black mb-2 glitch-text tracking-wider ${userWon ? 'text-cyan-400' : 'text-pink-500'}`}
-        data-text={userWon ? 'WIN SIDE PAID' : 'LOSE SIDE PAID'}
+        className={`text-6xl md:text-8xl font-black mb-2 glitch-text tracking-wider ${isVictory ? 'text-cyan-400' : 'text-pink-500'}`}
+        data-text={isVictory ? 'WIN SIDE PAID' : 'LOSE SIDE PAID'}
       >
-        {userWon ? 'WIN SIDE PAID' : 'LOSE SIDE PAID'}
+        {isVictory ? 'WIN SIDE PAID' : 'LOSE SIDE PAID'}
       </h1>
-      <p className={`text-xl mb-12 tracking-[0.5em] uppercase ${userWon ? 'text-green-400' : 'text-red-500'}`}>
-        {userWon ? 'PAYOUT CONFIRMED' : 'BET LOST'}
+      <p className={`text-xl mb-12 tracking-[0.5em] uppercase ${isVictory ? 'text-green-400' : 'text-red-500'}`}>
+        {isVictory ? 'PAYOUT CONFIRMED' : 'BET LOST'}
       </p>
 
       <div className="flex flex-col md:flex-row gap-12 w-full max-w-5xl">
         <div
-          className={`w-full md:w-1/2 glass-panel p-8 border-l-4 ${userWon ? 'border-cyan-500 win-glow-savior' : 'border-pink-500 win-glow-doomer'
-            } transition duration-1000`}
+          className={`w-full md:w-1/2 glass-panel p-8 border-l-4 ${
+            isVictory ? 'border-cyan-500 win-glow-savior' : 'border-pink-500 win-glow-doomer'
+          } transition duration-1000`}
         >
           <h3 className="text-2xl text-cyan-400 mb-6 border-b border-gray-700 pb-2">POOL SUMMARY</h3>
           <div className="space-y-4 font-mono text-sm">
