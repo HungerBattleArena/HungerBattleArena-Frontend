@@ -29,8 +29,10 @@ const useGetPreviewReward = () => {
           sender: currentAccount.address,
           transactionBlock: tx,
         });
+        console.log('🚀 ~ useGetPreviewReward ~ result:', result);
 
         const decode = bcs.vector(bcs.u64());
+        console.log('🚀 ~ useGetPreviewReward ~ decode:', decode);
         const [bytes] = result.results?.[0]?.returnValues?.[0] || [];
         const decodedReward = decode.parse(Uint8Array.from(bytes || []));
 
