@@ -5,6 +5,7 @@ import type { CustomSuiObjectChange } from '../../../contract-modules/type';
 import { setFighterRoom } from '../../../store/gameSlice';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import useCustomSign from './useCustomSign';
+import { toast } from 'react-toastify';
 
 const useOpenRoom = () => {
   const { mutateAsync: signAndExecute } = useCustomSign();
@@ -22,10 +23,7 @@ const useOpenRoom = () => {
         const tx = new Transaction();
         tx.moveCall({
           target: `${PackageID}::bet_engine::create_match_with_bet_vault`,
-          arguments: [
-            tx.object(Registry),
-            tx.pure.vector("u8", new TextEncoder().encode(roomName))
-          ],
+          arguments: [tx.object(Registry), tx.pure.vector('u8', new TextEncoder().encode(roomName))],
         });
 
         const result = await signAndExecute({
@@ -35,30 +33,32 @@ const useOpenRoom = () => {
         if (result?.objectChanges?.length && result.objectChanges.length > 0) {
           const match = result.objectChanges.find((change) => {
             const currObj = change as unknown as CustomSuiObjectChange;
-            return currObj.objectType.toLowerCase().includes("match_manager::match")
+            return currObj.objectType.toLowerCase().includes('match_manager::match');
           }) as unknown as CustomSuiObjectChange;
 
           setFighterRoomAction({
             ...fighterRoom,
             name: roomName,
-            status: "created",
-            total_bet_viewers: "0",
-            win_bets_total: "0",
-            lose_bets_total: "0",
-            win_bettors_count: "0",
-            lose_bettors_count: "0",
+            status: 'created',
+            total_bet_viewers: '0',
+            win_bets_total: '0',
+            lose_bets_total: '0',
+            win_bettors_count: '0',
+            lose_bettors_count: '0',
             match_id: match?.objectId || '',
           });
 
           return match?.objectId || '';
         }
       } catch (error) {
-        throw new Error("Failed to open room", { cause: error });
+        console.log('useOpenRoom error:', error);
+        toast.error('Failed to open room');
+        throw new Error('Failed to open room', { cause: error });
       }
     },
   });
 
   return mutation;
-}
+};
 
-export default useOpenRoom
+export default useOpenRoom;

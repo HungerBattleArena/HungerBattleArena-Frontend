@@ -1,15 +1,14 @@
-import { useMutation } from "@tanstack/react-query";
-import { handleCancelMatch } from "../../../services";
-import { toast } from "react-toastify";
+import { useMutation } from '@tanstack/react-query';
+import { handleCancelMatch } from '../../../services';
+import { toast } from 'react-toastify';
 
 const useCancelMatch = () => {
-
   const mutation = useMutation({
-    mutationKey: ["cancel-match"],
+    mutationKey: ['cancel-match'],
     mutationFn: async (values?: { matchId: string }) => {
       const matchId = values?.matchId || '';
       if (!matchId || matchId === '') {
-        toast.error("Match ID is required");
+        toast.error('Match ID is required');
         return;
       }
 
@@ -17,14 +16,14 @@ const useCancelMatch = () => {
         const result = await handleCancelMatch(matchId);
         return result;
       } catch (error) {
-        console.log(error);
-        toast.error("Failed to cancel match");
+        console.log('useCancelMatch error:', error);
+        toast.error('Failed to cancel match');
         return;
       }
     },
   });
 
   return mutation;
-}
+};
 
-export default useCancelMatch
+export default useCancelMatch;

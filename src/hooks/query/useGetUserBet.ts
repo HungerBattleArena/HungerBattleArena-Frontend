@@ -45,7 +45,7 @@ const useGetUserBet = (interval?: number) => {
           side: decodedUserBets.side == 0 ? 'WIN' : 'LOSE',
         };
       } catch (error) {
-        console.error(error);
+        console.error('useGetUserBet error:', error);
         return initData;
       }
     },

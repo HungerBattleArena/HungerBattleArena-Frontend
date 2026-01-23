@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Transaction } from '@mysten/sui/transactions';
 import { OCT_COIN_DECIMALS, PackageID } from '../../../constants/contract';
 import { BN } from '../../../utils/utils';
+import { toast } from 'react-toastify';
 
 const usePlaceBet = () => {
   const { mutateAsync: signAndExecute } = useCustomSign();
@@ -57,7 +58,8 @@ const usePlaceBet = () => {
 
         return result;
       } catch (error) {
-        console.error(error);
+        console.error('usePlaceBet error:', error);
+        toast.error('Failed to place bet');
         throw new Error('Failed to place bet', { cause: error });
       }
     },

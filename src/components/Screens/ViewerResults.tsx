@@ -22,19 +22,25 @@ export default function ViewerResults({ isVictory, isOpen }: ViewerResultsProps)
   const [animatedValues, setAnimatedValues] = useState({
     totalPool: 0,
     fighterReward: 0,
-    viewerPool: 0,
-    userPayout: 0,
+    winningSidePool: 0,
+    // viewerPool: 0,
+    // userPayout: 0,
+    totalReward: 0,
+    pnl: 0,
   });
 
   const totalPool = parseInt(selectedRoom?.total_bet_viewers || '0', 10);
   const fighterReward = isVictory ? Math.floor(totalPool * 0.15) : 0;
-  const viewerWinPool = totalPool - fighterReward;
+  const winningSidePool = totalPool - fighterReward;
+  // const viewerWinPool = totalPool - fighterReward;
+  const totalReward = Number(previewReward?.toLocaleString);
+
   const userBet = gameState.userBetAmount || 0;
-  const totalBetSideWin =
-    isVictory === true ? parseInt(selectedRoom?.win_bets_total || '0', 10) : parseInt(selectedRoom?.lose_bets_total || '0', 10);
-  const share = totalBetSideWin > 0 ? userBet / totalBetSideWin : 0;
-  const userPayout = isVictory ? Math.floor(share * viewerWinPool) : 0;
-  const pnl = isVictory ? userBet : -userBet;
+  // const totalBetSideWin =
+  //   isVictory === true ? parseInt(selectedRoom?.win_bets_total || '0', 10) : parseInt(selectedRoom?.lose_bets_total || '0', 10);
+  // const share = totalBetSideWin > 0 ? userBet / totalBetSideWin : 0;
+  // const userPayout = isVictory ? Math.floor(share * viewerWinPool) : 0;
+  const pnl = totalReward - userBet;
 
   const handleClaim = async () => {
     await claimReward({ vaultId: selectedRoom?.vault_id || '' });
@@ -62,9 +68,12 @@ export default function ViewerResults({ isVictory, isOpen }: ViewerResultsProps)
 
     animate('totalPool', totalPool, 0);
     animate('fighterReward', fighterReward, 500);
-    animate('viewerPool', viewerWinPool, 1000);
-    animate('userPayout', userPayout, 1500);
-  }, [totalPool, fighterReward, viewerWinPool, userPayout]);
+    animate('winningSidePool', winningSidePool, 1000);
+    animate('totalReward', totalReward, 1500);
+    animate('pnl', pnl, 2000);
+    // animate('viewerPool', viewerWinPool, 1000);
+    // animate('userPayout', userPayout, 1500);
+  }, [fighterReward, pnl, totalPool, totalReward, winningSidePool]);
 
   if (!isOpen) return null;
 
@@ -93,8 +102,12 @@ export default function ViewerResults({ isVictory, isOpen }: ViewerResultsProps)
               <span className="text-white text-lg">{animatedValues.totalPool.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
+              <span className="text-gray-400">Fighter reward (10%)</span>
+              <span className="text-yellow-400 text-xl font-bold">{animatedValues.fighterReward.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
               <span className="text-gray-400">WINNING SIDE POOL</span>
-              <span className="text-green-400 text-xl font-bold">{animatedValues.viewerPool.toLocaleString()}</span>
+              <span className="text-green-400 text-xl font-bold">{animatedValues.winningSidePool.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -108,11 +121,13 @@ export default function ViewerResults({ isVictory, isOpen }: ViewerResultsProps)
             </div>
             <div className="bg-black/40 p-4 border border-gray-700 rounded text-center">
               <div className="text-xs text-gray-500 uppercase tracking-widest mb-1">Total reward</div>
-              <div className="text-5xl font-black text-white">{previewReward?.toLocaleString() ?? '0'}</div>
+              <div className="text-5xl font-black text-white">{animatedValues.totalReward.toLocaleString() ?? '0'}</div>
             </div>
             <div className="flex justify-between items-end">
               <span className="text-gray-400 text-sm">PNL</span>
-              <span className={`font-mono text-xl ${pnl >= 0 ? 'text-green-400' : 'text-red-500'}`}>{previewReward?.toLocaleString()}</span>
+              <span className={`font-mono text-xl ${animatedValues.pnl >= 0 ? 'text-green-400' : 'text-red-500'}`}>
+                {animatedValues.pnl.toLocaleString()}
+              </span>
             </div>
             {pnl > 0 && (
               <button className="btn-cyber px-10 py-3 text-lg font-bold" onClick={handleClaim}>
