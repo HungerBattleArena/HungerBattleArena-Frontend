@@ -7,14 +7,16 @@ import useMatchInfo from '../../hooks/query/useMatchInfo';
 
 interface ViewerResultsProps {
   isVictory: boolean;
+  isFighterWin: boolean;
   isOpen: boolean;
 }
 
-export default function ViewerResults({ isVictory, isOpen }: ViewerResultsProps) {
+export default function ViewerResults({ isVictory, isFighterWin, isOpen }: ViewerResultsProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const matchId = searchParams.get('room');
   const { data: previewReward } = useGetPreviewReward();
+  console.log('🚀 ~ ViewerResults ~ previewReward:', previewReward);
   const { mutateAsync: claimReward } = useClaimViewerReward();
   const { data: selectedRoom } = useMatchInfo(matchId || undefined);
 
@@ -30,7 +32,8 @@ export default function ViewerResults({ isVictory, isOpen }: ViewerResultsProps)
   });
 
   const totalPool = parseInt(selectedRoom?.total_bet_viewers || '0', 10);
-  const fighterReward = isVictory ? Math.floor(totalPool * 0.15) : 0;
+  // NOTE: Fighter reward is 10% of total pool
+  const fighterReward = isFighterWin ? Math.floor(totalPool * 0.1) : 0;
   const winningSidePool = totalPool - fighterReward;
   // const viewerWinPool = totalPool - fighterReward;
   const totalReward = Number(previewReward?.toLocaleString);

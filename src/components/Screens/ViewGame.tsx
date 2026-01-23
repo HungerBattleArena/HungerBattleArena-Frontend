@@ -27,6 +27,8 @@ function ViewGame() {
   const [isShowResultDialog, setIsShowResultDialog] = useState(false);
   const [viewerWon, setViewerWon] = useState(false);
   const [, setRerenderTrigger] = useState(0);
+  const [isFighterWin, setIsFighterWin] = useState(false);
+
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const peerRef = useRef<Peer | null>(null);
@@ -138,7 +140,6 @@ function ViewGame() {
     if (!dataConnection) return;
 
     const handleData = (data: unknown) => {
-      console.log('🚀 ~ handleData ~ data:', data);
       try {
         if (data === 'player-died') {
           if (viewerBetSide == 'WIN') {
@@ -148,6 +149,7 @@ function ViewGame() {
             setIsShowResultDialog(true);
             setViewerWon(true);
           }
+          setIsFighterWin(false);
         } else if (data === 'game-ended') {
           if (viewerBetSide == 'LOSE') {
             setIsShowResultDialog(true);
@@ -156,6 +158,7 @@ function ViewGame() {
             setIsShowResultDialog(true);
             setViewerWon(true);
           }
+          setIsFighterWin(true);
         }
       } catch (error) {
         console.error('Error processing message from peer server:', error);
@@ -205,7 +208,7 @@ function ViewGame() {
 
       <ViewerItems onSendMessageToGame={handleSendMessageToGame} />
 
-      <ViewerResults isOpen={isShowResultDialog} isVictory={viewerWon} />
+      <ViewerResults isOpen={isShowResultDialog} isVictory={viewerWon} isFighterWin={isFighterWin} />
 
       <RefundDialog
         isOpen={isRefundDialogOpen}

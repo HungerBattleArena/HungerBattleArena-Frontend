@@ -20,7 +20,6 @@ export default function ViewerBet() {
   const { data, refetch } = useGetUserBet();
   const { mutateAsync: placeBet } = usePlaceBet();
   const { data: matchInfo } = useMatchInfo(selectedRoom?.match_id, 5000);
-  console.log('🚀 ~ ViewerBet ~ matchInfo:', matchInfo);
   const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
     dispatch(setGameState(updates));
   };
