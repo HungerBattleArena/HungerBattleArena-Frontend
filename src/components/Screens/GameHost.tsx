@@ -315,6 +315,7 @@ const GameHost = () => {
           navigate('/');
         }}
         playerName={winnerName}
+        matchInfo={matchInfo}
       />
     </div>
   );
