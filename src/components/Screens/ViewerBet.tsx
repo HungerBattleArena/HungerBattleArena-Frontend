@@ -101,7 +101,7 @@ export default function ViewerBet() {
         yourSide={selectedBetSide}
         roomPool={matchInfo.total_pool}
         onClose={() => {
-          navigate('/');
+          navigate('/viewer-rooms');
         }}
       />
     );

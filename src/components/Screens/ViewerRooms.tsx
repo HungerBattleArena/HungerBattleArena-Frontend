@@ -27,6 +27,7 @@ export default function ViewerRooms() {
   }, [debouncedSearchQuery, activeRooms]);
 
   const { data: paginatedRooms, currentPage, maxPage, next, prev } = usePagination(filteredRooms, { itemPerPage: 6 });
+  console.log('🚀 ~ ViewerRooms ~ paginatedRooms:', paginatedRooms);
 
   const setSelectedRoomAction = (room: Parameters<typeof setSelectedRoom>[0]) => {
     dispatch(setSelectedRoom(room));
@@ -48,6 +49,21 @@ export default function ViewerRooms() {
       return;
     }
   };
+
+  function displayRoomStatus(status: string | number) {
+    switch (status) {
+      case 'created':
+        return 'OPEN';
+      case 'in_game':
+        return 'IN GAME';
+      case 'cancelled':
+        return 'CANCELLED';
+      case 'ended':
+        return 'ENDED';
+      default:
+        return 'UNKNOWN';
+    }
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -105,16 +121,20 @@ export default function ViewerRooms() {
           <>
             <div className="w-full max-w-7xl p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {paginatedRooms.map((room) => {
-                const isEnded = room.status === 'ended';
                 const isInGame = room.status === 'in_game';
+                const isCreated = room.status === 'created';
 
                 return (
                   <div
                     key={room.match_id}
                     className={`room-card glass-panel p-2 flex flex-col gap-4 relative transition-transform ${
-                      isEnded ? 'opacity-50 cursor-not-allowed' : isInGame ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-105'
+                      isCreated ? 'cursor-pointer hover:scale-105' : isInGame ? 'cursor-not-allowed' : 'opacity-50 cursor-not-allowed'
                     }`}
-                    onClick={() => selectRoom(room)}
+                    onClick={() => {
+                      if (room.status === 'created') {
+                        selectRoom(room);
+                      } else return;
+                    }}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-2xl text-white font-bold">{room.name}</h3>
@@ -146,7 +166,7 @@ export default function ViewerRooms() {
                           room.status === 'created' ? 'text-green-400' : room.status === 'in_game' ? 'text-yellow-400' : 'text-red-400'
                         }`}
                       >
-                        {room.status === 'created' ? 'OPEN' : room.status === 'in_game' ? 'IN GAME' : 'ENDED'}
+                        {displayRoomStatus(room.status)}
                       </div>
                     </div>
                   </div>

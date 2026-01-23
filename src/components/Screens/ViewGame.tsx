@@ -138,7 +138,7 @@ function ViewGame() {
     if (!dataConnection) return;
 
     const handleData = (data: unknown) => {
-      console.log("🚀 ~ handleData ~ data:", data)
+      console.log('🚀 ~ handleData ~ data:', data);
       try {
         if (data === 'player-died') {
           if (viewerBetSide == 'WIN') {
@@ -211,7 +211,7 @@ function ViewGame() {
         isOpen={isRefundDialogOpen}
         onClose={() => {
           setIsRefundDialogOpen(false);
-          navigate('/');
+          navigate('/viewer-rooms');
         }}
         yourSide={gameState.faction}
         yourBet={gameState.userBetAmount}
