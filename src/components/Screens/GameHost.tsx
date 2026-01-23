@@ -29,7 +29,7 @@ const GameHost = () => {
   const [winnerName, setWinnerName] = useState<string | undefined>(undefined);
   const [isConnected, setIsConnected] = useState(false);
   const { mutate: cancelMatch } = useCancelMatch();
-  const { data: matchInfo } = useMatchInfo();
+  const { data: matchInfo } = useMatchInfo(roomId);
   const navigate = useNavigate();
 
   const peerRef = useRef<Peer | null>(null);
@@ -260,10 +260,11 @@ const GameHost = () => {
   }, [isConnected, showGameEndedDialog, showPlayerDiedDialog, roomId]);
 
   useEffect(() => {
-    if (matchInfo && (matchInfo?.status === 'ended' || matchInfo?.status === 'cancelled')) {
+    if (matchInfo && (matchInfo?.status === 'ended' || matchInfo?.status === 'cancelled') && showGameEndedDialog && showPlayerDiedDialog) {
       toast.info('Match has ended or been cancelled. Redirecting to home page.');
       navigate('/');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchInfo, navigate]);
 
   if (!matchInfo) {

@@ -36,7 +36,7 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
   const fighterReward = isFighterWin ? Math.floor(totalPool * 0.1) : 0;
   const winningSidePool = totalPool - fighterReward;
   // const viewerWinPool = totalPool - fighterReward;
-  const totalReward = Number(previewReward?.toLocaleString);
+  const totalReward = Number(previewReward?.toLocaleString());
 
   const userBet = gameState.userBetAmount || 0;
   // const totalBetSideWin =

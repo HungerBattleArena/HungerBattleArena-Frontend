@@ -4,7 +4,7 @@ import { useAppSelector } from '../../store/hooks';
 import type { TMatchInfo } from '../../types/game';
 import { fetchMatchView } from '../../utils/helper';
 
-const useMatchInfo = (matchId?: string, refetchInterval?: number) => {
+const useMatchInfo = (matchId?: string | null, refetchInterval?: number) => {
   const { client } = useSuiClientContext();
   const currentAccount = useCurrentAccount();
   const matchIdByFighter = useAppSelector((state) => {
