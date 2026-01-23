@@ -260,7 +260,12 @@ const GameHost = () => {
   }, [isConnected, showGameEndedDialog, showPlayerDiedDialog, roomId]);
 
   useEffect(() => {
-    if (matchInfo && (matchInfo?.status === 'ended' || matchInfo?.status === 'cancelled') && showGameEndedDialog && showPlayerDiedDialog) {
+    if (
+      matchInfo &&
+      (matchInfo?.status === 'ended' || matchInfo?.status === 'cancelled') &&
+      !showGameEndedDialog &&
+      !showPlayerDiedDialog
+    ) {
       toast.info('Match has ended or been cancelled. Redirecting to home page.');
       navigate('/');
     }
