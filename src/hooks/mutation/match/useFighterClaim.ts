@@ -12,6 +12,8 @@ const useFighterClaim = () => {
   const mutation = useMutation({
     mutationKey: ['fighter-claim'],
     mutationFn: async (values: { matchId?: string; vaultId?: string }) => {
+      console.log('Fighter claim transaction:', values);
+
       try {
         if (!values.matchId || !values.vaultId) {
           throw new Error('Match ID and Vault ID are required');
@@ -26,7 +28,7 @@ const useFighterClaim = () => {
           arguments: [tx.object(values.vaultId), tx.object(values.matchId)],
         });
 
-        console.log('Fighter claim transaction:', values);
+        console.log('Fighter claim transaction downnnnnn:', values);
 
         const result = await signAndExecute({
           transaction: tx,
