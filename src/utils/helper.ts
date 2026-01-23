@@ -40,7 +40,6 @@ export const fetchMatchView = async (
 
     const [bytes] = result.results?.[0]?.returnValues?.[0] || [];
     const decoded = MatchView.parse(Uint8Array.from(bytes || []));
-    console.log('🚀 ~ fetchMatchView ~ decoded:', decoded);
 
     const matchStatus: Record<number, 'created' | 'in_game' | 'ended' | 'cancelled'> = {
       0: 'created',

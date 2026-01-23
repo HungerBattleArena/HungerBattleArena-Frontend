@@ -15,10 +15,11 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const matchId = searchParams.get('room');
-  const { data: previewReward } = useGetPreviewReward();
-  console.log('🚀 ~ ViewerResults ~ previewReward:', previewReward);
+  const { data: previewReward } = useGetPreviewReward(matchId);
   const { mutateAsync: claimReward } = useClaimViewerReward();
   const { data: selectedRoom } = useMatchInfo(matchId || undefined);
+
+  console.log('🚀 ~ ViewerResults ~ previewReward:', previewReward);
 
   const gameState = useAppSelector((state) => state.game.gameState);
   const [animatedValues, setAnimatedValues] = useState({
@@ -110,7 +111,9 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">WINNING SIDE POOL</span>
-              <span className="text-green-400 text-xl font-bold">{animatedValues.winningSidePool.toLocaleString()}</span>
+              <span className="text-green-400 text-xl font-bold">
+                {animatedValues.winningSidePool.toLocaleString()}
+              </span>
             </div>
           </div>
         </div>

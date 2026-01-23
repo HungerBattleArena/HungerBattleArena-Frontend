@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { useCurrentAccount, useDisconnectWallet } from '@mysten/dapp-kit';
 import { useState, useRef, useEffect } from 'react';
 import { CustomConnectWalletDialog } from '../Dialog/CustomConnectWalletDialog';
-import useMatchInfo from '../../hooks/query/useMatchInfo';
 
 export default function MainMenu() {
   const navigate = useNavigate();
@@ -11,8 +10,6 @@ export default function MainMenu() {
   const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { data: matchInfo } = useMatchInfo('0x9b08bb749d74c05575fc531504f4597d7346f906bbed9f5e1346dbf5a3350c72');
-  console.log('🚀 ~ MainMenu ~ matchInfo:', matchInfo);
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
