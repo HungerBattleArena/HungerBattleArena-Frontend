@@ -260,24 +260,29 @@ const GameHost = () => {
   }, [isConnected, showGameEndedDialog, showPlayerDiedDialog, roomId]);
 
   useEffect(() => {
-    if (matchInfo && (matchInfo?.status === 'ended' || matchInfo?.status === 'cancelled') && showGameEndedDialog && showPlayerDiedDialog) {
+    if (
+      matchInfo &&
+      (matchInfo?.status === 'ended' || matchInfo?.status === 'cancelled') &&
+      !showGameEndedDialog &&
+      !showPlayerDiedDialog
+    ) {
       toast.info('Match has ended or been cancelled. Redirecting to home page.');
       navigate('/');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchInfo, navigate]);
 
-  if (!matchInfo) {
-    return (
-      <div className="w-screen h-screen max-w-7xl p-4 flex flex-col items-center justify-center py-24">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
-          <div className="absolute inset-0 w-16 h-16 border-4 border-cyan-500/20 rounded-full animate-pulse"></div>
-        </div>
-        <div className="mt-6 text-cyan-400 font-bold uppercase tracking-wider animate-pulse">Loading Rooms...</div>
-      </div>
-    );
-  }
+  // if (!matchInfo) {
+  //   return (
+  //     <div className="w-screen h-screen max-w-7xl p-4 flex flex-col items-center justify-center py-24">
+  //       <div className="relative">
+  //         <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
+  //         <div className="absolute inset-0 w-16 h-16 border-4 border-cyan-500/20 rounded-full animate-pulse"></div>
+  //       </div>
+  //       <div className="mt-6 text-cyan-400 font-bold uppercase tracking-wider animate-pulse">Loading Rooms...</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="w-screen h-screen overflow-hidden relative">
