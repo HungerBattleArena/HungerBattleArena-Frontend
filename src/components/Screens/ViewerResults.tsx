@@ -35,6 +35,9 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
   // const share = totalBetSideWin > 0 ? userBet / totalBetSideWin : 0;
   // const userPayout = isVictory ? Math.floor(share * viewerWinPool) : 0;
   const pnl = totalReward - userBet;
+  console.log('🚀 ~ ViewerResults ~ userBet:', userBet);
+  console.log('🚀 ~ ViewerResults ~ totalReward:', totalReward);
+  console.log('🚀 ~ ViewerResults ~ pnl:', pnl);
 
   const handleClaim = async () => {
     await claimReward({ vaultId: selectedRoom?.vault_id || '', matchId: selectedRoom?.match_id || '' });
