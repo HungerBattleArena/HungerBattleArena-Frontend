@@ -5,7 +5,11 @@ import { Transaction } from '@mysten/sui/transactions';
 import { OCT_COIN_DECIMALS, PackageID } from '../constants/contract';
 import { BN } from './utils';
 
-export const fetchMatchView = async (client: SuiClient, matchId: string, senderAddress: string): Promise<TMatchInfo | null> => {
+export const fetchMatchView = async (
+  client: SuiClient,
+  matchId: string,
+  senderAddress: string
+): Promise<TMatchInfo | null> => {
   try {
     // NOTE: divide by OCT_COIN_DECIMALS when displaying coin amounts
     const MatchView = bcs.struct('MatchView', {
@@ -36,6 +40,7 @@ export const fetchMatchView = async (client: SuiClient, matchId: string, senderA
 
     const [bytes] = result.results?.[0]?.returnValues?.[0] || [];
     const decoded = MatchView.parse(Uint8Array.from(bytes || []));
+    console.log('🚀 ~ fetchMatchView ~ decoded:', decoded);
 
     const matchStatus: Record<number, 'created' | 'in_game' | 'ended' | 'cancelled'> = {
       0: 'created',
