@@ -8,6 +8,8 @@ import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { cn } from '../../utils/utils';
 import RoomInfo from '../Section/FighterRoom/RoomInfo';
 import useCancelMatch from '../../hooks/mutation/match/useCancelMatch';
+import { API_END_POINTS } from '../../services/api';
+import { API_URL } from '../../services/constant';
 
 export default function FighterRoom() {
   const [roomName, setRoomName] = useState('');
@@ -37,7 +39,7 @@ export default function FighterRoom() {
       const matchId = await openRoom({ roomName });
 
       if (!matchId || matchId === '') {
-        throw new Error("Failed to open room" + matchId);
+        throw new Error('Failed to open room' + matchId);
       }
 
       setMatchId(matchId);
@@ -55,9 +57,8 @@ export default function FighterRoom() {
     navigate(`/game?room=${matchId}`);
   };
 
-  // Warn user before closing window or redirecting when room is open
   useEffect(() => {
-    if (!isOpenRoom) return;
+    if (!isOpenRoom || !matchId) return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -66,19 +67,35 @@ export default function FighterRoom() {
 
     const handlePageHide = (e: PageTransitionEvent) => {
       // This fires when the page is actually being unloaded (user confirmed)
-      if (e.persisted === false) {
-        // persisted = false means the page is being unloaded (not cached)
-        cancelMatch({ matchId })
+      if (e.persisted === false && matchId) {
+        const url = `${API_URL}${API_END_POINTS.cancelMatch}`;
+        const data = JSON.stringify({ matchId: matchId });
+
+        // Try fetch with keepalive first (supports headers, works during unload)
+        fetch(url, {
+          method: 'POST',
+          body: data,
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+        }).catch(() => {
+          // If fetch fails, try sendBeacon as fallback (guaranteed to send)
+          const blob = new Blob([data], { type: 'application/json' });
+          navigator.sendBeacon(url, blob);
+        });
+
+        // Also try the mutation (may not complete during unload but worth trying)
+        cancelMatch({ matchId: matchId });
       }
     };
 
     const handlePopState = () => {
-      if (isOpenRoom) {
-        const confirmLeave = window.confirm(
-          'You have an open room. Are you sure you want to leave?'
-        );
+      if (isOpenRoom && matchId) {
+        const confirmLeave = window.confirm('You have an open room. Are you sure you want to leave?');
         if (confirmLeave) {
-          cancelMatch({ matchId })
+          cancelMatch({ matchId: matchId });
+        } else {
+          // Push the current state back to prevent navigation
+          window.history.pushState(null, '', window.location.href);
         }
       }
     };
@@ -96,7 +113,7 @@ export default function FighterRoom() {
       window.removeEventListener('popstate', handlePopState);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpenRoom]);
+  }, [isOpenRoom, matchId]);
 
   return (
     <div className="absolute inset-0 bg-black/90 pointer-events-auto z-50 flex items-center justify-center">
@@ -134,7 +151,11 @@ export default function FighterRoom() {
               </div>
             </div>
 
-            <button className={cn('btn-cyber px-8 py-3 text-lg font-bold w-full', isOpenRoom && 'opacity-50 disabled:cursor-not-allowed')} onClick={openFighterRoom} disabled={isOpenRoom}>
+            <button
+              className={cn('btn-cyber px-8 py-3 text-lg font-bold w-full', isOpenRoom && 'opacity-50 disabled:cursor-not-allowed')}
+              onClick={openFighterRoom}
+              disabled={isOpenRoom}
+            >
               Open Room
             </button>
           </div>
