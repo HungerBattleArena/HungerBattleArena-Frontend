@@ -7,7 +7,7 @@ interface HostWinResultDialogProps {
   isOpen: boolean;
   onClose: () => void;
   playerName?: string;
-  matchInfo?: TMatchInfo;
+  matchInfo?: TMatchInfo | null;
 }
 
 const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClose, playerName, matchInfo }) => {

@@ -47,7 +47,9 @@ export default function MainMenu() {
               className="glass-panel px-3 py-2 md:px-6 md:py-3 flex items-center gap-2 md:gap-3 cursor-pointer hover:border-cyan-400/50 transition-all"
             >
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-xs md:text-sm font-tech text-cyan-400">{formatAddress(currentAccount.address)}</span>
+              <span className="text-xs md:text-sm font-tech text-cyan-400">
+                {formatAddress(currentAccount.address)}
+              </span>
               <svg
                 className={`w-4 h-4 text-cyan-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                 fill="none"

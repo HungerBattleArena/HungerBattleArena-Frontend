@@ -1,14 +1,11 @@
 import { useCurrentAccount, useSuiClientContext } from '@mysten/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
 import { Transaction } from '@mysten/sui/transactions';
 import { PackageID } from '../../constants/contract';
 import { bcs } from '@mysten/sui/bcs';
 
-const useGetPreviewReward = () => {
+const useGetPreviewReward = (matchId?: string | null) => {
   const currentAccount = useCurrentAccount();
-  const [searchParams] = useSearchParams();
-  const matchId = searchParams.get('room');
   const { client } = useSuiClientContext();
 
   const query = useQuery({

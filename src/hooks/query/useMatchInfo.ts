@@ -11,11 +11,13 @@ const useMatchInfo = (matchId?: string | null, refetchInterval?: number) => {
     queryKey: ['match-info', matchId],
     queryFn: async () => {
       if (!currentAccount?.address || !matchId) {
+        console.log('No account connected or match ID missing');
         throw new Error('No account connected or match ID missing');
       }
 
       return await fetchMatchView(client, matchId, currentAccount.address);
     },
+    staleTime: Infinity,
     refetchInterval: refetchInterval ?? false,
   });
 

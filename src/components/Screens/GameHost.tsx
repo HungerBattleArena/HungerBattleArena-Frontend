@@ -31,7 +31,6 @@ const GameHost = () => {
   const { mutate: cancelMatch } = useCancelMatch();
   const { data: matchInfo } = useMatchInfo(roomId);
   const navigate = useNavigate();
-  console.log('🚀 ~ GameHost ~ matchInfo:', { roomId, matchInfo });
 
   const peerRef = useRef<Peer | null>(null);
   const dataConnectionRef = useRef<DataConnection | null>(null);
@@ -315,6 +314,7 @@ const GameHost = () => {
           navigate('/');
         }}
         playerName={winnerName}
+        matchInfo={matchInfo}
       />
     </div>
   );
