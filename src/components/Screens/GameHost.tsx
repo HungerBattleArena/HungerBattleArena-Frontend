@@ -6,6 +6,8 @@ import HostWinResultDialog from '../Dialog/HostWinResultDialog';
 import useCancelMatch from '../../hooks/mutation/match/useCancelMatch';
 import { API_URL } from '../../services/constant';
 import { API_END_POINTS } from '../../services/api';
+import useMatchInfo from '../../hooks/query/useMatchInfo';
+import { toast } from 'react-toastify';
 
 // Infer types from Peer methods to avoid runtime import issues
 type DataConnection = ReturnType<Peer['connect']>;
@@ -27,6 +29,7 @@ const GameHost = () => {
   const [winnerName, setWinnerName] = useState<string | undefined>(undefined);
   const [isConnected, setIsConnected] = useState(false);
   const { mutate: cancelMatch } = useCancelMatch();
+  const { data: matchInfo } = useMatchInfo();
   const navigate = useNavigate();
 
   const peerRef = useRef<Peer | null>(null);
@@ -231,9 +234,7 @@ const GameHost = () => {
 
     const handlePopState = () => {
       if (isConnected && roomId) {
-        const confirmLeave = window.confirm(
-          'You have an open room. Are you sure you want to leave?'
-        );
+        const confirmLeave = window.confirm('You have an open room. Are you sure you want to leave?');
         if (confirmLeave) {
           cancelMatch({ matchId: roomId });
         } else {
@@ -257,6 +258,25 @@ const GameHost = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, showGameEndedDialog, showPlayerDiedDialog, roomId]);
+
+  useEffect(() => {
+    if (matchInfo && (matchInfo?.status === 'ended' || matchInfo?.status === 'cancelled')) {
+      toast.info('Match has ended or been cancelled. Redirecting to home page.');
+      navigate('/');
+    }
+  }, [matchInfo, navigate]);
+
+  if (!matchInfo) {
+    return (
+      <div className="w-screen h-screen max-w-7xl p-4 flex flex-col items-center justify-center py-24">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 w-16 h-16 border-4 border-cyan-500/20 rounded-full animate-pulse"></div>
+        </div>
+        <div className="mt-6 text-cyan-400 font-bold uppercase tracking-wider animate-pulse">Loading Rooms...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-screen h-screen overflow-hidden relative">
