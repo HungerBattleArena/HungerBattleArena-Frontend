@@ -30,7 +30,7 @@ const useUserRefund = () => {
         toast.success('Bet refunded');
         return result;
       } catch (error) {
-        console.log('useUserRefund error:', error);
+        console.error('useUserRefund error:', error);
         toast.error('Failed to refund');
         return;
       }

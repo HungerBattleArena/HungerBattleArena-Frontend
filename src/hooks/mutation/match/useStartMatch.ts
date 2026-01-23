@@ -28,7 +28,7 @@ const useStartMatch = () => {
 
         return result;
       } catch (error) {
-        console.log('useStartMatch error:', error);
+        console.error('useStartMatch error:', error);
         toast.error('Failed to start match');
         throw new Error('Failed to start match', { cause: error });
       }

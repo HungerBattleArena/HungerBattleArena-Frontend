@@ -28,7 +28,7 @@ const useEndMatch = () => {
 
         return result;
       } catch (error) {
-        console.log('useEndMatch error:', error);
+        console.error('useEndMatch error:', error);
         toast.error('Failed to end match');
         throw new Error('Failed to end match', { cause: error });
       }
