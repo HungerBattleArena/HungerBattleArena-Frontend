@@ -3,20 +3,18 @@ import { Transaction } from '@mysten/sui/transactions';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { PackageID } from '../../../constants/contract';
-import useMatchInfo from '../../query/useMatchInfo';
 import useCustomSign from './useCustomSign';
 
 const useFighterClaim = () => {
   const { mutateAsync: signAndExecute } = useCustomSign();
   const currentAccount = useCurrentAccount();
-  const { data: matchInfo } = useMatchInfo();
 
   const mutation = useMutation({
-    mutationKey: ['fighter-claim', matchInfo?.match_id],
-    mutationFn: async () => {
+    mutationKey: ['fighter-claim'],
+    mutationFn: async (values: { matchId?: string; vaultId?: string }) => {
       try {
-        if (!matchInfo?.match_id || !matchInfo?.vault_id) {
-          throw new Error('Match ID is required');
+        if (!values.matchId || !values.vaultId) {
+          throw new Error('Match ID and Vault ID are required');
         }
         if (!currentAccount?.address) {
           throw new Error('No account connected');
@@ -25,8 +23,10 @@ const useFighterClaim = () => {
         const tx = new Transaction();
         tx.moveCall({
           target: `${PackageID}::bet_engine::claim_fighter_reward`,
-          arguments: [tx.object(matchInfo.vault_id!), tx.object(matchInfo.match_id!)],
+          arguments: [tx.object(values.vaultId), tx.object(values.matchId)],
         });
+
+        console.log('Fighter claim transaction:', values);
 
         const result = await signAndExecute({
           transaction: tx,

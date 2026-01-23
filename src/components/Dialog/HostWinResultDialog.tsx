@@ -1,25 +1,23 @@
 import React, { useCallback, useEffect } from 'react';
 import useFighterClaim from '../../hooks/mutation/match/useFighterClaim';
 import useEndMatch from '../../hooks/mutation/match/useEndMatch';
+import type { TMatchInfo } from '../../types/game';
 
 interface HostWinResultDialogProps {
   isOpen: boolean;
   onClose: () => void;
   playerName?: string;
+  matchInfo?: TMatchInfo;
 }
 
-const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({
-  isOpen,
-  onClose,
-  playerName,
-}) => {
+const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClose, playerName, matchInfo }) => {
   const { mutateAsync: claimFighterReward } = useFighterClaim();
   const { mutateAsync: endMatch } = useEndMatch();
 
   const handleClaimReward = async () => {
-    await claimFighterReward();
+    await claimFighterReward({ matchId: matchInfo?.match_id, vaultId: matchInfo?.vault_id || undefined });
     onClose();
-  }
+  };
 
   const handleEndMatch = useCallback(async () => {
     await endMatch({ isWin: true });
@@ -40,10 +38,7 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({
       className="absolute inset-0 bg-black/90 backdrop-blur-xl pointer-events-auto z-50 flex items-center justify-center fade-in"
       onClick={onClose}
     >
-      <div
-        className="glass-panel w-full max-w-lg p-10 relative fade-in"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="glass-panel w-full max-w-lg p-10 relative fade-in" onClick={(e) => e.stopPropagation()}>
         <button
           className="absolute top-6 right-6 text-3xl text-gray-400 hover:text-white transition-colors z-50"
           onClick={onClose}
@@ -70,22 +65,14 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({
 
           <div className="h-px bg-linear-to-r from-transparent via-gray-600 to-transparent my-6"></div>
 
-          <p className="text-gray-400 text-sm">
-            Congratulations on your triumph!
-          </p>
+          <p className="text-gray-400 text-sm">Congratulations on your triumph!</p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
-            <button
-              className="btn-cyber px-8 py-3 text-lg font-bold"
-              onClick={handleClaimReward}
-            >
+            <button className="btn-cyber px-8 py-3 text-lg font-bold" onClick={handleClaimReward}>
               Claim Reward
             </button>
 
-            <button
-              className="btn-cyber px-8 py-3 text-lg font-bold"
-              onClick={onClose}
-            >
+            <button className="btn-cyber px-8 py-3 text-lg font-bold" onClick={onClose}>
               Continue
             </button>
           </div>
@@ -93,6 +80,6 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({
       </div>
     </div>
   );
-}
+};
 
-export default HostWinResultDialog
+export default HostWinResultDialog;
