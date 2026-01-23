@@ -43,7 +43,7 @@ export default function ViewerResults({ isVictory, isOpen }: ViewerResultsProps)
   const pnl = totalReward - userBet;
 
   const handleClaim = async () => {
-    await claimReward({ vaultId: selectedRoom?.vault_id || '' });
+    await claimReward({ vaultId: selectedRoom?.vault_id || '', matchId: selectedRoom?.match_id || '' });
   };
 
   useEffect(() => {

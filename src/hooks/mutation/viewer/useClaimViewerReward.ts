@@ -1,21 +1,18 @@
 import { useCurrentAccount } from '@mysten/dapp-kit';
-import { useMutation } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import useCustomSign from '../match/useCustomSign';
 import { Transaction } from '@mysten/sui/transactions';
-import { PackageID } from '../../../constants/contract';
+import { useMutation } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
+import { PackageID } from '../../../constants/contract';
+import useCustomSign from '../match/useCustomSign';
 
 const useClaimViewerReward = () => {
   const { mutateAsync: signAndExecute } = useCustomSign();
   const currentAccount = useCurrentAccount();
-  const [searchParams] = useSearchParams();
-  const matchId = searchParams.get('room');
 
   const mutation = useMutation({
-    mutationKey: ['claim-viewer-reward', matchId, currentAccount?.address],
-    mutationFn: async (values: { vaultId: string }) => {
-      const { vaultId } = values;
+    mutationKey: ['claim-viewer-reward', currentAccount?.address],
+    mutationFn: async (values: { vaultId: string; matchId: string }) => {
+      const { vaultId, matchId } = values;
 
       if (!vaultId || !matchId || !currentAccount?.address) {
         throw new Error('Vault ID, match ID and account address are required');
