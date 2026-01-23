@@ -28,6 +28,12 @@ const useClaimViewerReward = () => {
           arguments: [tx.object(vaultId), tx.object(matchId)],
         });
 
+        console.log('Transaction to be signed with:', {
+          vaultId,
+          matchId,
+          accountAddress: currentAccount.address,
+        });
+
         const result = await signAndExecute({
           transaction: tx,
         });
