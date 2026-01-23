@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { TMatchInfo } from '../../types/game';
 import { fetchMatchView } from '../../utils/helper';
 
-const useMatchInfo = (matchId: string | null, refetchInterval?: number) => {
+const useMatchInfo = (matchId?: string | null, refetchInterval?: number) => {
   const { client } = useSuiClientContext();
   const currentAccount = useCurrentAccount();
 
