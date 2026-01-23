@@ -1,8 +1,9 @@
-import { Transaction } from "@mysten/sui/transactions";
-import { useMutation } from "@tanstack/react-query";
-import { PackageID } from "../../../constants/contract";
-import { useAppSelector } from "../../../store/hooks";
-import useCustomSign from "./useCustomSign";
+import { Transaction } from '@mysten/sui/transactions';
+import { useMutation } from '@tanstack/react-query';
+import { PackageID } from '../../../constants/contract';
+import { useAppSelector } from '../../../store/hooks';
+import useCustomSign from './useCustomSign';
+import { toast } from 'react-toastify';
 
 const useStartMatch = () => {
   const { mutateAsync: signAndExecute } = useCustomSign();
@@ -12,15 +13,13 @@ const useStartMatch = () => {
     mutationFn: async () => {
       try {
         if (!fighterRoom.match_id) {
-          throw new Error("Match ID is required");
+          throw new Error('Match ID is required');
         }
 
         const tx = new Transaction();
         tx.moveCall({
           target: `${PackageID}::match_manager::start_match`,
-          arguments: [
-            tx.object(fighterRoom.match_id!),
-          ],
+          arguments: [tx.object(fighterRoom.match_id!)],
         });
 
         const result = await signAndExecute({
@@ -29,12 +28,14 @@ const useStartMatch = () => {
 
         return result;
       } catch (error) {
-        throw new Error("Failed to start match", { cause: error });
+        console.log('useStartMatch error:', error);
+        toast.error('Failed to start match');
+        throw new Error('Failed to start match', { cause: error });
       }
     },
   });
 
   return mutation;
-}
+};
 
-export default useStartMatch
+export default useStartMatch;

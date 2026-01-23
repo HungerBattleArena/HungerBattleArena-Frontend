@@ -1,8 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
-import { handleEndMatch } from "../../../services";
-import { useAppDispatch } from "../../../store/hooks";
-import { defaultFighterRoom, setFighterRoom } from "../../../store/gameSlice";
+import { useMutation } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
+import { handleEndMatch } from '../../../services';
+import { useAppDispatch } from '../../../store/hooks';
+import { defaultFighterRoom, setFighterRoom } from '../../../store/gameSlice';
+import { toast } from 'react-toastify';
 
 const useEndMatch = () => {
   const [searchParams] = useSearchParams();
@@ -13,27 +14,28 @@ const useEndMatch = () => {
   };
 
   const mutation = useMutation({
-    mutationKey: ["end-match", matchId],
+    mutationKey: ['end-match', matchId],
     mutationFn: async (values: { isWin: boolean }) => {
       const { isWin } = values;
 
       if (!matchId || !isWin) {
-        throw new Error("Match ID and isWin are required");
+        throw new Error('Match ID and isWin are required');
       }
 
       try {
-        console.log("🚀 ~ mutationFn ~ matchId:", { matchId, isWin })
         const result = await handleEndMatch(matchId, isWin);
         setFighterRoomAction(defaultFighterRoom);
 
         return result;
       } catch (error) {
-        throw new Error("Failed to end match", { cause: error });
+        console.log('useEndMatch error:', error);
+        toast.error('Failed to end match');
+        throw new Error('Failed to end match', { cause: error });
       }
     },
   });
 
   return mutation;
-}
+};
 
-export default useEndMatch
+export default useEndMatch;
