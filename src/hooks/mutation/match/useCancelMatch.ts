@@ -16,7 +16,7 @@ const useCancelMatch = () => {
         const result = await handleCancelMatch(matchId);
         return result;
       } catch (error) {
-        console.log('useCancelMatch error:', error);
+        console.error('useCancelMatch error:', error);
         toast.error('Failed to cancel match');
         return;
       }

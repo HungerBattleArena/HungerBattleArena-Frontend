@@ -51,7 +51,7 @@ const useOpenRoom = () => {
           return match?.objectId || '';
         }
       } catch (error) {
-        console.log('useOpenRoom error:', error);
+        console.error('useOpenRoom error:', error);
         toast.error('Failed to open room');
         throw new Error('Failed to open room', { cause: error });
       }

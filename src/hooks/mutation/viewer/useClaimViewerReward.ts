@@ -35,7 +35,7 @@ const useClaimViewerReward = () => {
         toast.success('Viewer reward claimed');
         return result;
       } catch (error) {
-        console.log('useClaimViewerReward error:', error);
+        console.error('useClaimViewerReward error:', error);
         toast.error('Failed to claim reward');
         throw new Error('Failed to claim viewer reward', { cause: error });
       }
