@@ -190,7 +190,9 @@ function ViewGame() {
         onConnectionChange={handleConnectionChange}
         onDataConnectionChange={handleDataConnectionChange}
         handleRefund={() => {
-          setIsRefundDialogOpen(true);
+          if (!isShowResultDialog) {
+            setIsRefundDialogOpen(true);
+          }
         }}
       />
 
