@@ -47,7 +47,10 @@ h3,
 .glitch-text {
   position: relative;
   font-weight: 900;
+  color: #fff;
   text-shadow: 0 0 10px var(--neon-blue);
+  letter-spacing: 0.1em;
+  display: block;
 }
 
 .glitch-text::before,
@@ -62,34 +65,62 @@ h3,
 }
 
 .glitch-text::before {
-  animation: glitch1 2s infinite;
+  animation: glitch1 4s infinite;
   color: var(--neon-pink);
-  clip: rect(0, 999px, 50px, 0);
+  clip-path: inset(20% 0 60% 0);
 }
 
 .glitch-text::after {
-  animation: glitch2 3s infinite;
+  animation: glitch2 5s infinite;
   color: var(--neon-blue);
-  clip: rect(60px, 999px, 120px, 0);
+  clip-path: inset(60% 0 20% 0);
 }
 
 @keyframes glitch1 {
   0%,
   100% {
-    clip: rect(20px, 999px, 60px, 0);
+    clip-path: inset(10% 0 70% 0);
+    transform: translate(-2px, 0);
+  }
+  10% {
+    clip-path: inset(40% 0 30% 0);
+    transform: translate(2px, 0);
+  }
+  20% {
+    clip-path: inset(60% 0 10% 0);
+    transform: translate(-2px, 0);
   }
   30% {
-    clip: rect(90px, 999px, 130px, 0);
+    clip-path: inset(20% 0 50% 0);
+    transform: translate(2px, 0);
+  }
+  40% {
+    clip-path: inset(80% 0 5% 0);
+    transform: translate(-2px, 0);
   }
 }
 
 @keyframes glitch2 {
   0%,
   100% {
-    clip: rect(70px, 999px, 110px, 0);
+    clip-path: inset(50% 0 30% 0);
+    transform: translate(2px, 0);
+  }
+  15% {
+    clip-path: inset(5% 0 80% 0);
+    transform: translate(-2px, 0);
+  }
+  25% {
+    clip-path: inset(70% 0 15% 0);
+    transform: translate(2px, 0);
   }
   40% {
-    clip: rect(30px, 999px, 80px, 0);
+    clip-path: inset(30% 0 50% 0);
+    transform: translate(-2px, 0);
+  }
+  60% {
+    clip-path: inset(65% 0 20% 0);
+    transform: translate(2px, 0);
   }
 }
 
