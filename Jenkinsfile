@@ -22,14 +22,14 @@ pipeline {
         REPOSITORY_NAME = "app"
 
         // Staging server information
-        STAGING_VM_IP = "68.183.237.123"
+        STAGING_VM_IP = "131.153.164.63"
         STAGING_URL = "https://uppercut.hedos.finance"
         STAGING_DOCKER_PORT = 80
         STAGING_DOCKER_BIND_PORT = 3000 
         STAGING_ENV_CREDENTIALS_ID = "env-vite-hedos-app-staging"
 
         // Production server information
-        PRODUCTION_VM_IP = "68.183.237.123"
+        PRODUCTION_VM_IP = "131.153.164.63"
         PRODUCTION_URL = "https://hungerfe.hedos.finance"
         PRODUCTION_DOCKER_PORT = 80
         PRODUCTION_DOCKER_BIND_PORT = 6363
