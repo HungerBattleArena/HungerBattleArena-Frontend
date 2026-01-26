@@ -17,6 +17,7 @@ const useMatchInfo = (matchId?: string | null, refetchInterval?: number) => {
 
       return await fetchMatchView(client, matchId, currentAccount.address);
     },
+    enabled: !!matchId && !!currentAccount?.address,
     staleTime: Infinity,
     refetchInterval: refetchInterval ?? false,
   });

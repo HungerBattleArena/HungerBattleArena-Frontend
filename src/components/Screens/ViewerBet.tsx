@@ -66,8 +66,13 @@ export default function ViewerBet() {
   }, [data]);
 
   useEffect(() => {
-    // NOTE: Auto-navigate after 5 seconds - mock player entering the game
-    if (matchInfo?.status == 'in_game') navigate(`/view-game?room=${selectedRoom?.match_id}`);
+    // NOTE: Auto-navigate after 2 seconds when game starts
+    if (matchInfo?.status == 'in_game') {
+      const timer = setTimeout(() => {
+        navigate(`/view-game?room=${selectedRoom?.match_id}`);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchInfo?.status]);
 
