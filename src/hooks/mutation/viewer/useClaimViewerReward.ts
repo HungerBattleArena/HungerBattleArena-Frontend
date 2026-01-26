@@ -35,6 +35,8 @@ const useClaimViewerReward = () => {
           transaction: tx,
         });
 
+        console.log("🚀 ~ useClaimViewerReward ~ result:", result)
+
         toast.success('Viewer reward claimed');
         return result;
       } catch (error) {
