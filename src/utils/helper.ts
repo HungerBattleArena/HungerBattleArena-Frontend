@@ -65,3 +65,24 @@ export const UserBetView = bcs.struct('UserBetView', {
   side: bcs.u8(),
   amount: bcs.u64(),
 });
+
+
+export const handleCalcReward = ({ match, initBet, isVictory, betSide }: { match: TMatchInfo | null, initBet: string, isVictory: boolean, betSide: 'WIN' | 'LOSE' }) => {
+  if (!match) return '0';
+  const { win_bets_total, lose_bets_total, total_pool } = match;
+  const winReward = BN(BN(initBet).dividedBy(win_bets_total)).multipliedBy(BN(total_pool));
+  const loseReward = BN(BN(initBet).dividedBy(lose_bets_total)).multipliedBy(BN(total_pool));
+
+  console.log('🚀 ~ mutationFn ~ win_bets_total:', {
+    match,
+    initBet,
+    winReward: winReward.toString(),
+    loseReward: loseReward.toString(),
+  });
+
+  if (isVictory) {
+    return betSide === 'WIN' ? winReward.toString() : loseReward.toString();
+  } else {
+    return '0';
+  }
+};

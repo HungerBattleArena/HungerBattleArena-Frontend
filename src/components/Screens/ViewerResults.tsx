@@ -1,8 +1,8 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
-import useGetPreviewReward from '../../hooks/query/useGetPreviewReward';
 import useClaimViewerReward from '../../hooks/mutation/viewer/useClaimViewerReward';
 import useMatchInfo from '../../hooks/query/useMatchInfo';
+import { handleCalcReward } from '../../utils/helper';
 
 interface ViewerResultsProps {
   isVictory: boolean;
@@ -14,30 +14,18 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const matchId = searchParams.get('room');
-  const { data: previewReward } = useGetPreviewReward(matchId);
+  // const { data: previewReward } = useGetPreviewReward(matchId);
   const { mutateAsync: claimReward } = useClaimViewerReward();
-  const { data: selectedRoom } = useMatchInfo(matchId || undefined);
-
-  console.log('🚀 ~ ViewerResults ~ previewReward:', previewReward);
-
+  const { data: selectedRoom, } = useMatchInfo(matchId || undefined);
   const gameState = useAppSelector((state) => state.game.gameState);
+  const previewReward = handleCalcReward({ match: selectedRoom || null, initBet: gameState.userBetAmount.toString(), isVictory, betSide: gameState.faction || 'WIN' });
 
   const totalPool = parseInt(selectedRoom?.total_bet_viewers || '0', 10);
-  // NOTE: Fighter reward is 10% of total pool
   const fighterReward = isFighterWin ? Math.floor(totalPool * 0.1) : 0;
   const winningSidePool = totalPool - fighterReward;
-  // const viewerWinPool = totalPool - fighterReward;
   const totalReward = Number(previewReward?.toLocaleString());
-
   const userBet = gameState.userBetAmount || 0;
-  // const totalBetSideWin =
-  //   isVictory === true ? parseInt(selectedRoom?.win_bets_total || '0', 10) : parseInt(selectedRoom?.lose_bets_total || '0', 10);
-  // const share = totalBetSideWin > 0 ? userBet / totalBetSideWin : 0;
-  // const userPayout = isVictory ? Math.floor(share * viewerWinPool) : 0;
   const pnl = totalReward - userBet;
-  console.log('🚀 ~ ViewerResults ~ userBet:', userBet);
-  console.log('🚀 ~ ViewerResults ~ totalReward:', totalReward);
-  console.log('🚀 ~ ViewerResults ~ pnl:', pnl);
 
   const handleClaim = async () => {
     await claimReward({ vaultId: selectedRoom?.vault_id || '', matchId: selectedRoom?.match_id || '' });
@@ -59,9 +47,8 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
 
       <div className="flex flex-col md:flex-row gap-12 w-full max-w-5xl">
         <div
-          className={`w-full md:w-1/2 glass-panel p-8 border-l-4 ${
-            isVictory ? 'border-cyan-500 win-glow-savior' : 'border-pink-500 win-glow-doomer'
-          } transition duration-1000`}
+          className={`w-full md:w-1/2 glass-panel p-8 border-l-4 ${isVictory ? 'border-cyan-500 win-glow-savior' : 'border-pink-500 win-glow-doomer'
+            } transition duration-1000`}
         >
           <h3 className="text-2xl text-cyan-400 mb-6 border-b border-gray-700 pb-2">POOL SUMMARY</h3>
           <div className="space-y-4 font-mono text-sm">
