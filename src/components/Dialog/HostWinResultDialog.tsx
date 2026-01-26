@@ -13,7 +13,6 @@ interface HostWinResultDialogProps {
 const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClose, playerName, matchInfo }) => {
   const { mutateAsync: claimFighterReward } = useFighterClaim();
   const { mutateAsync: endMatch } = useEndMatch();
-  console.log('🚀 ~ HostWinResultDialog ~ matchInfo:', { matchInfo });
 
   const handleClaimReward = async () => {
     await claimFighterReward({ matchId: matchInfo?.match_id, vaultId: matchInfo?.vault_id || undefined });

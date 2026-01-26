@@ -16,16 +16,13 @@ const HostLostResultDialog: React.FC<HostLostResultDialogProps> = ({
 
   const handleEndMatch = useCallback(async () => {
     await endMatch({ isWin: false });
-    onClose();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [endMatch]);
 
   useEffect(() => {
     if (isOpen) {
       handleEndMatch();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [handleEndMatch, isOpen]);
 
   if (!isOpen) return null;
 

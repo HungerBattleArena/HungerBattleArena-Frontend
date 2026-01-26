@@ -25,6 +25,7 @@ const useEndMatch = () => {
       try {
         const result = await handleEndMatch(matchId, isWin);
         setFighterRoomAction(defaultFighterRoom);
+        console.log("🚀 ~ useEndMatch ~ result:", result)
 
         return result;
       } catch (error) {
