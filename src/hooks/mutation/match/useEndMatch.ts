@@ -16,7 +16,8 @@ const useEndMatch = () => {
       const { isWin, matchId } = values;
 
       if (!matchId) {
-        throw new Error('Match IDare required');
+        toast.error('Match ID is required');
+        return;
       }
 
       try {

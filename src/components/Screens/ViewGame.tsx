@@ -26,7 +26,6 @@ function ViewGame() {
   const [peerId, setPeerId] = useState<string | null>(null);
   const [isShowResultDialog, setIsShowResultDialog] = useState(false);
   const [viewerWon, setViewerWon] = useState(false);
-  const [, setRerenderTrigger] = useState(0);
   const [isFighterWin, setIsFighterWin] = useState(false);
 
   const navigate = useNavigate();
@@ -140,21 +139,28 @@ function ViewGame() {
     if (!dataConnection) return;
 
     const handleData = (data: unknown) => {
+      console.log('🚀 ~ handleData ~ data:', data);
       try {
         if (data === 'player-died') {
+          console.log("if-1");
           if (viewerBetSide == 'WIN') {
+            console.log("if-1-1");
             setIsShowResultDialog(true);
             setViewerWon(false);
           } else if (viewerBetSide == 'LOSE') {
+            console.log("if-1-2");
             setIsShowResultDialog(true);
             setViewerWon(true);
           }
           setIsFighterWin(false);
         } else if (data === 'game-ended') {
+          console.log("if-2");
           if (viewerBetSide == 'LOSE') {
+            console.log("if-2-1");
             setIsShowResultDialog(true);
             setViewerWon(false);
           } else if (viewerBetSide == 'WIN') {
+            console.log("if-2-2");
             setIsShowResultDialog(true);
             setViewerWon(true);
           }
@@ -162,6 +168,7 @@ function ViewGame() {
         }
       } catch (error) {
         console.error('Error processing message from peer server:', error);
+        toast.error('Error processing message from peer server');
       }
     };
 
@@ -175,23 +182,6 @@ function ViewGame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
-  // Force rerender every 1 second for the first 10 seconds
-  useEffect(() => {
-    let secondsElapsed = 0;
-    const interval = setInterval(() => {
-      secondsElapsed += 1;
-      setRerenderTrigger((prev) => prev + 1);
-
-      if (secondsElapsed >= 10) {
-        clearInterval(interval);
-      }
-    }, 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
   return (
     <div className="flex flex-col h-screen bg-[#111] text-[#eee] font-sans relative">
       {/* Room Selector */}
@@ -199,6 +189,9 @@ function ViewGame() {
         peerRef={peerRef}
         onConnectionChange={handleConnectionChange}
         onDataConnectionChange={handleDataConnectionChange}
+        handleRefund={() => {
+          setIsRefundDialogOpen(true);
+        }}
       />
 
       {/* Video Container */}

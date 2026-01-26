@@ -1,17 +1,20 @@
 import Peer from "peerjs";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import useMatchInfo from "../../hooks/query/useMatchInfo";
 
 type DataConnection = ReturnType<Peer["connect"]>;
 interface ConnectRoomSectionProps {
   peerRef: React.MutableRefObject<Peer | null>;
   onConnectionChange: (isConnected: boolean, roomCode: string | null) => void;
   onDataConnectionChange: (dataConnection: DataConnection | null) => void;
+  handleRefund: () => void;
 }
 
 const ConnectRoomSection = ({
   peerRef,
   onConnectionChange,
   onDataConnectionChange,
+  handleRefund,
 }: ConnectRoomSectionProps) => {
   // Initialize room code from URL if present
   const getInitialRoomCode = () => {
@@ -29,7 +32,9 @@ const ConnectRoomSection = ({
   const currentRoomCodeRef = useRef<string | null>(null);
   const autoConnectAttemptedRef = useRef(false);
 
-  const connectToRoom = (code: string) => {
+  const { data: matchInfo, refetch: refetchMatchInfo } = useMatchInfo(currentRoomCode);
+
+  const connectToRoom = useCallback((code: string) => {
     const peer = peerRef.current;
     if (!peer || !peer.id) {
       console.log("PeerJS not ready yet. Please wait...");
@@ -70,10 +75,12 @@ const ConnectRoomSection = ({
 
     dataConnection.on("close", () => {
       console.log("Data connection close");
+      refetchMatchInfo();
       setIsConnected(false);
       onDataConnectionChange(null);
     });
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, onDataConnectionChange, peerRef]);
 
   const disconnectFromRoom = () => {
     if (dataConnectionRef.current) {
@@ -153,6 +160,13 @@ const ConnectRoomSection = ({
     onConnectionChange,
     onDataConnectionChange,
   ]);
+
+  useEffect(() => {
+    if (matchInfo?.status == 'cancelled') {
+      handleRefund();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchInfo?.status]);
 
   return (
     <div className="p-3 bg-[#222] border-b border-[#333] flex gap-2 items-center flex-wrap">

@@ -13,6 +13,7 @@ export default function ViewerBet() {
   const [selectedBetSide, setSelectedBetSide] = useState<'WIN' | 'LOSE' | null>(null);
   const [betAmount, setBetAmount] = useState('');
   const [showBetLockedDialog, setShowBetLockedDialog] = useState(false);
+  const [showRefundDialog, setShowRefundDialog] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -76,6 +77,12 @@ export default function ViewerBet() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchInfo?.status]);
 
+  useEffect(() => {
+    if (matchInfo?.status == 'cancelled') {
+      setShowRefundDialog(true);
+    }
+  }, [matchInfo?.status]);
+
   if (!selectedRoom) {
     navigate('/viewer-rooms');
     return null;
@@ -92,21 +99,6 @@ export default function ViewerBet() {
         winBettors={Number(matchInfo.win_bettors_count)}
         loseAmount={Number(matchInfo.lose_bets_total)}
         loseBettors={Number(matchInfo.lose_bettors_count)}
-      />
-    );
-  }
-
-  if (matchInfo?.status == 'cancelled') {
-    return (
-      <RefundDialog
-        isOpen={true}
-        roomName={selectedRoom.name}
-        yourBet={data?.amount || 0}
-        yourSide={selectedBetSide}
-        roomPool={matchInfo.total_pool}
-        onClose={() => {
-          navigate('/viewer-rooms');
-        }}
       />
     );
   }
@@ -173,6 +165,17 @@ export default function ViewerBet() {
           </button>
         </div>
         <div className="mt-3 text-xs text-gray-500">Betting closes when the fighter starts the match.</div>
+
+        <RefundDialog
+          isOpen={showRefundDialog}
+          roomName={selectedRoom.name}
+          yourBet={data?.amount || 0}
+          yourSide={selectedBetSide}
+          roomPool={matchInfo?.total_pool || '0'}
+          onClose={() => {
+            navigate('/viewer-rooms');
+          }}
+        />
       </div>
     </div>
   );

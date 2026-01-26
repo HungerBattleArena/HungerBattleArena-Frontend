@@ -20,7 +20,7 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
   const gameState = useAppSelector((state) => state.game.gameState);
   const previewReward = handleCalcReward({ match: selectedRoom || null, initBet: gameState.userBetAmount.toString(), isVictory, betSide: gameState.faction || 'WIN' });
 
-  const totalPool = parseInt(selectedRoom?.total_bet_viewers || '0', 10);
+  const totalPool = parseInt(selectedRoom?.total_pool || '0', 10);
   const fighterReward = isFighterWin ? Math.floor(totalPool * 0.1) : 0;
   const winningSidePool = totalPool - fighterReward;
   const totalReward = Number(previewReward?.toLocaleString());

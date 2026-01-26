@@ -1,4 +1,4 @@
-import { useCurrentAccount, useSuiClientContext } from '@mysten/dapp-kit';
+import { useCurrentAccount } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
@@ -8,7 +8,6 @@ import useCustomSign from '../match/useCustomSign';
 const useClaimViewerReward = () => {
   const { mutateAsync: signAndExecute } = useCustomSign();
   const currentAccount = useCurrentAccount();
-  const { client } = useSuiClientContext();
 
   const mutation = useMutation({
     mutationKey: ['claim-viewer-reward', currentAccount?.address],
@@ -25,9 +24,6 @@ const useClaimViewerReward = () => {
           target: `${PackageID}::bet_engine::claim_viewer_reward`,
           arguments: [tx.object(vaultId), tx.object(matchId)],
         });
-
-        const res = await client.devInspectTransactionBlock({ sender: currentAccount.address, transactionBlock: tx });
-        console.log("🚀 ~ useClaimViewerReward ~ res:", res)
 
         const result = await signAndExecute({
           transaction: tx,
