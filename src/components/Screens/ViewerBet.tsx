@@ -21,9 +21,6 @@ export default function ViewerBet() {
   const { data, refetch } = useGetUserBet();
   const { mutateAsync: placeBet } = usePlaceBet();
   const { data: matchInfo } = useMatchInfo(selectedRoom?.match_id, 5000);
-  const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
-    dispatch(setGameState(updates));
-  };
 
   const lockBetAndEnter = async () => {
     if (!selectedRoom) return null;
@@ -55,16 +52,18 @@ export default function ViewerBet() {
   };
 
   useEffect(() => {
+    console.log('🚀 ~ ViewerBet ~ data:', data);
     if (data && Number(data.amount) > 0) {
-      setGameStateAction({
-        role: 'VIEWER',
-        faction: selectedBetSide,
-        userBetAmount: Number(data.amount),
-      });
+      dispatch(
+        setGameState({
+          role: 'VIEWER',
+          faction: selectedBetSide,
+          userBetAmount: Number(data.amount),
+        })
+      );
       setShowBetLockedDialog(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  }, [data, selectedBetSide, dispatch]);
 
   useEffect(() => {
     // NOTE: Auto-navigate after 2 seconds when game starts
@@ -78,6 +77,7 @@ export default function ViewerBet() {
   }, [matchInfo?.status]);
 
   useEffect(() => {
+    console.log('🚀 ~ ViewerBet ~ matchInfo:', matchInfo);
     if (matchInfo?.status == 'cancelled') {
       setShowRefundDialog(true);
     }
@@ -86,21 +86,6 @@ export default function ViewerBet() {
   if (!selectedRoom) {
     navigate('/viewer-rooms');
     return null;
-  }
-
-  if (showBetLockedDialog && matchInfo) {
-    return (
-      <BetLockedDialog
-        isOpen={showBetLockedDialog}
-        roomName={selectedRoom.name}
-        yourSide={data?.side || selectedBetSide || 'NONE'}
-        roomPool={Number(matchInfo.total_pool)}
-        winAmount={Number(matchInfo.win_bets_total)}
-        winBettors={Number(matchInfo.win_bettors_count)}
-        loseAmount={Number(matchInfo.lose_bets_total)}
-        loseBettors={Number(matchInfo.lose_bettors_count)}
-      />
-    );
   }
 
   return (
@@ -134,7 +119,9 @@ export default function ViewerBet() {
             <h3 className="text-2xl md:text-3xl text-cyan-400 font-bold">WIN</h3>
             <p className="text-xs md:text-sm text-gray-400 mt-2">Fighter survives</p>
             <div className="text-xs text-gray-500 mt-3 md:mt-4">Bet pool</div>
-            <div className="text-lg md:text-xl text-white font-bold">{selectedRoom.win_bets_total.toLocaleString()}</div>
+            <div className="text-lg md:text-xl text-white font-bold">
+              {selectedRoom.win_bets_total.toLocaleString()}
+            </div>
           </div>
           <div
             className={`bet-side-card p-4 md:p-6 rounded-lg ${selectedBetSide === 'LOSE' ? 'selected' : ''}`}
@@ -143,7 +130,9 @@ export default function ViewerBet() {
             <h3 className="text-2xl md:text-3xl text-pink-400 font-bold">LOSE</h3>
             <p className="text-xs md:text-sm text-gray-400 mt-2">Fighter is eliminated</p>
             <div className="text-xs text-gray-500 mt-3 md:mt-4">Bet pool</div>
-            <div className="text-lg md:text-xl text-white font-bold">{selectedRoom.lose_bets_total.toLocaleString()}</div>
+            <div className="text-lg md:text-xl text-white font-bold">
+              {selectedRoom.lose_bets_total.toLocaleString()}
+            </div>
           </div>
         </div>
 
@@ -175,6 +164,17 @@ export default function ViewerBet() {
           onClose={() => {
             navigate('/viewer-rooms');
           }}
+        />
+
+        <BetLockedDialog
+          isOpen={showBetLockedDialog}
+          roomName={selectedRoom.name}
+          yourSide={data?.side || selectedBetSide || 'NONE'}
+          roomPool={Number(matchInfo?.total_pool)}
+          winAmount={Number(matchInfo?.win_bets_total)}
+          winBettors={Number(matchInfo?.win_bettors_count)}
+          loseAmount={Number(matchInfo?.lose_bets_total)}
+          loseBettors={Number(matchInfo?.lose_bettors_count)}
         />
       </div>
     </div>
