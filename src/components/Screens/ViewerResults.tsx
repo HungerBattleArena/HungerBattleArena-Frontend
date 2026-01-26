@@ -3,6 +3,8 @@ import { useAppSelector } from '../../store/hooks';
 import useClaimViewerReward from '../../hooks/mutation/viewer/useClaimViewerReward';
 import useMatchInfo from '../../hooks/query/useMatchInfo';
 import { handleCalcReward } from '../../utils/helper';
+import { BN } from '../../utils/utils';
+import { toast } from 'react-toastify';
 
 interface ViewerResultsProps {
   isVictory: boolean;
@@ -20,15 +22,21 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
   const gameState = useAppSelector((state) => state.game.gameState);
   const previewReward = handleCalcReward({ match: selectedRoom || null, initBet: gameState.userBetAmount.toString(), isVictory, betSide: gameState.faction || 'WIN' });
 
-  const totalPool = parseInt(selectedRoom?.total_pool || '0', 10);
-  const fighterReward = isFighterWin ? Math.floor(totalPool * 0.1) : 0;
-  const winningSidePool = totalPool - fighterReward;
+  const totalPool = BN(selectedRoom?.total_pool);
+  const fighterReward = isFighterWin ? BN(totalPool).multipliedBy(0.1).toNumber() : 0;
+  const winningSidePool = BN(totalPool).minus(BN(fighterReward)).toNumber();
   const totalReward = Number(previewReward?.toLocaleString());
   const userBet = gameState.userBetAmount || 0;
   const pnl = totalReward - userBet;
 
   const handleClaim = async () => {
-    await claimReward({ vaultId: selectedRoom?.vault_id || '', matchId: selectedRoom?.match_id || '' });
+    try {
+      await claimReward({ vaultId: selectedRoom?.vault_id || '', matchId: selectedRoom?.match_id || '' });
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to claim reward');
+    }
   };
 
   if (!isOpen) return null;
@@ -54,7 +62,7 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
           <div className="space-y-4 font-mono text-sm">
             <div className="flex justify-between">
               <span className="text-gray-400">TOTAL POOL</span>
-              <span className="text-white text-lg">{totalPool.toLocaleString()}</span>
+              <span className="text-white text-lg">{totalPool.toString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Fighter reward (10%)</span>

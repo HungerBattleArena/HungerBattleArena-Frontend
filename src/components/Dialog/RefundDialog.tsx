@@ -24,7 +24,7 @@ export default function RefundDialog({ isOpen, roomName, yourBet, yourSide, room
 
   if (!isOpen) return null;
   return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-50 bg-black/95">
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-100 bg-black/95">
       <div className="glass-panel w-full max-w-2xl p-8 relative fade-in">
         <button className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl transition" onClick={onClose}>
           ×

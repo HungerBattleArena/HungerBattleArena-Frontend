@@ -78,6 +78,7 @@ const ConnectRoomSection = ({
       refetchMatchInfo();
       setIsConnected(false);
       onDataConnectionChange(null);
+      handleRefund();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, onDataConnectionChange, peerRef]);

@@ -20,7 +20,7 @@ export default function ViewerBet() {
   const selectedRoom = useAppSelector((state) => state.game.selectedRoom);
   const { data, refetch } = useGetUserBet();
   const { mutateAsync: placeBet } = usePlaceBet();
-  const { data: matchInfo } = useMatchInfo(selectedRoom?.match_id, 5000);
+  const { data: matchInfo, isFetched: isMatchInfoFetched } = useMatchInfo(selectedRoom?.match_id, 5000);
 
   const lockBetAndEnter = async () => {
     if (!selectedRoom) return null;
@@ -70,14 +70,15 @@ export default function ViewerBet() {
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchInfo?.status]);
+  }, [matchInfo?.status, isMatchInfoFetched]);
+
 
   useEffect(() => {
-    if (matchInfo?.status == 'cancelled') {
+    if (matchInfo?.status == "cancelled") {
+      setShowBetLockedDialog(false);
       setShowRefundDialog(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchInfo?.status]);
+  }, [matchInfo]);
 
   if (!selectedRoom) {
     navigate('/viewer-rooms');
