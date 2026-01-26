@@ -76,7 +76,6 @@ export default function ViewerBet() {
     if (matchInfo?.status == 'cancelled') {
       setShowRefundDialog(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchInfo?.status]);
 
   if (!selectedRoom) {
@@ -87,7 +86,10 @@ export default function ViewerBet() {
   return (
     <>
       <div className="absolute inset-0 flex items-center justify-center overflow-y-auto pointer-events-auto z-50 bg-black/95 md:p-8">
-        <div style={{ display: showBetLockedDialog || showRefundDialog ? 'none' : 'block' }} className="glass-panel w-full max-w-4xl p-4 md:p-10 relative fade-in my-auto">
+        <div
+          style={{ display: showBetLockedDialog || showRefundDialog ? 'none' : 'block' }}
+          className="glass-panel w-full max-w-4xl p-4 md:p-10 relative fade-in my-auto"
+        >
           <button
             className="text-white text-sm md:text-base z-50 hover:text-cyan-400 transition mb-4 md:mb-0"
             onClick={() => navigate('/viewer-rooms')}
@@ -175,8 +177,6 @@ export default function ViewerBet() {
           loseBettors={Number(matchInfo?.lose_bettors_count)}
         />
       </div>
-
-
     </>
   );
 }
