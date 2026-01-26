@@ -190,6 +190,7 @@ function ViewGame() {
         onConnectionChange={handleConnectionChange}
         onDataConnectionChange={handleDataConnectionChange}
         handleRefund={() => {
+          console.log("handleRefund", isShowResultDialog);
           if (!isShowResultDialog) {
             setIsRefundDialogOpen(true);
           }
@@ -206,7 +207,7 @@ function ViewGame() {
       <ViewerResults isOpen={isShowResultDialog} isVictory={viewerWon} isFighterWin={isFighterWin} />
 
       <RefundDialog
-        isOpen={isRefundDialogOpen}
+        isOpen={isRefundDialogOpen && !isShowResultDialog}
         onClose={() => {
           setIsRefundDialogOpen(false);
           navigate('/viewer-rooms');
