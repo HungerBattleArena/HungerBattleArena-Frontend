@@ -118,7 +118,12 @@ export default function FighterRoom() {
   return (
     <div className="absolute inset-0 bg-black/90 pointer-events-auto z-50 flex items-center justify-center">
       <div className="glass-panel w-full max-w-5xl p-10 relative fade-in overflow-y-auto max-h-screen">
-        <button className="absolute top-6 right-6 text-3xl text-gray-400 hover:text-white z-50" onClick={() => navigate('/')}>
+        <button className="absolute top-6 right-6 text-3xl text-gray-400 hover:text-white z-50" onClick={() => {
+          if (matchId) {
+            cancelMatch({ matchId: matchId });
+          }
+          navigate('/');
+        }}>
           ✕
         </button>
 

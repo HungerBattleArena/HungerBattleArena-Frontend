@@ -44,7 +44,6 @@ export default function ViewerBet() {
         side: selectedBetSide,
         amount: amount,
       });
-      await refetch();
 
       dispatch(
         setGameState({
@@ -54,6 +53,8 @@ export default function ViewerBet() {
         })
       );
       setShowBetLockedDialog(true);
+
+      await refetch();
     } catch (error) {
       console.error(error);
       toast.error('Failed to place bet');
