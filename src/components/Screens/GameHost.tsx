@@ -304,6 +304,7 @@ const GameHost = () => {
           navigate('/');
         }}
         playerName={playerName}
+        matchInfo={matchInfo}
       />
 
       <HostWinResultDialog

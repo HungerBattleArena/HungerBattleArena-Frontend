@@ -1,28 +1,33 @@
 import React, { useCallback, useEffect } from 'react'
 import useEndMatch from '../../hooks/mutation/match/useEndMatch';
+import type { TMatchInfo } from '../../types/game';
 
 interface HostLostResultDialogProps {
   isOpen: boolean;
   onClose: () => void;
   playerName?: string;
+  matchInfo?: TMatchInfo | null;
 }
 
 const HostLostResultDialog: React.FC<HostLostResultDialogProps> = ({
   isOpen,
   onClose,
-  playerName
+  playerName,
+  matchInfo
 }) => {
   const { mutateAsync: endMatch } = useEndMatch();
 
   const handleEndMatch = useCallback(async () => {
-    await endMatch({ isWin: false });
-  }, [endMatch]);
+    await endMatch({ isWin: false, matchId: matchInfo?.match_id || undefined });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
       handleEndMatch();
     }
-  }, [handleEndMatch, isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
