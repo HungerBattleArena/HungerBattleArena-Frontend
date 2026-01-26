@@ -18,14 +18,11 @@ const HostLostResultDialog: React.FC<HostLostResultDialogProps> = ({
   const { mutateAsync: endMatch } = useEndMatch();
 
   const handleEndMatch = useCallback(async () => {
-    console.log('PNV');
     await endMatch({ isWin: false, matchId: matchInfo?.match_id || undefined });
   }, [endMatch, matchInfo]);
 
   useEffect(() => {
-    console.log("🚀 ~ useEffect ~ isOpen:", isOpen)
     if (isOpen) {
-      console.log('chung ta');
       handleEndMatch();
     }
   }, [handleEndMatch, isOpen]);

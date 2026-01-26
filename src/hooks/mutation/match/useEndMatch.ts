@@ -15,8 +15,8 @@ const useEndMatch = () => {
     mutationFn: async (values: { isWin: boolean, matchId?: string }) => {
       const { isWin, matchId } = values;
 
-      if (!matchId || !isWin) {
-        throw new Error('Match ID and isWin are required');
+      if (!matchId) {
+        throw new Error('Match IDare required');
       }
 
       try {
