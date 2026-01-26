@@ -195,8 +195,8 @@ function ViewGame() {
       />
 
       {/* Video Container */}
-      <div className="flex-1 flex items-center justify-center bg-black h-fit w-full mx-auto">
-        <video ref={videoRef} id="remoteVideo" autoPlay playsInline className="w-250 h-150 bg-black" />
+      <div className="flex-1 flex items-center justify-center bg-black h-fit w-full mx-auto max-h-[75%]">
+        <video ref={videoRef} id="remoteVideo" autoPlay playsInline className="w-250 h-150 bg-black max-h-full" />
       </div>
 
       <ViewerItems onSendMessageToGame={handleSendMessageToGame} />
