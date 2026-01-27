@@ -1,4 +1,4 @@
-import { Transaction } from '@mysten/sui/transactions';
+import { Transaction } from '@onelabs/sui/transactions';
 import { useMutation } from '@tanstack/react-query';
 import { PackageID } from '../../../constants/contract';
 import { useAppSelector } from '../../../store/hooks';

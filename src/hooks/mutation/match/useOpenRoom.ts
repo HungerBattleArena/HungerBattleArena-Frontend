@@ -1,4 +1,4 @@
-import { Transaction } from '@mysten/sui/transactions';
+import { Transaction } from '@onelabs/sui/transactions';
 import { useMutation } from '@tanstack/react-query';
 import { PackageID, Registry } from '../../../constants/contract';
 import type { CustomSuiObjectChange } from '../../../contract-modules/type';

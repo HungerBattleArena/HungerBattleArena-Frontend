@@ -1,11 +1,11 @@
-import { useCurrentAccount, useSuiClientContext } from '@mysten/dapp-kit';
+import { useCurrentAccount, useSuiClientContext } from '@onelabs/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 import { OCT_COIN_DECIMALS, PackageID } from '../../constants/contract';
-import { Transaction } from '@mysten/sui/transactions';
+import { Transaction } from '@onelabs/sui/transactions';
 import { useSearchParams } from 'react-router-dom';
 import { UserBetView } from '../../utils/helper';
 import { BN } from '../../utils/utils';
-import { bcs } from '@mysten/sui/bcs';
+import { bcs } from '@onelabs/sui/bcs';
 
 const useGetUserBet = (interval?: number) => {
   const { client } = useSuiClientContext();

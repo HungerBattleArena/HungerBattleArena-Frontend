@@ -1,4 +1,4 @@
-import { useCurrentAccount, useSuiClientContext } from '@mysten/dapp-kit';
+import { useCurrentAccount, useSuiClientContext } from '@onelabs/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 import type { TMatchInfo } from '../../types/game';
 import { fetchMatchView } from '../../utils/helper';

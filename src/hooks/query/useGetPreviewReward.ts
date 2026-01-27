@@ -1,8 +1,8 @@
-import { useCurrentAccount, useSuiClientContext } from '@mysten/dapp-kit';
+import { useCurrentAccount, useSuiClientContext } from '@onelabs/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
-import { Transaction } from '@mysten/sui/transactions';
+import { Transaction } from '@onelabs/sui/transactions';
 import { PackageID } from '../../constants/contract';
-import { bcs } from '@mysten/sui/bcs';
+import { bcs } from '@onelabs/sui/bcs';
 
 const useGetPreviewReward = (matchId?: string | null) => {
   const currentAccount = useCurrentAccount();

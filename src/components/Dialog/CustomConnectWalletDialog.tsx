@@ -1,5 +1,5 @@
-import { useConnectWallet, useWallets } from '@mysten/dapp-kit';
-import type { WalletWithRequiredFeatures } from '@mysten/wallet-standard';
+import { useConnectWallet, useWallets } from '@onelabs/dapp-kit';
+import type { WalletWithRequiredFeatures } from '@onelabs/wallet-standard';
 import { useState } from 'react';
 
 interface CustomConnectWalletDialogProps {

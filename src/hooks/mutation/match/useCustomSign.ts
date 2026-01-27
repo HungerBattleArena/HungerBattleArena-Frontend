@@ -1,4 +1,4 @@
-import { useSignAndExecuteTransaction, useSuiClientContext } from "@mysten/dapp-kit";
+import { useSignAndExecuteTransaction, useSuiClientContext } from "@onelabs/dapp-kit";
 
 const useCustomSign = () => {
   const { client } = useSuiClientContext();

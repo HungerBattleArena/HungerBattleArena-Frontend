@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useCurrentAccount, useDisconnectWallet } from '@mysten/dapp-kit';
+import { useCurrentAccount, useDisconnectWallet } from '@onelabs/dapp-kit';
 import { useState, useRef, useEffect } from 'react';
 import { CustomConnectWalletDialog } from '../Dialog/CustomConnectWalletDialog';
 
