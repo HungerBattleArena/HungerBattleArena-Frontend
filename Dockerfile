@@ -5,8 +5,8 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm install
-RUN npm run build
+RUN yarn
+RUN yarn build
 
 # prepare nginx
 FROM nginx:1.29.0-alpine
