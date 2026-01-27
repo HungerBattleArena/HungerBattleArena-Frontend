@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import useFighterClaim from '../../hooks/mutation/match/useFighterClaim';
 import useEndMatch from '../../hooks/mutation/match/useEndMatch';
 import type { TMatchInfo } from '../../types/game';
-import useGetFeeBps from '../../hooks/query/useGetFeeBps';
+import { BN } from '../../utils/utils';
 
 interface HostWinResultDialogProps {
   isOpen: boolean;
@@ -14,10 +14,10 @@ interface HostWinResultDialogProps {
 const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClose, playerName, matchInfo }) => {
   const { mutateAsync: claimFighterReward } = useFighterClaim();
   const { mutateAsync: endMatch } = useEndMatch();
-  const { data: feeBps } = useGetFeeBps();
 
-  console.log('feeBps in dialog', feeBps);
-  const fighterReward = Number(matchInfo?.total_pool || 0) * 0.1 - Number(feeBps || 0); // 10% of total pool as reward minus feeBps
+  const fighterReward = BN(matchInfo?.total_pool || 0)
+    .multipliedBy(0.1)
+    .multipliedBy(0.95); //  10% of total pool as reward minus 5% fee
   console.log('Calculated fighterReward in dialog', fighterReward);
   console.log('total_pool in dialog', matchInfo?.total_pool);
 
@@ -73,6 +73,8 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClo
           <div className="h-px bg-linear-to-r from-transparent via-gray-600 to-transparent my-6"></div>
 
           <p className="text-gray-400 text-sm">Congratulations on your triumph!</p>
+
+          <p>Your reward: {fighterReward.toString()}</p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
             <button className="btn-cyber px-8 py-3 text-lg font-bold" onClick={handleClaimReward}>

@@ -66,15 +66,26 @@ export const UserBetView = bcs.struct('UserBetView', {
   amount: bcs.u64(),
 });
 
-
-export const handleCalcReward = ({ match, initBet, isVictory, betSide }: { match: TMatchInfo | null, initBet: string, isVictory: boolean, betSide: 'WIN' | 'LOSE' }) => {
+export const handleCalcReward = ({
+  match,
+  initBet,
+  isVictory,
+  betSide,
+}: {
+  match: TMatchInfo | null;
+  initBet: string;
+  isVictory: boolean;
+  betSide: 'WIN' | 'LOSE';
+}) => {
   if (!match) return '0';
 
   const { win_bets_total, lose_bets_total, total_pool } = match;
   const fighterReward = BN(BN(total_pool).multipliedBy(0.1)).toString();
-  const winningSidePool = betSide === "LOSE" && isVictory ? BN(total_pool).toString() : BN(BN(total_pool).minus(fighterReward)).toString();
-  const winReward = BN(BN(initBet).dividedBy(win_bets_total)).multipliedBy(BN(winningSidePool));
-  const loseReward = BN(BN(initBet).dividedBy(lose_bets_total)).multipliedBy(BN(winningSidePool));
+  const winningSidePool =
+    betSide === 'LOSE' && isVictory ? BN(total_pool).toString() : BN(BN(total_pool).minus(fighterReward)).toString();
+  // NOTE: 5% platform fee is deducted from the rewards
+  const winReward = BN(BN(initBet).dividedBy(win_bets_total)).multipliedBy(BN(winningSidePool)).multipliedBy(0.95);
+  const loseReward = BN(BN(initBet).dividedBy(lose_bets_total)).multipliedBy(BN(winningSidePool)).multipliedBy(0.95);
 
   console.log('🚀 ~ mutationFn ~ win_bets_total:', {
     match,
@@ -83,7 +94,7 @@ export const handleCalcReward = ({ match, initBet, isVictory, betSide }: { match
     loseReward: loseReward.toString(),
     winningSidePool: winningSidePool,
     viewerBetSie: betSide,
-    fighterLose: betSide === "LOSE" && isVictory
+    fighterLose: betSide === 'LOSE' && isVictory,
   });
 
   if (isVictory) {
