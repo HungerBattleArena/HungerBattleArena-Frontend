@@ -1,6 +1,7 @@
 import Peer from "peerjs";
 import { useState, useRef, useEffect, useCallback } from "react";
 import useMatchInfo from "../../hooks/query/useMatchInfo";
+import { toast } from "react-toastify";
 
 type DataConnection = ReturnType<Peer["connect"]>;
 interface ConnectRoomSectionProps {
@@ -73,36 +74,23 @@ const ConnectRoomSection = ({
       setIsConnected(false);
     });
 
-    dataConnection.on("close", () => {
+    dataConnection.on("close", async () => {
       console.log("Data connection close");
-      refetchMatchInfo();
       setIsConnected(false);
       onDataConnectionChange(null);
-      handleRefund();
+      try {
+        const result = await refetchMatchInfo();
+        if (result.data?.status == 'cancelled') {
+          handleRefund();
+        }
+      } catch (error) {
+        console.error("Error refetching match info:", error);
+        toast.error("Error refetching match info");
+      }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, onDataConnectionChange, peerRef]);
 
-  const disconnectFromRoom = () => {
-    if (dataConnectionRef.current) {
-      dataConnectionRef.current.close();
-      dataConnectionRef.current = null;
-    }
-
-    setIsConnected(false);
-    setCurrentRoomCode(null);
-    currentRoomCodeRef.current = null;
-    onDataConnectionChange(null);
-  };
-
-  const handleConnect = () => {
-    const code = roomCode.trim();
-    if (code) {
-      connectToRoom(code);
-    } else {
-      console.log("Please enter a room code");
-    }
-  };
 
   // Auto-connect on mount if room code is present in URL
   useEffect(() => {
@@ -183,23 +171,19 @@ const ConnectRoomSection = ({
         disabled={isConnected}
         className="px-2.5 py-1.5 border border-[#444] rounded bg-[#333] text-sm w-30 uppercase focus:outline-none focus:border-[#3a7bfd] disabled:opacity-50"
       />
-      {!isConnected ? (
-        <button
-          id="connectBtn"
-          onClick={handleConnect}
-          className="px-3 py-1.5 bg-[#27ae60] text-black border-none rounded cursor-pointer text-sm hover:bg-[#229954] disabled:opacity-50 disabled:cursor-default"
-        >
-          Connect
-        </button>
-      ) : (
-        <button
-          id="disconnectBtn"
-          onClick={disconnectFromRoom}
-          className="px-3 py-1.5 bg-[#e67e22] border-none rounded cursor-pointer text-sm hover:bg-[#d35400] disabled:opacity-50 disabled:cursor-default"
-        >
-          Disconnect
-        </button>
-      )}
+      <button
+        id="refreshBtn"
+        onClick={() => {
+          const code = roomCode.trim();
+          if (code && !isConnected) {
+            connectToRoom(code);
+          }
+          refetchMatchInfo();
+        }}
+        className="px-3 py-1.5 bg-[#3498db] text-white border-none rounded cursor-pointer text-sm hover:bg-[#2980b9] disabled:opacity-50 disabled:cursor-default"
+      >
+        Refresh
+      </button>
       <div
         className={`ml-auto text-xs ${isConnected ? "text-[#27ae60]" : "text-[#999]"
           }`}

@@ -76,16 +76,6 @@ export const handleCalcReward = ({ match, initBet, isVictory, betSide }: { match
   const winReward = BN(BN(initBet).dividedBy(win_bets_total)).multipliedBy(BN(winningSidePool));
   const loseReward = BN(BN(initBet).dividedBy(lose_bets_total)).multipliedBy(BN(winningSidePool));
 
-  console.log('🚀 ~ mutationFn ~ win_bets_total:', {
-    match,
-    initBet,
-    winReward: winReward.toString(),
-    loseReward: loseReward.toString(),
-    winningSidePool: winningSidePool,
-    viewerBetSie: betSide,
-    fighterLose: betSide === "LOSE" && isVictory
-  });
-
   if (isVictory) {
     return betSide === 'WIN' ? winReward.toString() : loseReward.toString();
   } else {
