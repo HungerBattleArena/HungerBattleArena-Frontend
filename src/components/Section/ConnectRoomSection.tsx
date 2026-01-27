@@ -1,7 +1,7 @@
 import Peer from "peerjs";
 import { useState, useRef, useEffect, useCallback } from "react";
 import useMatchInfo from "../../hooks/query/useMatchInfo";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 
 type DataConnection = ReturnType<Peer["connect"]>;
 interface ConnectRoomSectionProps {
@@ -78,15 +78,18 @@ const ConnectRoomSection = ({
       console.log("Data connection close");
       setIsConnected(false);
       onDataConnectionChange(null);
-      try {
-        const result = await refetchMatchInfo();
-        if (result.data?.status == 'cancelled') {
-          handleRefund();
-        }
-      } catch (error) {
-        console.error("Error refetching match info:", error);
-        toast.error("Error refetching match info");
-      }
+      refetchMatchInfo();
+      handleRefund();
+
+      // try {
+      //   const result = await refetchMatchInfo();
+      //   if (result.data?.status == 'cancelled') {
+      //     handleRefund();
+      //   }
+      // } catch (error) {
+      //   console.error("Error refetching match info:", error);
+      //   toast.error("Error refetching match info");
+      // }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, onDataConnectionChange, peerRef]);

@@ -52,6 +52,7 @@ export default function ViewerBet() {
           userBetAmount: Number(amount),
         })
       );
+      setSelectedBetSide(selectedBetSide);
       setShowBetLockedDialog(true);
 
       await refetch();
@@ -74,11 +75,13 @@ export default function ViewerBet() {
 
 
   useEffect(() => {
+    console.log("🚀 ~ useEffect ~ matchInfo:", matchInfo);
     if (matchInfo?.status == "cancelled") {
+      console.log("🚀 ~ useEffect ~ matchInfo cancelled:", matchInfo);
       setShowBetLockedDialog(false);
       setShowRefundDialog(true);
     }
-  }, [matchInfo]);
+  }, [matchInfo, isMatchInfoFetched]);
 
   if (!selectedRoom) {
     navigate('/viewer-rooms');
