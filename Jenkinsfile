@@ -23,8 +23,8 @@ pipeline {
         REPOSITORY_NAME = "frontend-app"
         
         // SSH username
-        // SSH_USER = "frontend"
-        SSH_USER = "root"
+        SSH_USER = "frontend"
+        // SSH_USER = "root"
 
         // Staging server information
         STAGING_VM_IP = "159.223.65.237"
@@ -34,8 +34,8 @@ pipeline {
         STAGING_ENV_CREDENTIALS_ID = "env-vite-hedos-app-staging"
 
         // Production server information
-        // PRODUCTION_VM_IP = "131.153.202.197"
-        PRODUCTION_VM_IP = "178.128.217.190"
+        PRODUCTION_VM_IP = "131.153.202.197"
+        // PRODUCTION_VM_IP = "178.128.217.190"
         PRODUCTION_URL = "https://hungerfe.hedos.finance"
         PRODUCTION_DOCKER_PORT = 80
         PRODUCTION_DOCKER_BIND_PORT = 3911
