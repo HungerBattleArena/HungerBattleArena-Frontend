@@ -1,4 +1,5 @@
-export const PackageID = '0x3a279f228a55b5629e2a9537202962d60db530ce1af830bf7f1c21faea241e20';
-export const Registry = '0x9cc9312556e74d998cb822bfe0a4e5ddcf3e87b831987a609d93dc323c93811a';
+export const PackageID = '0xbc13ff229ee30ea6c95b3f8880e595238dfa0e1cbdb9e6db5db63551ca5d6d7d';
+export const Registry = '0x1fa76c2a8af7d88aa2f4028071244439b75fdaa6afb9543df86be16d43947dd5';
+export const Treasury = '0x452bb2187385aba910ffb3cb00b3d5bb38da40a41ac891ba56712d8e57652678';
 
 export const OCT_COIN_DECIMALS = 9;
