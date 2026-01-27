@@ -75,9 +75,7 @@ export default function ViewerBet() {
 
 
   useEffect(() => {
-    console.log("🚀 ~ useEffect ~ matchInfo:", matchInfo);
     if (matchInfo?.status == "cancelled") {
-      console.log("🚀 ~ useEffect ~ matchInfo cancelled:", matchInfo);
       setShowBetLockedDialog(false);
       setShowRefundDialog(true);
     }

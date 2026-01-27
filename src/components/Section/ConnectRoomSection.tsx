@@ -80,16 +80,6 @@ const ConnectRoomSection = ({
       onDataConnectionChange(null);
       refetchMatchInfo();
       handleRefund();
-
-      // try {
-      //   const result = await refetchMatchInfo();
-      //   if (result.data?.status == 'cancelled') {
-      //     handleRefund();
-      //   }
-      // } catch (error) {
-      //   console.error("Error refetching match info:", error);
-      //   toast.error("Error refetching match info");
-      // }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, onDataConnectionChange, peerRef]);
