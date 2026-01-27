@@ -1,7 +1,7 @@
-import type { SuiClient } from '@mysten/sui/client';
+import type { SuiClient } from '@onelabs/sui/client';
 import type { TMatchInfo } from '../types/game';
-import { bcs } from '@mysten/sui/bcs';
-import { Transaction } from '@mysten/sui/transactions';
+import { bcs } from '@onelabs/sui/bcs';
+import { Transaction } from '@onelabs/sui/transactions';
 import { OCT_COIN_DECIMALS, PackageID } from '../constants/contract';
 import { BN } from './utils';
 

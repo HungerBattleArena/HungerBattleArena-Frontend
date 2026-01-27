@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { createNetworkConfig, SuiClientProvider, WalletProvider } from '@mysten/dapp-kit';
+import { createNetworkConfig, SuiClientProvider, WalletProvider } from '@onelabs/dapp-kit';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -11,7 +11,7 @@ import ViewerBet from './components/Screens/ViewerBet';
 import GameHost from './components/Screens/GameHost';
 import ViewGame from './components/Screens/ViewGame';
 import { ToastNotifier } from './components/Provider/ToastProvider';
-import '@mysten/dapp-kit/dist/index.css';
+import '@onelabs/dapp-kit/dist/index.css';
 import { queryClient } from './constants';
 
 const { networkConfig } = createNetworkConfig({

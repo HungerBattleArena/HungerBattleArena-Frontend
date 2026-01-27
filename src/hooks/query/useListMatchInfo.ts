@@ -1,8 +1,8 @@
-import { Transaction } from '@mysten/sui/transactions';
+import { Transaction } from '@onelabs/sui/transactions';
 import { useQuery } from '@tanstack/react-query';
 import { PackageID, Registry } from '../../constants/contract';
-import { useCurrentAccount, useSuiClientContext } from '@mysten/dapp-kit';
-import { bcs } from '@mysten/sui/bcs';
+import { useCurrentAccount, useSuiClientContext } from '@onelabs/dapp-kit';
+import { bcs } from '@onelabs/sui/bcs';
 import type { TMatchInfo } from '../../types/game';
 import { fetchMatchView } from '../../utils/helper';
 import { queryClient } from '../../constants';
