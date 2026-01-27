@@ -4,22 +4,22 @@ import { Transaction } from '@onelabs/sui/transactions';
 import { PackageID } from '../../constants/contract';
 import { bcs } from '@onelabs/sui/bcs';
 
-const useGetPreviewReward = (matchId?: string | null) => {
+const useGetFeeBps = () => {
   const currentAccount = useCurrentAccount();
   const { client } = useSuiClientContext();
 
   const query = useQuery({
-    queryKey: ['preview-reward', matchId],
+    queryKey: ['fee-bps'],
     queryFn: async () => {
       try {
-        if (!matchId || !currentAccount?.address) {
-          throw new Error('Match ID is required');
+        if (!currentAccount?.address) {
+          throw new Error('Current account address is required');
         }
 
         const tx = new Transaction();
         tx.moveCall({
-          target: `${PackageID}::bet_engine::preview_reward`,
-          arguments: [tx.object(matchId), tx.object(currentAccount.address)],
+          target: `${PackageID}::bet_engine::fee_bps`,
+          arguments: [],
         });
 
         const result = await client.devInspectTransactionBlock({
@@ -29,11 +29,11 @@ const useGetPreviewReward = (matchId?: string | null) => {
 
         const decode = bcs.u64();
         const [bytes] = result.results?.[0]?.returnValues?.[0] || [];
-        const decodedReward = decode.parse(Uint8Array.from(bytes || []));
+        const decodedFeeBps = decode.parse(Uint8Array.from(bytes || []));
 
-        return decodedReward;
+        return decodedFeeBps;
       } catch (error) {
-        console.log('preview reward error', error);
+        console.log('fee bps error', error);
         throw error;
       }
     },
@@ -42,4 +42,4 @@ const useGetPreviewReward = (matchId?: string | null) => {
   return query;
 };
 
-export default useGetPreviewReward;
+export default useGetFeeBps;

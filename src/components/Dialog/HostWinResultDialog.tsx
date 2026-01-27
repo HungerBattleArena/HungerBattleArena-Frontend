@@ -2,6 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import useFighterClaim from '../../hooks/mutation/match/useFighterClaim';
 import useEndMatch from '../../hooks/mutation/match/useEndMatch';
 import type { TMatchInfo } from '../../types/game';
+import useGetFeeBps from '../../hooks/query/useGetFeeBps';
 
 interface HostWinResultDialogProps {
   isOpen: boolean;
@@ -13,6 +14,12 @@ interface HostWinResultDialogProps {
 const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClose, playerName, matchInfo }) => {
   const { mutateAsync: claimFighterReward } = useFighterClaim();
   const { mutateAsync: endMatch } = useEndMatch();
+  const { data: feeBps } = useGetFeeBps();
+
+  console.log('feeBps in dialog', feeBps);
+  const fighterReward = Number(matchInfo?.total_pool || 0) * 0.1 - Number(feeBps || 0); // 10% of total pool as reward minus feeBps
+  console.log('Calculated fighterReward in dialog', fighterReward);
+  console.log('total_pool in dialog', matchInfo?.total_pool);
 
   const handleClaimReward = async () => {
     await claimFighterReward({ matchId: matchInfo?.match_id, vaultId: matchInfo?.vault_id || undefined });
