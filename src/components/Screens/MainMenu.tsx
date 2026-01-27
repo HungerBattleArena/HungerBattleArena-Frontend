@@ -38,7 +38,7 @@ export default function MainMenu() {
   }, [isDropdownOpen]);
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl pointer-events-auto z-50 fade-in px-4">
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl pointer-events-auto z-50 fade-in px-4 pt-12">
       <div className="absolute top-4 right-4 md:top-6 md:right-6 z-50">
         {currentAccount ? (
           <div className="relative" ref={dropdownRef}>
