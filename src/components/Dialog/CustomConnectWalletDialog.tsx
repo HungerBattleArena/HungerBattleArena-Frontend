@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useConnectWallet, useWallets } from '@onelabs/dapp-kit';
 import type { WalletWithRequiredFeatures } from '@onelabs/wallet-standard';
 import { useState } from 'react';
+import { APP_URL } from '../../constants/contract';
 
 interface CustomConnectWalletDialogProps {
   isOpen: boolean;
@@ -9,7 +11,7 @@ interface CustomConnectWalletDialogProps {
 
 export function CustomConnectWalletDialog({ isOpen, onClose }: CustomConnectWalletDialogProps) {
   const wallets = useWallets();
-  console.log('🚀 ~ CustomConnectWalletDialog ~ wallets:', wallets);
+  const oneWallet = wallets.find((wallet) => wallet.name === 'OneWallet');
   const { mutate: connectWallet, isPending, isError } = useConnectWallet();
   const [selectedWallet, setSelectedWallet] = useState<WalletWithRequiredFeatures | null>(null);
 
@@ -27,6 +29,14 @@ export function CustomConnectWalletDialog({ isOpen, onClose }: CustomConnectWall
         },
       }
     );
+  };
+
+  const handleContinueOnBrowser = () => {
+    if ((window as any).Telegram) {
+      (window as any).Telegram.WebApp.openLink(APP_URL);
+    } else {
+      window.open(APP_URL, '_blank');
+    }
   };
 
   if (!isOpen) return null;
@@ -54,13 +64,14 @@ export function CustomConnectWalletDialog({ isOpen, onClose }: CustomConnectWall
 
         {/* Wallet List */}
         <div className="space-y-3 mb-6">
-          {wallets.length === 0 ? (
+          {!oneWallet ? (
             <div className="text-center py-8">
               <p className="text-gray-400 mb-4">No wallets detected</p>
-              <p className="text-sm text-gray-500">Please install a Sui wallet extension</p>
+              <p className="text-sm text-gray-500">Please install a One Wallet wallet extension</p>
+              <button onClick={handleContinueOnBrowser} className='mt-4 btn-cyber px-4 py-2 md:px-6 md:py-3 text-sm md:text-lg font-tech uppercase tracking-wider text-white cursor-pointer'>Continue on browser</button>
             </div>
           ) : (
-            wallets.map((wallet) => {
+            [oneWallet].map((wallet) => {
               const isConnecting = isPending && selectedWallet?.name === wallet.name;
               const walletName = wallet.name || 'Unknown Wallet';
               const walletIcon = wallet.icon;
