@@ -2,7 +2,7 @@
 import { useConnectWallet, useWallets } from '@onelabs/dapp-kit';
 import type { WalletWithRequiredFeatures } from '@onelabs/wallet-standard';
 import { useState } from 'react';
-import { APP_URL } from '../../constants/contract';
+import { APP_URL, ONE_WALLET_URL } from '../../constants';
 
 interface CustomConnectWalletDialogProps {
   isOpen: boolean;
@@ -31,11 +31,13 @@ export function CustomConnectWalletDialog({ isOpen, onClose }: CustomConnectWall
     );
   };
 
+  const textRedirection = (!(window as any).Telegram && !oneWallet) ? 'Install One Wallet' : 'Continue on browser';
+
   const handleContinueOnBrowser = () => {
     if ((window as any).Telegram) {
       (window as any).Telegram.WebApp.openLink(APP_URL);
     } else {
-      window.open(APP_URL, '_blank');
+      window.open(ONE_WALLET_URL, '_blank');
     }
   };
 
@@ -68,7 +70,7 @@ export function CustomConnectWalletDialog({ isOpen, onClose }: CustomConnectWall
             <div className="text-center py-8">
               <p className="text-gray-400 mb-4">No wallets detected</p>
               <p className="text-sm text-gray-500">Please install a One Wallet wallet extension</p>
-              <button onClick={handleContinueOnBrowser} className='mt-4 btn-cyber px-4 py-2 md:px-6 md:py-3 text-sm md:text-lg font-tech uppercase tracking-wider text-white cursor-pointer'>Continue on browser</button>
+              <button onClick={handleContinueOnBrowser} className='mt-4 btn-cyber px-4 py-2 md:px-6 md:py-3 text-sm md:text-lg font-tech uppercase tracking-wider text-white cursor-pointer'>{textRedirection}</button>
             </div>
           ) : (
             [oneWallet].map((wallet) => {
