@@ -1,6 +1,6 @@
-export const PackageID = '0xc87396954d4926813a9118dd5524355331537004ef0b94db2c54d12605f4937c';
-export const Registry = '0x2fb20fc21dfac243a59e6958322c82ba17bc7e45e906ca8c194a193bdfcd6aa8';
-export const Treasury = '0xfb8a80d595ff1970d27d77188f414791e74cacc293438ee8fb44b0a2b269e8d0';
+export const PackageID = '0xfa4d30eaf965998f22e1f3cc06bbe293e54ec2591252ab7e3903f504f2cd599f';
+export const Registry = '0xc8c62d9f0be715b6f54e2871548dca7ffb01a065b2ac086e344bd430419b3548';
+export const Treasury = '0xcb9ee7a185fa867769a1de724a867455e6ca8ad08e186b50d118e9bc7301153c';
 
 export const coinType = '0x8b76fc2a2317d45118770cefed7e57171a08c477ed16283616b15f099391f120::hackathon::HACKATHON';
 
