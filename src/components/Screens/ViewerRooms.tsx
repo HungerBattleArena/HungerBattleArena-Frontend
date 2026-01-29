@@ -73,7 +73,7 @@ export default function ViewerRooms() {
   }, [searchQuery]);
 
   return (
-    <div className="bg-black/95 pointer-events-auto flex flex-col h-screen overflow-hidden items-center fade-in pt-2">
+    <div className="bg-black/95 pointer-events-auto flex flex-col items-center fade-in pt-2">
       <div className="w-full max-w-7xl px-8 mb-4 flex flex-col gap-4 border-b border-gray-800">
         <button
           className="self-start text-xl text-gray-400 hover:text-white flex items-center gap-2 font-tech"
@@ -126,9 +126,8 @@ export default function ViewerRooms() {
                 return (
                   <div
                     key={room.match_id}
-                    className={`room-card glass-panel p-2 flex flex-col gap-4 relative transition-transform ${
-                      isCreated ? 'cursor-pointer hover:scale-105' : isInGame ? 'cursor-not-allowed' : 'opacity-50 cursor-not-allowed'
-                    }`}
+                    className={`room-card glass-panel p-2 flex flex-col gap-4 relative transition-transform ${isCreated ? 'cursor-pointer hover:scale-105' : isInGame ? 'cursor-not-allowed' : 'opacity-50 cursor-not-allowed'
+                      }`}
                     onClick={() => {
                       if (room.status === 'created') {
                         selectRoom(room);
@@ -161,9 +160,8 @@ export default function ViewerRooms() {
                         {room.status === 'created' ? 'BETTING OPEN' : 'BETTING CLOSED'}
                       </div>
                       <div
-                        className={`text-xs font-semibold ${
-                          room.status === 'created' ? 'text-green-400' : room.status === 'in_game' ? 'text-yellow-400' : 'text-red-400'
-                        }`}
+                        className={`text-xs font-semibold ${room.status === 'created' ? 'text-green-400' : room.status === 'in_game' ? 'text-yellow-400' : 'text-red-400'
+                          }`}
                       >
                         {displayRoomStatus(room.status)}
                       </div>
