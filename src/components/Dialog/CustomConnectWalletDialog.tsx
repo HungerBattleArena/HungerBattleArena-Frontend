@@ -2,7 +2,7 @@
 import { useConnectWallet, useWallets } from '@onelabs/dapp-kit';
 import type { WalletWithRequiredFeatures } from '@onelabs/wallet-standard';
 import { useState } from 'react';
-import { APP_URL, ONE_WALLET_URL } from '../../constants';
+import { APP_URL } from '../../constants';
 
 interface CustomConnectWalletDialogProps {
   isOpen: boolean;
@@ -31,13 +31,13 @@ export function CustomConnectWalletDialog({ isOpen, onClose }: CustomConnectWall
     );
   };
 
-  const textRedirection = (!(window as any).Telegram && !oneWallet) ? 'Install One Wallet' : 'Continue on browser';
+  const textRedirection = 'Continue on browser';
 
   const handleContinueOnBrowser = () => {
     if ((window as any).Telegram) {
       (window as any).Telegram.WebApp.openLink(APP_URL);
     } else {
-      window.open(ONE_WALLET_URL, '_blank');
+      window.open(APP_URL, '_blank');
     }
   };
 
