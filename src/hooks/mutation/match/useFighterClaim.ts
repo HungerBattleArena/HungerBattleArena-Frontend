@@ -2,7 +2,7 @@ import { useCurrentAccount } from '@onelabs/dapp-kit';
 import { Transaction } from '@onelabs/sui/transactions';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { PackageID, Treasury } from '../../../constants/contract';
+import { coinType, PackageID, Treasury } from '../../../constants/contract';
 import useCustomSign from './useCustomSign';
 
 const useFighterClaim = () => {
@@ -26,6 +26,7 @@ const useFighterClaim = () => {
         tx.moveCall({
           target: `${PackageID}::bet_engine::claim_fighter_reward`,
           arguments: [tx.object(Treasury), tx.object(values.vaultId), tx.object(values.matchId)],
+          typeArguments: [coinType],
         });
 
         console.log('Fighter claim transaction downnnnnn:', values);

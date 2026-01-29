@@ -2,7 +2,7 @@ import { useCurrentAccount } from '@onelabs/dapp-kit';
 import { Transaction } from '@onelabs/sui/transactions';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { PackageID, Treasury } from '../../../constants/contract';
+import { coinType, PackageID, Treasury } from '../../../constants/contract';
 import useCustomSign from '../match/useCustomSign';
 
 const useClaimViewerReward = () => {
@@ -23,6 +23,7 @@ const useClaimViewerReward = () => {
         tx.moveCall({
           target: `${PackageID}::bet_engine::claim_viewer_reward`,
           arguments: [tx.object(Treasury), tx.object(vaultId), tx.object(matchId)],
+          typeArguments: [coinType],
         });
 
         const result = await signAndExecute({

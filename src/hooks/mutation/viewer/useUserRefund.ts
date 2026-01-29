@@ -1,7 +1,7 @@
 import { Transaction } from '@onelabs/sui/transactions';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { PackageID } from '../../../constants/contract';
+import { coinType, PackageID } from '../../../constants/contract';
 import useCustomSign from '../match/useCustomSign';
 
 const useUserRefund = () => {
@@ -21,6 +21,7 @@ const useUserRefund = () => {
         tx.moveCall({
           target: `${PackageID}::bet_engine::refund_bet`,
           arguments: [tx.object(vaultId), tx.object(matchId)],
+          typeArguments: [coinType],
         });
 
         const result = await signAndExecute({

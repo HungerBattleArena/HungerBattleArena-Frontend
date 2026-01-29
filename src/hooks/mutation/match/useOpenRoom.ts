@@ -1,6 +1,6 @@
 import { Transaction } from '@onelabs/sui/transactions';
 import { useMutation } from '@tanstack/react-query';
-import { PackageID, Registry } from '../../../constants/contract';
+import { coinType, PackageID, Registry } from '../../../constants/contract';
 import type { CustomSuiObjectChange } from '../../../contract-modules/type';
 import { setFighterRoom } from '../../../store/gameSlice';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
@@ -24,6 +24,7 @@ const useOpenRoom = () => {
         tx.moveCall({
           target: `${PackageID}::bet_engine::create_match_with_bet_vault`,
           arguments: [tx.object(Registry), tx.pure.vector('u8', new TextEncoder().encode(roomName))],
+          typeArguments: [coinType],
         });
 
         const result = await signAndExecute({

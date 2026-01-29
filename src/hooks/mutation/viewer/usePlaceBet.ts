@@ -3,7 +3,7 @@ import useCustomSign from '../match/useCustomSign';
 import { useCurrentAccount, useSuiClientContext } from '@onelabs/dapp-kit';
 import { useSearchParams } from 'react-router-dom';
 import { Transaction } from '@onelabs/sui/transactions';
-import { OCT_COIN_DECIMALS, PackageID } from '../../../constants/contract';
+import { coinType, OCT_COIN_DECIMALS, PackageID } from '../../../constants/contract';
 import { BN } from '../../../utils/utils';
 import { toast } from 'react-toastify';
 
@@ -28,7 +28,7 @@ const usePlaceBet = () => {
         const tx = new Transaction();
         const coins = await client.getCoins({
           owner: currentAccount?.address,
-          coinType: '0x2::oct::OCT',
+          coinType: coinType,
         });
 
         if (coins.data.length === 0) {
@@ -50,6 +50,7 @@ const usePlaceBet = () => {
         tx.moveCall({
           target: `${PackageID}::bet_engine::place_bet`,
           arguments: [tx.object(vaultId), tx.object(matchId), tx.pure.u8(sideValue), betCoin],
+          typeArguments: [coinType],
         });
 
         const result = await signAndExecute({
