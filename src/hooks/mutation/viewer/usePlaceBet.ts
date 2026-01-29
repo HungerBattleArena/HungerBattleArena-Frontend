@@ -28,6 +28,11 @@ const usePlaceBet = () => {
         const tx = new Transaction();
         const coins = await client.getCoins({
           owner: currentAccount?.address,
+          coinType: "0x2::oct::OCT",
+        });
+
+        const betCoins = await client.getCoins({
+          owner: currentAccount?.address,
           coinType: coinType,
         });
 
@@ -46,7 +51,7 @@ const usePlaceBet = () => {
         const rawAmount = BN(amount)
           .multipliedBy(10 ** OCT_COIN_DECIMALS)
           .toString();
-        const [betCoin] = tx.splitCoins(tx.gas, [tx.pure('u64', rawAmount)]);
+        const [betCoin] = tx.splitCoins(betCoins.data[0].coinObjectId, [tx.pure('u64', rawAmount)]);
         tx.moveCall({
           target: `${PackageID}::bet_engine::place_bet`,
           arguments: [tx.object(vaultId), tx.object(matchId), tx.pure.u8(sideValue), betCoin],
