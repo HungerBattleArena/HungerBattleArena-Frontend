@@ -10,29 +10,35 @@ pipeline {
     environment {
         // Docker registry url
         REGISTRY = "registry.a-star.group"
-        REGISTRY_LOCAL = "localhost:5000"
+        // local port registry use this when registry and jenkins-agent is same server
+        REGISTRY_LOCAL="localhost:5000"
 
         // Username for Docker registry
         USERNAME = "devopstovchain"
 
         // Name of organization, team, project, etc..
-        ORGANIZATION_NAME = "hunger-game"
+        ORGANIZATION_NAME = "hunger"
 
         // Name of repository, application, etc..
-        REPOSITORY_NAME = "app"
+        REPOSITORY_NAME = "frontend-app"
+        
+        // SSH username
+        SSH_USER = "frontend"
+        // SSH_USER = "root"
 
         // Staging server information
-        STAGING_VM_IP = "68.183.237.123"
-        STAGING_URL = "https://uppercut.hedos.finance"
+        STAGING_VM_IP = "159.223.65.237"
+        STAGING_URL = "https://mockup.hedos.finance"
         STAGING_DOCKER_PORT = 80
-        STAGING_DOCKER_BIND_PORT = 3000 
+        STAGING_DOCKER_BIND_PORT = 3800 
         STAGING_ENV_CREDENTIALS_ID = "env-vite-hedos-app-staging"
 
         // Production server information
-        PRODUCTION_VM_IP = "68.183.237.123"
+        PRODUCTION_VM_IP = "131.153.202.197"
+        // PRODUCTION_VM_IP = "178.128.217.190"
         PRODUCTION_URL = "https://hungerfe.hedos.finance"
         PRODUCTION_DOCKER_PORT = 80
-        PRODUCTION_DOCKER_BIND_PORT = 6363
+        PRODUCTION_DOCKER_BIND_PORT = 3911
         PRODUCTION_ENV_CREDENTIALS_ID = "env-vite-hedos-app-production"
 
         // Configuation
@@ -74,7 +80,7 @@ pipeline {
                         case "master":
                             echo "BRANCH_NAME is ${env.BRANCH_NAME}"
                             script {
-                                env.ENVIRONMENT = "tagging"
+                                env.ENVIRONMENT = "staging"
                                 env.RELEASE_TAG = sh(returnStdout: true, script: "git tag --points-at HEAD").trim()
                             }
                             break
@@ -83,6 +89,7 @@ pipeline {
                             return
                     }
                     env.IMAGE_NAME = "${REGISTRY}/${USERNAME}/${ORGANIZATION_NAME}-${REPOSITORY_NAME}-${env.ENVIRONMENT}:${env.DEPLOY_COMMIT_HASH}"
+                    env.IMAGE_NAME_LOCAL = "${REGISTRY_LOCAL}/${USERNAME}/${ORGANIZATION_NAME}-${REPOSITORY_NAME}-${env.ENVIRONMENT}:${env.DEPLOY_COMMIT_HASH}"
                     env.CONTAINER_NAME = "${ORGANIZATION_NAME}-${REPOSITORY_NAME}-${env.ENVIRONMENT}"
                 }
             }
@@ -122,12 +129,13 @@ pipeline {
 
                         withCredentials([usernamePassword(credentialsId: 'docker-devopstovchain', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME'),
                                         file(credentialsId: "${env.ENV_CREDENTIALS_ID}", variable: 'ENV_FILE_STAGING')]) {
-                            echo "###############--- Bắt đầu log nội dung file ENV_FILE_STAGING ---############################"
-                            echo readFile("${ENV_FILE_STAGING}")
-                            echo "#############################################################################################"
                             writeFile(file: ".env", text: readFile("${ENV_FILE_STAGING}"), encoding: "UTF-8")
-                            sh "docker build -t ${env.IMAGE_NAME} . && \
+                            sh "docker build -t ${env.IMAGE_NAME_LOCAL} . && \
                                 docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} ${REGISTRY_LOCAL} && \
+                                docker push ${env.IMAGE_NAME_LOCAL} && \
+                                docker logout && \
+                                docker tag ${env.IMAGE_NAME_LOCAL} ${env.IMAGE_NAME} && \
+                                docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} ${REGISTRY} && \
                                 docker push ${env.IMAGE_NAME} && \
                                 docker logout"
                         }
@@ -148,14 +156,14 @@ pipeline {
 
                         withCredentials([usernamePassword(credentialsId: 'docker-devopstovchain', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                             script {
-                                env.LATEST_DEPLOY_COMMIT_HASH = sh(returnStdout: true, script: "ssh -o StrictHostKeyChecking=no -l root ${DEPLOY_VM_IP} 'docker ps --filter name=${env.CONTAINER_NAME} --format={{.Image}} | cut -d: -f2'").trim()
+                                env.LATEST_DEPLOY_COMMIT_HASH = sh(returnStdout: true, script: "ssh -o StrictHostKeyChecking=no -l ${SSH_USER} ${DEPLOY_VM_IP} 'docker ps --filter name=${env.CONTAINER_NAME} --format={{.Image}} | cut -d: -f2'").trim()
                             }
 
-                            sh "ssh -o StrictHostKeyChecking=no -l root ${DEPLOY_VM_IP} \
+                            sh "ssh -o StrictHostKeyChecking=no -l ${SSH_USER} ${DEPLOY_VM_IP} \
                                 'docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} ${REGISTRY} && \
                                  docker pull ${env.IMAGE_NAME} && \
                                  docker rm -f ${env.CONTAINER_NAME} && \
-                                 docker run -d --name ${env.CONTAINER_NAME} -p ${DOCKER_BIND_PORT}:${DOCKER_PORT} ${env.IMAGE_NAME} && \
+                                 docker run -d --restart unless-stopped --name ${env.CONTAINER_NAME} -p ${DOCKER_BIND_PORT}:${DOCKER_PORT} ${env.IMAGE_NAME} && \
                                  docker ps && \
                                  docker logout'"
                         }
@@ -165,9 +173,9 @@ pipeline {
                         failure {
                             echo "Failure delivery to ${env.ENVIRONMENT} environment"
                             withCredentials([usernamePassword(credentialsId: 'docker-devopstovchain', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                                sh "ssh -o StrictHostKeyChecking=no -l root ${DEPLOY_VM_IP} \
+                                sh "ssh -o StrictHostKeyChecking=no -l ${SSH_USER} ${DEPLOY_VM_IP} \
                                     'docker rm -f ${env.CONTAINER_NAME} && \
-                                     docker run -d --name ${env.CONTAINER_NAME} -p ${DOCKER_BIND_PORT}:${DOCKER_PORT} ${REGISTRY}/${USERNAME}/${ORGANIZATION_NAME}-${REPOSITORY_NAME}-${env.ENVIRONMENT}:${env.LATEST_DEPLOY_COMMIT_HASH} && \
+                                     docker run -d --restart unless-stopped --name ${env.CONTAINER_NAME} -p ${DOCKER_BIND_PORT}:${DOCKER_PORT} ${REGISTRY}/${USERNAME}/${ORGANIZATION_NAME}-${REPOSITORY_NAME}-${env.ENVIRONMENT}:${env.LATEST_DEPLOY_COMMIT_HASH} && \
                                      docker ps'"
                             }
                         }
@@ -210,9 +218,6 @@ pipeline {
 
                         withCredentials([usernamePassword(credentialsId: 'docker-devopstovchain', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME'),
                                          file(credentialsId: "${env.ENV_CREDENTIALS_ID}", variable: 'ENV_FILE_PRODUCTION')]) {
-                            echo "###############--- Bắt đầu log nội dung file ENV_FILE_STAGING ---############################"
-                            echo readFile("${ENV_FILE_PRODUCTION}")
-                            echo "#############################################################################################"
                             writeFile(file: ".env", text: readFile("${ENV_FILE_PRODUCTION}"), encoding: "UTF-8")
                             sh "docker build -t ${env.IMAGE_NAME} . && \
                                 docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} ${REGISTRY_LOCAL} && \
@@ -242,14 +247,14 @@ pipeline {
 
                         withCredentials([usernamePassword(credentialsId: 'docker-devopstovchain', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                             script {
-                                env.LATEST_DEPLOY_COMMIT_HASH = sh(returnStdout: true, script: "ssh -o StrictHostKeyChecking=no -l root ${DEPLOY_VM_IP} 'docker ps --filter name=${env.CONTAINER_NAME} --format={{.Image}} | cut -d: -f2'").trim()
+                                env.LATEST_DEPLOY_COMMIT_HASH = sh(returnStdout: true, script: "ssh -o StrictHostKeyChecking=no -l ${SSH_USER} ${DEPLOY_VM_IP} 'docker ps --filter name=${env.CONTAINER_NAME} --format={{.Image}} | cut -d: -f2'").trim()
                             }
 
-                            sh "ssh -o StrictHostKeyChecking=no -l root ${DEPLOY_VM_IP} \
+                            sh "ssh -o StrictHostKeyChecking=no -l ${SSH_USER} ${DEPLOY_VM_IP} \
                                 'docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} ${REGISTRY} && \
                                  docker pull ${env.IMAGE_NAME} && \
                                  docker rm -f ${env.CONTAINER_NAME} && \
-                                 docker run -d --name ${env.CONTAINER_NAME} -p ${DOCKER_BIND_PORT}:${DOCKER_PORT} ${env.IMAGE_NAME} && \
+                                 docker run -d --restart unless-stopped --name ${env.CONTAINER_NAME} -p ${DOCKER_BIND_PORT}:${DOCKER_PORT} ${env.IMAGE_NAME} && \
                                  docker ps && \
                                  docker logout'"
                         }
@@ -259,9 +264,9 @@ pipeline {
                         failure {
                             echo "Failure delivery to ${env.ENVIRONMENT} environment"
                             withCredentials([usernamePassword(credentialsId: 'docker-devopstovchain', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                                sh "ssh -o StrictHostKeyChecking=no -l root ${DEPLOY_VM_IP} \
+                                sh "ssh -o StrictHostKeyChecking=no -l ${SSH_USER} ${DEPLOY_VM_IP} \
                                     'docker rm -f ${env.CONTAINER_NAME} && \
-                                     docker run -d --name ${env.CONTAINER_NAME} -p ${DOCKER_BIND_PORT}:${DOCKER_PORT} ${REGISTRY}/${USERNAME}/${ORGANIZATION_NAME}-${REPOSITORY_NAME}-${env.ENVIRONMENT}:${env.LATEST_DEPLOY_COMMIT_HASH} && \
+                                     docker run -d --restart unless-stopped --name ${env.CONTAINER_NAME} -p ${DOCKER_BIND_PORT}:${DOCKER_PORT} ${REGISTRY}/${USERNAME}/${ORGANIZATION_NAME}-${REPOSITORY_NAME}-${env.ENVIRONMENT}:${env.LATEST_DEPLOY_COMMIT_HASH} && \
                                      docker ps'"
                             }
                         }
@@ -279,7 +284,7 @@ pipeline {
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-devopstovchain', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                    sh "ssh -o StrictHostKeyChecking=no -l root ${PRODUCTION_VM_IP} \
+                    sh "ssh -o StrictHostKeyChecking=no -l ${SSH_USER} ${PRODUCTION_VM_IP} \
                         'docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} ${REGISTRY} && \
                          docker tag \$(docker ps --filter name=${env.CONTAINER_NAME} --format={{.Image}}) ${env.IMAGE_NAME} ${REGISTRY}/${USERNAME}/${ORGANIZATION_NAME}-${REPOSITORY_NAME}:${env.RELEASE_TAG} && \
                          docker push ${REGISTRY}/${USERNAME}/${ORGANIZATION_NAME}-${REPOSITORY_NAME}:${env.RELEASE_TAG} && \
@@ -293,9 +298,21 @@ pipeline {
         success {
             echo "Successful deployment to ${env.ENVIRONMENT}!"
             withCredentials([usernamePassword(credentialsId: 'docker-devopstovchain', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                sh "ssh -o StrictHostKeyChecking=no -l root ${DEPLOY_VM_IP} \
-                    'docker container prune -f && \
-                     docker image prune -af'"
+                sh """
+                    ssh -o StrictHostKeyChecking=no -l ${SSH_USER} ${DEPLOY_VM_IP} '
+                        # 1. Xóa các image dangling (rác, không tên) - An toàn cho mọi người
+                        docker image prune -f
+
+                        # 2. Định nghĩa tên Repo đầy đủ để lọc
+                        TARGET_REPO="${REGISTRY}/${USERNAME}/${ORGANIZATION_NAME}-${REPOSITORY_NAME}-${env.ENVIRONMENT}"
+                        
+                        # 3. Liệt kê các image thuộc Repo này, loại trừ tag đang chạy hiện tại, và xóa các image cũ
+                        docker images --format "{{.Repository}}:{{.Tag}}" | \
+                        grep "\$TARGET_REPO" | \
+                        grep -v "${env.DEPLOY_COMMIT_HASH}" | \
+                        xargs -r docker rmi || true
+                    '
+                """
             }
             withCredentials([string(credentialsId: "${DISCORD_CREDENTIALS_ID}", variable: "WEBHOOK_URL")]) {
                 discordSend(

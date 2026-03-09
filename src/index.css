@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --neon-blue: #00f3ff;
@@ -14,11 +14,11 @@
 
 body {
   background-color: var(--bg-dark);
-  background-image: url("https://images.stockcake.com/public/a/e/3/ae345db0-8915-45fd-9ec4-4603887ed8ae_large/neon-stadium-future-stockcake.jpg");
+  background-image: url('https://images.stockcake.com/public/a/e/3/ae345db0-8915-45fd-9ec4-4603887ed8ae_large/neon-stadium-future-stockcake.jpg');
   background-size: cover;
   background-position: center;
   color: white;
-  font-family: "Rajdhani", sans-serif;
+  font-family: 'Rajdhani', sans-serif;
   overflow: hidden;
   margin: 0;
   user-select: none;
@@ -28,7 +28,7 @@ h1,
 h2,
 h3,
 .font-tech {
-  font-family: "Orbitron", sans-serif;
+  font-family: 'Orbitron', sans-serif;
 }
 
 .glass-panel {
@@ -47,7 +47,10 @@ h3,
 .glitch-text {
   position: relative;
   font-weight: 900;
+  color: #fff;
   text-shadow: 0 0 10px var(--neon-blue);
+  letter-spacing: 0.1em;
+  display: block;
 }
 
 .glitch-text::before,
@@ -62,43 +65,67 @@ h3,
 }
 
 .glitch-text::before {
-  animation: glitch1 2s infinite;
+  animation: glitch1 4s infinite;
   color: var(--neon-pink);
-  clip: rect(0, 999px, 50px, 0);
+  clip-path: inset(20% 0 60% 0);
 }
 
 .glitch-text::after {
-  animation: glitch2 3s infinite;
+  animation: glitch2 5s infinite;
   color: var(--neon-blue);
-  clip: rect(60px, 999px, 120px, 0);
+  clip-path: inset(60% 0 20% 0);
 }
 
 @keyframes glitch1 {
   0%,
   100% {
-    clip: rect(20px, 999px, 60px, 0);
+    clip-path: inset(10% 0 70% 0);
+    transform: translate(-2px, 0);
+  }
+  10% {
+    clip-path: inset(40% 0 30% 0);
+    transform: translate(2px, 0);
+  }
+  20% {
+    clip-path: inset(60% 0 10% 0);
+    transform: translate(-2px, 0);
   }
   30% {
-    clip: rect(90px, 999px, 130px, 0);
+    clip-path: inset(20% 0 50% 0);
+    transform: translate(2px, 0);
+  }
+  40% {
+    clip-path: inset(80% 0 5% 0);
+    transform: translate(-2px, 0);
   }
 }
 
 @keyframes glitch2 {
   0%,
   100% {
-    clip: rect(70px, 999px, 110px, 0);
+    clip-path: inset(50% 0 30% 0);
+    transform: translate(2px, 0);
+  }
+  15% {
+    clip-path: inset(5% 0 80% 0);
+    transform: translate(-2px, 0);
+  }
+  25% {
+    clip-path: inset(70% 0 15% 0);
+    transform: translate(2px, 0);
   }
   40% {
-    clip: rect(30px, 999px, 80px, 0);
+    clip-path: inset(30% 0 50% 0);
+    transform: translate(-2px, 0);
+  }
+  60% {
+    clip-path: inset(65% 0 20% 0);
+    transform: translate(2px, 0);
   }
 }
 
 .btn-cyber {
-  background: linear-gradient(
-    145deg,
-    rgba(0, 243, 255, 0.2),
-    rgba(0, 100, 150, 0.1)
-  );
+  background: linear-gradient(145deg, rgba(0, 243, 255, 0.2), rgba(0, 100, 150, 0.1));
   border: 2px solid var(--neon-blue);
   box-shadow: 0 0 30px rgba(0, 243, 255, 0.5);
   transition: all 0.4s;
@@ -131,7 +158,7 @@ h3,
 }
 
 .weapon-card.selected::after {
-  content: "✓";
+  content: '✓';
   position: absolute;
   top: 8px;
   right: 8px;
@@ -146,7 +173,7 @@ h3,
 }
 
 .weapon-card.locked::before {
-  content: "🔒";
+  content: '🔒';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -161,7 +188,7 @@ h3,
 }
 
 .mode-card.locked::before {
-  content: "COMING SOON";
+  content: 'COMING SOON';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -196,7 +223,7 @@ h3,
 }
 
 .timer-badge {
-  font-family: "Orbitron", monospace;
+  font-family: 'Orbitron', monospace;
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid var(--neon-blue);
 }
@@ -321,7 +348,7 @@ h3,
 
 #reticle::before,
 #reticle::after {
-  content: "";
+  content: '';
   position: absolute;
   background: var(--neon-blue);
   box-shadow: 0 0 15px var(--neon-blue);
@@ -342,7 +369,7 @@ h3,
 }
 
 .fade-in {
-  animation: fadeIn 1s ease-in;
+  animation: fadeIn 0.3s ease-in;
 }
 
 @keyframes fadeIn {
@@ -381,7 +408,7 @@ h3,
   height: 40px;
   border: 2px solid var(--neon-blue);
   border-radius: 4px;
-  font-family: "Orbitron", monospace;
+  font-family: 'Orbitron', monospace;
   font-weight: bold;
   background: rgba(0, 243, 255, 0.1);
   color: white;
@@ -407,7 +434,7 @@ h3,
   align-items: center;
   justify-content: center;
   color: var(--neon-blue);
-  font-family: "Orbitron", monospace;
+  font-family: 'Orbitron', monospace;
   cursor: pointer;
   pointer-events: auto;
   z-index: 100;
@@ -473,4 +500,9 @@ h3,
 .bet-side-card.selected {
   border-color: var(--neon-gold);
   box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+/* Ensure dapp-kit modals are visible */
+[data-radix-portal] {
+  z-index: 99999 !important;
 }

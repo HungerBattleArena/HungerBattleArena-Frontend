@@ -1,44 +1,129 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useGame } from "../../context/GameContext";
-import { generateRoomId } from "../../utils/utils";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import useOpenRoom from '../../hooks/mutation/match/useOpenRoom';
+import useStartMatch from '../../hooks/mutation/match/useStartMatch';
+import { setFighterRoom, setGameState } from '../../store/gameSlice';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { cn } from '../../utils/utils';
+import RoomInfo from '../Section/FighterRoom/RoomInfo';
+import useCancelMatch from '../../hooks/mutation/match/useCancelMatch';
+import { API_END_POINTS } from '../../services/api';
+import { API_URL } from '../../services/constant';
 
 export default function FighterRoom() {
+  const [roomName, setRoomName] = useState('');
+  const [isOpenRoom, setIsOpenRoom] = useState(false);
+  const [matchId, setMatchId] = useState('');
+
   const navigate = useNavigate();
-  const { fighterRoom, setFighterRoom, setGameState } = useGame();
-  const [roomName, setRoomName] = useState("");
-  const newRoomId = generateRoomId();
-
-  const openFighterRoom = () => {
-    const name = roomName.trim() || "Fighter Room";
-    setFighterRoom({
-      ...fighterRoom,
-      name,
-      id: newRoomId,
-      state: "OPEN",
-      totalBet: 8400,
-      winBet: 5200,
-      loseBet: 3200,
-      winCount: 38,
-      loseCount: 24,
-    });
+  const dispatch = useAppDispatch();
+  const { mutateAsync: openRoom } = useOpenRoom();
+  const { mutateAsync: startMatch } = useStartMatch();
+  const { mutate: cancelMatch } = useCancelMatch();
+  const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
+  const setFighterRoomAction = (room: Parameters<typeof setFighterRoom>[0]) => {
+    dispatch(setFighterRoom(room));
+  };
+  const setGameStateAction = (updates: Parameters<typeof setGameState>[0]) => {
+    dispatch(setGameState(updates));
   };
 
-  const startMatchAsFighter = () => {
-    setFighterRoom({ ...fighterRoom, state: "CLOSED" });
-    setGameState({ role: "FIGHTER" });
-    navigate(`/game?roomId=${newRoomId}`);
+  const openFighterRoom = async () => {
+    if (roomName.trim() === '') {
+      toast.error('Room name is required');
+      return;
+    }
+
+    try {
+      const matchId = await openRoom({ roomName });
+
+      if (!matchId || matchId === '') {
+        throw new Error('Failed to open room' + matchId);
+      }
+
+      setMatchId(matchId);
+      setIsOpenRoom(true);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to open room');
+    }
   };
 
-  const isOpen = fighterRoom.state === "OPEN";
+  const startMatchAsFighter = async () => {
+    setFighterRoomAction({ ...fighterRoom, status: 'ended' });
+    setGameStateAction({ role: 'FIGHTER' });
+    await startMatch();
+    navigate(`/game?room=${matchId}`);
+  };
+
+  useEffect(() => {
+    if (!isOpenRoom || !matchId) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      return '';
+    };
+
+    const handlePageHide = (e: PageTransitionEvent) => {
+      // This fires when the page is actually being unloaded (user confirmed)
+      if (e.persisted === false && matchId) {
+        const url = `${API_URL}${API_END_POINTS.cancelMatch}`;
+        const data = JSON.stringify({ matchId: matchId });
+
+        // Try fetch with keepalive first (supports headers, works during unload)
+        fetch(url, {
+          method: 'POST',
+          body: data,
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+        }).catch(() => {
+          // If fetch fails, try sendBeacon as fallback (guaranteed to send)
+          const blob = new Blob([data], { type: 'application/json' });
+          navigator.sendBeacon(url, blob);
+        });
+
+        // Also try the mutation (may not complete during unload but worth trying)
+        cancelMatch({ matchId: matchId });
+      }
+    };
+
+    const handlePopState = () => {
+      if (isOpenRoom && matchId) {
+        const confirmLeave = window.confirm('You have an open room. Are you sure you want to leave?');
+        if (confirmLeave) {
+          cancelMatch({ matchId: matchId });
+        } else {
+          // Push the current state back to prevent navigation
+          window.history.pushState(null, '', window.location.href);
+        }
+      }
+    };
+
+    // Push a state to enable popstate detection
+    window.history.pushState(null, '', window.location.href);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('popstate', handlePopState);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpenRoom, matchId]);
 
   return (
     <div className="absolute inset-0 bg-black/90 pointer-events-auto z-50 flex items-center justify-center">
       <div className="glass-panel w-full max-w-5xl p-10 relative fade-in overflow-y-auto max-h-screen">
-        <button
-          className="absolute top-6 right-6 text-3xl text-gray-400 hover:text-white z-50"
-          onClick={() => navigate("/")}
-        >
+        <button className="absolute top-6 right-6 text-3xl text-gray-400 hover:text-white z-50" onClick={() => {
+          if (matchId) {
+            cancelMatch({ matchId: matchId });
+          }
+          navigate('/');
+        }}>
           ✕
         </button>
 
@@ -46,15 +131,11 @@ export default function FighterRoom() {
           <div className="space-y-6">
             <div>
               <h3 className="text-3xl text-cyan-400 mb-2">Create Room</h3>
-              <p className="text-sm text-gray-400">
-                Name your room and open betting.
-              </p>
+              <p className="text-sm text-gray-400">Name your room and open betting.</p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs uppercase tracking-widest text-gray-500">
-                Room name
-              </label>
+              <label className="text-xs uppercase tracking-widest text-gray-500">Room name</label>
               <input
                 id="fighter-room-name"
                 className="input-cyber w-full rounded"
@@ -76,8 +157,9 @@ export default function FighterRoom() {
             </div>
 
             <button
-              className="btn-cyber px-8 py-3 text-lg font-bold w-full"
+              className={cn('btn-cyber px-8 py-3 text-lg font-bold w-full', isOpenRoom && 'opacity-50 disabled:cursor-not-allowed')}
               onClick={openFighterRoom}
+              disabled={isOpenRoom}
             >
               Open Room
             </button>
@@ -86,72 +168,18 @@ export default function FighterRoom() {
           <div className="space-y-6">
             <div>
               <h3 className="text-3xl text-white mb-2">Room Status</h3>
-              <p className="text-sm text-gray-400">
-                Track bettors before starting.
-              </p>
+              <p className="text-sm text-gray-400">Track bettors before starting.</p>
             </div>
-
-            <div className="glass-panel p-6 space-y-4 border border-gray-800">
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-500">Room</div>
-                <div className="text-lg text-white font-bold">
-                  {fighterRoom.name}
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-500">Status</div>
-                <div className={`status-pill ${isOpen ? "open" : "closed"}`}>
-                  {isOpen ? "BETTING OPEN" : "BETTING CLOSED"}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-black/40 p-3 rounded border border-gray-800">
-                  <div className="text-gray-500">Total bettors</div>
-                  <div className="text-xl text-white font-bold">
-                    {(
-                      fighterRoom.winCount + fighterRoom.loseCount
-                    ).toLocaleString()}
-                  </div>
-                </div>
-                <div className="bg-black/40 p-3 rounded border border-gray-800">
-                  <div className="text-gray-500">Total bet</div>
-                  <div className="text-xl text-gold-400 font-bold">
-                    {fighterRoom.totalBet.toLocaleString()}
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-black/40 p-3 rounded border border-cyan-500/30">
-                  <div className="text-cyan-400">WIN side</div>
-                  <div className="text-white font-bold">
-                    {fighterRoom.winBet.toLocaleString()}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {fighterRoom.winCount} bettors
-                  </div>
-                </div>
-                <div className="bg-black/40 p-3 rounded border border-pink-500/30">
-                  <div className="text-pink-400">LOSE side</div>
-                  <div className="text-white font-bold">
-                    {fighterRoom.loseBet.toLocaleString()}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {fighterRoom.loseCount} bettors
-                  </div>
-                </div>
-              </div>
-            </div>
-
+            <RoomInfo matchId={matchId} />
             <button
               id="btn-start-match"
-              className="btn-cyber px-8 py-3 text-lg font-bold w-full"
+              className={cn('btn-cyber px-8 py-3 text-lg font-bold w-full', !isOpenRoom && 'opacity-50 disabled:cursor-not-allowed')}
               onClick={startMatchAsFighter}
+              disabled={!isOpenRoom}
             >
               Start Match
             </button>
-            <p className="text-xs text-gray-500">
-              Start when you feel there are enough bettors.
-            </p>
+            <p className="text-xs text-gray-500">Start when you feel there are enough bettors.</p>
           </div>
         </div>
       </div>
