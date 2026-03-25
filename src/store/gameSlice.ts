@@ -23,6 +23,7 @@ export const defaultFighterRoom: TMatchInfo = {
   win_bettors_count: '0',
   lose_bettors_count: '0',
   cancel_stake_refundable: false,
+  fighter_stake: '0',
 };
 
 const initialState: GameSliceState = {
