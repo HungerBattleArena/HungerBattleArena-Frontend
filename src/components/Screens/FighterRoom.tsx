@@ -13,6 +13,7 @@ import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { cn } from '../../utils/utils';
 import DialogFighterReStake from '../Dialog/DialogFighterReStake';
 import RoomInfo from '../Section/FighterRoom/RoomInfo';
+import useMatchInfo from '../../hooks/query/useMatchInfo';
 
 export default function FighterRoom() {
   const [roomName, setRoomName] = useState('');
@@ -29,9 +30,10 @@ export default function FighterRoom() {
   const fighterRoom = useAppSelector((state) => {
     return state.game.fighterRoom;
   });
+  const { data: matchInfo } = useMatchInfo(matchId);
 
-  const isCanStartMatch =
-    isOpenRoom && Number(fighterRoom.lose_bettors_count) > 1 && Number(fighterRoom.win_bettors_count) > 1;
+  const isHasBettor = Number(matchInfo?.lose_bettors_count) > 0 && Number(matchInfo?.win_bettors_count) > 0;
+  const isCanStartMatch = isOpenRoom && isHasBettor;
 
   const setFighterRoomAction = (room: Parameters<typeof setFighterRoom>[0]) => {
     dispatch(setFighterRoom(room));
@@ -71,7 +73,10 @@ export default function FighterRoom() {
   const cancelMatchAsFighter = async () => {
     try {
       await cancelAsFighter({ matchId: fighterRoom.match_id });
-      setIsOpenRestake(true);
+      if (!isHasBettor) {
+        setIsOpenRestake(true);
+      }
+
       dispatch(resetFighterRoom());
     } catch {
       setIsOpenRestake(false);
