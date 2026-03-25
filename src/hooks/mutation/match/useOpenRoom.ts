@@ -6,9 +6,14 @@ import { setFighterRoom } from '../../../store/gameSlice';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import useCustomSign from './useCustomSign';
 import { toast } from 'react-toastify';
+import useDefaultFighterStake from '../../query/useDefaultFighterStake';
+import { useCurrentAccount, useSuiClientContext } from '@onelabs/dapp-kit';
 
 const useOpenRoom = () => {
+  const currentAccount = useCurrentAccount();
   const { mutateAsync: signAndExecute } = useCustomSign();
+  const { data: defaultFighterStake } = useDefaultFighterStake();
+  const { client } = useSuiClientContext();
   const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
   const dispatch = useAppDispatch();
   const setFighterRoomAction = (room: Parameters<typeof setFighterRoom>[0]) => {
@@ -19,11 +24,24 @@ const useOpenRoom = () => {
     mutationFn: async (values: { roomName: string }) => {
       const { roomName } = values;
 
+      if (!currentAccount?.address) {
+        throw new Error('Match ID and account address are required');
+      }
+
       try {
+        const fighterStakeValue = defaultFighterStake || 10;
+
         const tx = new Transaction();
+
+        const betCoins = await client.getCoins({
+          owner: currentAccount?.address,
+          coinType: coinType,
+        });
+
+        const [stakeCoin] = tx.splitCoins(betCoins.data[0].coinObjectId, [tx.pure('u64', fighterStakeValue)]);
         tx.moveCall({
           target: `${PackageID}::bet_engine::create_match_with_bet_vault`,
-          arguments: [tx.object(Registry), tx.pure.vector('u8', new TextEncoder().encode(roomName))],
+          arguments: [tx.object(Registry), tx.pure.vector('u8', new TextEncoder().encode(roomName)), stakeCoin],
           typeArguments: [coinType],
         });
 

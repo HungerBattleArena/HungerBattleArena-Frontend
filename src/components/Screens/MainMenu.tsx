@@ -1,6 +1,6 @@
-import { useNavigate } from 'react-router-dom';
 import { useCurrentAccount, useDisconnectWallet } from '@onelabs/dapp-kit';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CustomConnectWalletDialog } from '../Dialog/CustomConnectWalletDialog';
 
 export default function MainMenu() {

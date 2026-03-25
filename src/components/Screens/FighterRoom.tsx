@@ -1,27 +1,37 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import InfoIcon from '../../assets/info';
+import useCancelMatch from '../../hooks/mutation/match/useCancelMatch';
+import useFighterCancel from '../../hooks/mutation/match/useFighterCancel';
 import useOpenRoom from '../../hooks/mutation/match/useOpenRoom';
 import useStartMatch from '../../hooks/mutation/match/useStartMatch';
-import { setFighterRoom, setGameState } from '../../store/gameSlice';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { cn } from '../../utils/utils';
-import RoomInfo from '../Section/FighterRoom/RoomInfo';
-import useCancelMatch from '../../hooks/mutation/match/useCancelMatch';
 import { API_END_POINTS } from '../../services/api';
 import { API_URL } from '../../services/constant';
+import { resetFighterRoom, setFighterRoom, setGameState } from '../../store/gameSlice';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { cn } from '../../utils/utils';
+import DialogFighterReStake from '../Dialog/DialogFighterReStake';
+import RoomInfo from '../Section/FighterRoom/RoomInfo';
 
 export default function FighterRoom() {
   const [roomName, setRoomName] = useState('');
   const [isOpenRoom, setIsOpenRoom] = useState(false);
   const [matchId, setMatchId] = useState('');
+  const [isOpenRestake, setIsOpenRestake] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { mutateAsync: openRoom } = useOpenRoom();
   const { mutateAsync: startMatch } = useStartMatch();
   const { mutate: cancelMatch } = useCancelMatch();
-  const fighterRoom = useAppSelector((state) => state.game.fighterRoom);
+  const { mutateAsync: cancelAsFighter, isPending: isCanceling } = useFighterCancel();
+  const fighterRoom = useAppSelector((state) => {
+    return state.game.fighterRoom;
+  });
+
+  const isCanStartMatch = Number(fighterRoom.lose_bettors_count) > 1 && Number(fighterRoom.win_bettors_count) > 1;
+
   const setFighterRoomAction = (room: Parameters<typeof setFighterRoom>[0]) => {
     dispatch(setFighterRoom(room));
   };
@@ -55,6 +65,16 @@ export default function FighterRoom() {
     setGameStateAction({ role: 'FIGHTER' });
     await startMatch();
     navigate(`/game?room=${matchId}`);
+  };
+
+  const cancelMatchAsFighter = async () => {
+    try {
+      await cancelAsFighter({ matchId: fighterRoom.match_id });
+      setIsOpenRestake(true);
+      dispatch(resetFighterRoom());
+    } catch {
+      setIsOpenRestake(false);
+    }
   };
 
   useEffect(() => {
@@ -118,12 +138,15 @@ export default function FighterRoom() {
   return (
     <div className="absolute inset-0 bg-black/90 pointer-events-auto z-50 flex items-center justify-center">
       <div className="glass-panel w-full max-w-5xl p-10 relative fade-in overflow-y-auto max-h-screen">
-        <button className="absolute top-6 right-6 text-3xl text-gray-400 hover:text-white z-50" onClick={() => {
-          if (matchId) {
-            cancelMatch({ matchId: matchId });
-          }
-          navigate('/');
-        }}>
+        <button
+          className="absolute top-6 right-6 text-3xl text-gray-400 hover:text-white z-50"
+          onClick={() => {
+            if (matchId) {
+              cancelMatch({ matchId: matchId });
+            }
+            navigate('/');
+          }}
+        >
           ✕
         </button>
 
@@ -157,7 +180,10 @@ export default function FighterRoom() {
             </div>
 
             <button
-              className={cn('btn-cyber px-8 py-3 text-lg font-bold w-full', isOpenRoom && 'opacity-50 disabled:cursor-not-allowed')}
+              className={cn(
+                'btn-cyber px-8 py-3 text-lg font-bold w-full',
+                isOpenRoom && 'opacity-50 disabled:cursor-not-allowed'
+              )}
               onClick={openFighterRoom}
               disabled={isOpenRoom}
             >
@@ -171,18 +197,40 @@ export default function FighterRoom() {
               <p className="text-sm text-gray-400">Track bettors before starting.</p>
             </div>
             <RoomInfo matchId={matchId} />
-            <button
-              id="btn-start-match"
-              className={cn('btn-cyber px-8 py-3 text-lg font-bold w-full', !isOpenRoom && 'opacity-50 disabled:cursor-not-allowed')}
-              onClick={startMatchAsFighter}
-              disabled={!isOpenRoom}
-            >
-              Start Match
-            </button>
-            <p className="text-xs text-gray-500">Start when you feel there are enough bettors.</p>
+            <div className="flex gap-2">
+              <button
+                id="btn-start-match"
+                className={cn(
+                  'btn-cyber px-8 py-3 text-lg font-bold w-full',
+                  !isOpenRoom && 'opacity-50 disabled:cursor-not-allowed'
+                )}
+                onClick={startMatchAsFighter}
+                disabled={!isOpenRoom || !isCanStartMatch}
+              >
+                Start Match
+              </button>
+              <button
+                id="btn-cancel-match"
+                className={cn(
+                  'btn-cyber px-8 py-3 text-lg font-bold w-full',
+                  !isOpenRoom && 'opacity-50 disabled:cursor-not-allowed'
+                )}
+                onClick={cancelMatchAsFighter}
+                disabled={!isOpenRoom || fighterRoom.cancel_stake_refundable}
+              >
+                Cancel Match
+              </button>
+            </div>
+            <p className="text-xs text-red-300 mt-[-10px] flex gap-1.5">
+              <InfoIcon />
+              Canceling the match if both sides have bet will result in losing the stake; if not both sides have bet,
+              the stake will be refunded.
+            </p>
           </div>
         </div>
       </div>
+
+      <DialogFighterReStake isOpen={isOpenRestake} isLoading={isCanceling} onClose={() => setIsOpenRestake(false)} />
     </div>
   );
 }

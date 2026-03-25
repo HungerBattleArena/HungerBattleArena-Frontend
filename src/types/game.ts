@@ -65,6 +65,7 @@ export type TMatchInfo = {
   vault_id: string | null;
   name: string;
   fighter: string;
+  fighter_stake: string;
   status: number | string;
   result: boolean | null;
   total_pool: string;
@@ -73,4 +74,5 @@ export type TMatchInfo = {
   lose_bets_total: string;
   win_bettors_count: string;
   lose_bettors_count: string;
+  cancel_stake_refundable: boolean;
 };

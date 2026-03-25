@@ -33,8 +33,12 @@ export default function ViewerBet() {
       return;
     }
     const amount = parseFloat(betAmount);
-    if (!amount || amount <= 0) {
-      toast.warning('Enter a valid bet amount.');
+    if (amount < 1) {
+      toast.warning('Bet amount must be at least 1.');
+      return;
+    }
+    if (amount > 1000) {
+      toast.warning('Bet amount cannot exceed 1000.');
       return;
     }
 
@@ -73,9 +77,8 @@ export default function ViewerBet() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchInfo?.status, isMatchInfoFetched]);
 
-
   useEffect(() => {
-    if (matchInfo?.status == "cancelled") {
+    if (matchInfo?.status == 'cancelled') {
       setShowBetLockedDialog(false);
       setShowRefundDialog(true);
     }

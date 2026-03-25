@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import useFighterClaim from '../../hooks/mutation/match/useFighterClaim';
 import useEndMatch from '../../hooks/mutation/match/useEndMatch';
 import type { TMatchInfo } from '../../types/game';
@@ -15,11 +15,14 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClo
   const { mutateAsync: claimFighterReward } = useFighterClaim();
   const { mutateAsync: endMatch } = useEndMatch();
 
-  const fighterReward = BN(matchInfo?.total_pool || 0)
-    .multipliedBy(0.1)
-    .multipliedBy(0.95); //  10% of total pool as reward minus 5% fee
-  console.log('Calculated fighterReward in dialog', fighterReward);
-  console.log('total_pool in dialog', matchInfo?.total_pool);
+  const fighterGross = useMemo(() => {
+    if (!matchInfo) return BN(0);
+    return BN(matchInfo.fighter_stake || 0).plus(BN(matchInfo.lose_bets_total).multipliedBy(0.2));
+  }, [matchInfo]);
+
+  const fighterNet = useMemo(() => {
+    return fighterGross.multipliedBy(0.95);
+  }, [fighterGross]);
 
   const handleClaimReward = async () => {
     await claimFighterReward({ matchId: matchInfo?.match_id, vaultId: matchInfo?.vault_id || undefined });
@@ -74,7 +77,29 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClo
 
           <p className="text-gray-400 text-sm">Congratulations on your triumph!</p>
 
-          <p>Your reward: {fighterReward.toString()}</p>
+          <div className="w-full max-w-md mx-auto text-left">
+            <div className="rounded-lg border border-gray-700/80 bg-black/40 p-5 ">
+              <h3 className="text-xl text-cyan-400 mb-4 border-b border-gray-700 pb-2 font-tech">REWARD BREAKDOWN</h3>
+              <div className="space-y-4 font-mono text-sm">
+                <div className="flex justify-between items-end gap-4">
+                  <span className="text-gray-400 text-sm uppercase tracking-wide">Initial stake</span>
+                  <span className="text-white text-lg tabular-nums">
+                    {BN(matchInfo?.fighter_stake || 10).toFixed(2)}
+                  </span>
+                </div>
+                <div className="bg-black/40 p-4 border border-gray-700 rounded text-center">
+                  <div className="text-xs text-gray-500 uppercase tracking-widest mb-1">Total reward</div>
+                  <div className="text-4xl font-black text-white tabular-nums">{fighterNet.toFixed(2)}</div>
+                </div>
+                <div className="flex justify-between items-end gap-4">
+                  <span className="text-gray-400 text-sm uppercase tracking-wide">Your reward</span>
+                  <span className="text-green-400 text-xl font-bold tabular-nums">
+                    {fighterNet.minus(matchInfo?.fighter_stake || 10).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
             <button className="btn-cyber px-8 py-3 text-lg font-bold" onClick={handleClaimReward}>

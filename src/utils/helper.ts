@@ -17,8 +17,10 @@ export const fetchMatchView = async (
       vault_id: bcs.option(bcs.Address),
       name: bcs.string(),
       fighter: bcs.Address,
-      status: bcs.u8(),
+      fighter_stake: bcs.u64(),
+      status: bcs.u8(), // 0=CREATED, 1=IN_GAME, 2=ENDED, 3=CANCELLED
       result: bcs.option(bcs.bool()),
+      cancel_stake_refundable: bcs.bool(),
       total_pool: bcs.u64(),
       total_bet_viewers: bcs.u64(),
       win_bets_total: bcs.u64(),

@@ -22,7 +22,8 @@ export const defaultFighterRoom: TMatchInfo = {
   lose_bets_total: '0',
   win_bettors_count: '0',
   lose_bettors_count: '0',
-}
+  cancel_stake_refundable: false,
+};
 
 const initialState: GameSliceState = {
   gameState: {
@@ -55,9 +56,12 @@ const gameSlice = createSlice({
     setFighterRoom: (state, action: PayloadAction<TMatchInfo>) => {
       state.fighterRoom = action.payload;
     },
+    resetFighterRoom: (state) => {
+      state.fighterRoom = defaultFighterRoom;
+    },
   },
 });
 
-export const { setGameState, setActiveRooms, setSelectedRoom, setFighterRoom } = gameSlice.actions;
+export const { setGameState, setActiveRooms, setSelectedRoom, setFighterRoom, resetFighterRoom } = gameSlice.actions;
 
 export default gameSlice.reducer;

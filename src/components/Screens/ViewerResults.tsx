@@ -1,10 +1,10 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAppSelector } from '../../store/hooks';
+import { toast } from 'react-toastify';
 import useClaimViewerReward from '../../hooks/mutation/viewer/useClaimViewerReward';
 import useMatchInfo from '../../hooks/query/useMatchInfo';
-import { handleCalcReward } from '../../utils/helper';
+import { useAppSelector } from '../../store/hooks';
 import { BN } from '../../utils/utils';
-import { toast } from 'react-toastify';
+import { useMemo } from 'react';
 
 interface ViewerResultsProps {
   isVictory: boolean;
@@ -16,18 +16,25 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const matchId = searchParams.get('room');
-  // const { data: previewReward } = useGetPreviewReward(matchId);
   const { mutateAsync: claimReward } = useClaimViewerReward();
-  const { data: selectedRoom, } = useMatchInfo(matchId || undefined);
+  const { data: selectedRoom } = useMatchInfo(matchId || undefined);
   const gameState = useAppSelector((state) => state.game.gameState);
-  const previewReward = handleCalcReward({ match: selectedRoom || null, initBet: gameState.userBetAmount.toString(), isVictory, betSide: gameState.faction || 'WIN' });
 
-  const totalPool = BN(selectedRoom?.total_pool);
-  const fighterReward = isFighterWin ? BN(totalPool).multipliedBy(0.1).toNumber() : 0;
-  const winningSidePool = BN(totalPool).minus(BN(fighterReward)).toNumber();
-  const totalReward = Number(previewReward?.toLocaleString());
+  const totalPool = BN(selectedRoom?.lose_bets_total);
+  const fighterReward = isFighterWin ? BN(totalPool).multipliedBy(0.2).toNumber() : 0;
   const userBet = gameState.userBetAmount || 0;
-  const pnl = totalReward - userBet;
+
+  const viewerGross = useMemo(() => {
+    if (!selectedRoom) return BN(0);
+    const a = BN(userBet).dividedBy(selectedRoom.win_bets_total);
+    const result = BN(userBet).plus(a).multipliedBy(0.8).multipliedBy(selectedRoom.lose_bets_total);
+    return result;
+  }, [selectedRoom, userBet]);
+  const viewerNet = useMemo(() => {
+    return viewerGross.multipliedBy(0.98);
+  }, [viewerGross]);
+
+  const pnl = Number(viewerNet.minus(userBet).toFixed(4));
 
   const handleClaim = async () => {
     try {
@@ -55,8 +62,9 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
 
       <div className="flex flex-col md:flex-row gap-12 w-full max-w-5xl">
         <div
-          className={`w-full md:w-1/2 glass-panel p-8 border-l-4 ${isVictory ? 'border-cyan-500 win-glow-savior' : 'border-pink-500 win-glow-doomer'
-            } transition duration-1000`}
+          className={`w-full md:w-1/2 glass-panel p-8 border-l-4 ${
+            isVictory ? 'border-cyan-500 win-glow-savior' : 'border-pink-500 win-glow-doomer'
+          } transition duration-1000`}
         >
           <h3 className="text-2xl text-cyan-400 mb-6 border-b border-gray-700 pb-2">POOL SUMMARY</h3>
           <div className="space-y-4 font-mono text-sm">
@@ -70,7 +78,11 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">WINNING SIDE POOL</span>
-              <span className="text-green-400 text-xl font-bold">{winningSidePool.toLocaleString()}</span>
+              <span className="text-green-400 text-xl font-bold">{selectedRoom?.win_bets_total}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">LOSING SIDE POOL</span>
+              <span className="text-red-300 text-xl font-bold">{selectedRoom?.lose_bets_total}</span>
             </div>
           </div>
         </div>
@@ -84,7 +96,7 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
             </div>
             <div className="bg-black/40 p-4 border border-gray-700 rounded text-center">
               <div className="text-xs text-gray-500 uppercase tracking-widest mb-1">Total reward</div>
-              <div className="text-5xl font-black text-white">{totalReward.toLocaleString() ?? '0'}</div>
+              <div className="text-5xl font-black text-white">{viewerNet.toFixed(4) ?? '0'}</div>
             </div>
             <div className="flex justify-between items-end">
               <span className="text-gray-400 text-sm">PNL</span>
