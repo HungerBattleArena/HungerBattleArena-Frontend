@@ -30,6 +30,7 @@ const useClaimCancelStake = () => {
         const result = await signAndExecute({
           transaction: tx,
         });
+        console.log('🚀 ~ useClaimCancelStake ~ result:', { result, tx });
 
         toast.success('Claim cancel stake success');
         return result;

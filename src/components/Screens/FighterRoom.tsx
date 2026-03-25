@@ -30,7 +30,8 @@ export default function FighterRoom() {
     return state.game.fighterRoom;
   });
 
-  const isCanStartMatch = Number(fighterRoom.lose_bettors_count) > 1 && Number(fighterRoom.win_bettors_count) > 1;
+  const isCanStartMatch =
+    isOpenRoom && Number(fighterRoom.lose_bettors_count) > 1 && Number(fighterRoom.win_bettors_count) > 1;
 
   const setFighterRoomAction = (room: Parameters<typeof setFighterRoom>[0]) => {
     dispatch(setFighterRoom(room));
@@ -189,6 +190,11 @@ export default function FighterRoom() {
             >
               Open Room
             </button>
+
+            <p className="text-xs text-gray-300 mt-[-10px] flex gap-1.5">
+              <InfoIcon size={16} />
+              You need a stake of <span className="font-bold">10 Hackathon</span> to create a room.
+            </p>
           </div>
 
           <div className="space-y-6">
@@ -202,10 +208,10 @@ export default function FighterRoom() {
                 id="btn-start-match"
                 className={cn(
                   'btn-cyber px-8 py-3 text-lg font-bold w-full',
-                  !isOpenRoom && 'opacity-50 disabled:cursor-not-allowed'
+                  !isCanStartMatch && 'opacity-50 disabled:cursor-not-allowed'
                 )}
                 onClick={startMatchAsFighter}
-                disabled={!isOpenRoom || !isCanStartMatch}
+                disabled={!isCanStartMatch}
               >
                 Start Match
               </button>

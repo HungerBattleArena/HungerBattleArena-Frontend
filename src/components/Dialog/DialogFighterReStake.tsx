@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useClaimCancelStake from '../../hooks/mutation/match/useClaimCancelStake';
 import useDefaultFighterStake from '../../hooks/query/useDefaultFighterStake';
 import useMatchInfo from '../../hooks/query/useMatchInfo';
 import { useAppSelector } from '../../store/hooks';
+import { BN } from '../../utils/utils';
+import { OCT_COIN_DECIMALS } from '../../constants/contract';
+
+type TIds = {
+  match_id: string;
+  vault_id: string;
+  stake_amount: string;
+};
 
 export interface DialogFighterReStakeProps {
   isOpen: boolean;
@@ -13,23 +21,39 @@ export interface DialogFighterReStakeProps {
 
 const DialogFighterReStake: React.FC<DialogFighterReStakeProps> = ({ isOpen, onClose, isLoading }) => {
   const navigate = useNavigate();
+  const [ids, setIds] = useState<TIds>();
   const { data: stakeAmount } = useDefaultFighterStake();
   const { mutateAsync: claimCancelStake, isPending: isClaiming } = useClaimCancelStake();
   const fighterRoom = useAppSelector((state) => {
     return state.game.fighterRoom;
   });
-  const { data: matchInfo, refetch } = useMatchInfo(fighterRoom.match_id);
-  if (!isOpen) return null;
+  const { data: matchInfo } = useMatchInfo(fighterRoom.match_id);
+  const displayAmount =
+    BN(stakeAmount)
+      .dividedBy(10 ** OCT_COIN_DECIMALS)
+      .toNumber() || 10;
 
-  const displayAmount = stakeAmount || 10;
   const onClaim = async () => {
     await claimCancelStake({
-      matchId: matchInfo?.match_id,
-      vaultId: matchInfo?.vault_id,
+      matchId: ids?.match_id,
+      vaultId: ids?.vault_id,
     });
 
     navigate('/');
   };
+
+  useEffect(() => {
+    if (matchInfo?.match_id && matchInfo?.vault_id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIds({
+        match_id: matchInfo?.match_id,
+        vault_id: matchInfo?.vault_id,
+        stake_amount: matchInfo?.fighter_stake,
+      });
+    }
+  }, [matchInfo]);
+
+  if (!isOpen) return null;
 
   return (
     <div
@@ -119,8 +143,7 @@ const DialogFighterReStake: React.FC<DialogFighterReStakeProps> = ({ isOpen, onC
             <button
               type="button"
               className="flex-1 bg-gray-800/80 hover:bg-gray-700/90 text-white py-3 rounded-lg font-tech font-bold uppercase tracking-wider text-sm transition border border-gray-600/50"
-              //   onClick={onClose}
-              onClick={() => refetch()}
+              onClick={onClose}
               disabled={isLoading || isClaiming}
             >
               Dismiss

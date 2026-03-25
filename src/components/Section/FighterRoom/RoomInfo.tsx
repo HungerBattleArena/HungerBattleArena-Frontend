@@ -44,6 +44,9 @@ const RoomInfo = ({ matchId }: RoomInfoProps) => {
           <div className="text-xs text-gray-500">{matchInfo?.lose_bettors_count.toLocaleString()} bettors</div>
         </div>
       </div>
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-gray-500">Room can only start when there are enough bettors on both sides</div>
+      </div>
     </div>
   );
 };

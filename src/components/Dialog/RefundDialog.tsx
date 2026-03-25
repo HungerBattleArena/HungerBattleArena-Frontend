@@ -1,6 +1,6 @@
-import { useSearchParams } from "react-router-dom";
-import useUserRefund from "../../hooks/mutation/viewer/useUserRefund";
-import useMatchInfo from "../../hooks/query/useMatchInfo";
+import { useSearchParams } from 'react-router-dom';
+import useUserRefund from '../../hooks/mutation/viewer/useUserRefund';
+import useMatchInfo from '../../hooks/query/useMatchInfo';
 
 interface RefundDialogProps {
   isOpen: boolean;
@@ -48,7 +48,9 @@ export default function RefundDialog({ isOpen, roomName, yourBet, yourSide, room
 
           <div className="flex justify-between items-center">
             <span className="text-gray-400 uppercase tracking-wide text-sm">Your Bet Side</span>
-            <span className={`font-bold text-xl ${yourSide === 'WIN' ? 'text-cyan-400' : 'text-pink-400'}`}>{yourSide}</span>
+            <span className={`font-bold text-xl ${yourSide === 'WIN' ? 'text-cyan-400' : 'text-pink-400'}`}>
+              {yourSide}
+            </span>
           </div>
 
           <div className="flex justify-between items-center">
@@ -67,7 +69,9 @@ export default function RefundDialog({ isOpen, roomName, yourBet, yourSide, room
             <div className="text-yellow-400 text-xl">⚠️</div>
             <div>
               <div className="text-yellow-400 font-bold mb-1">Refund Notice</div>
-              <div className="text-gray-300 text-sm">Requesting a refund will return your bet amount. This action cannot be undone.</div>
+              <div className="text-gray-300 text-sm">
+                Requesting a refund will return your bet amount. This action cannot be undone.
+              </div>
             </div>
           </div>
         </div>
@@ -79,9 +83,14 @@ export default function RefundDialog({ isOpen, roomName, yourBet, yourSide, room
           >
             Cancel
           </button>
-          <button className="flex-1 btn-cyber py-3 rounded-lg font-bold uppercase tracking-wider" onClick={handleRefund}>
-            Confirm Refund
-          </button>
+          {yourBet > 0 && (
+            <button
+              className="flex-1 btn-cyber py-3 rounded-lg font-bold uppercase tracking-wider"
+              onClick={handleRefund}
+            >
+              Confirm Refund
+            </button>
+          )}
         </div>
       </div>
     </div>
