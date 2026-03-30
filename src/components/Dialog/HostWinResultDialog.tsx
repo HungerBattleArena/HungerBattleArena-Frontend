@@ -3,6 +3,7 @@ import useFighterClaim from '../../hooks/mutation/match/useFighterClaim';
 import useEndMatch from '../../hooks/mutation/match/useEndMatch';
 import type { TMatchInfo } from '../../types/game';
 import { BN } from '../../utils/utils';
+import { OCT_COIN_DECIMALS } from '../../constants/contract';
 
 interface HostWinResultDialogProps {
   isOpen: boolean;
@@ -15,14 +16,16 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClo
   const { mutateAsync: claimFighterReward } = useFighterClaim();
   const { mutateAsync: endMatch } = useEndMatch();
 
+  const fighterStake = BN(matchInfo?.fighter_stake || 0).dividedBy(BN(10).pow(OCT_COIN_DECIMALS));
+
   const fighterGross = useMemo(() => {
     if (!matchInfo) return BN(0);
-    return BN(matchInfo.fighter_stake || 0).plus(BN(matchInfo.lose_bets_total).multipliedBy(0.2));
+    return BN(matchInfo.lose_bets_total).multipliedBy(0.2);
   }, [matchInfo]);
 
   const fighterNet = useMemo(() => {
-    return fighterGross.multipliedBy(0.95);
-  }, [fighterGross]);
+    return BN(fighterStake).plus(fighterGross.multipliedBy(0.95));
+  }, [fighterGross, fighterStake]);
 
   const handleClaimReward = async () => {
     await claimFighterReward({ matchId: matchInfo?.match_id, vaultId: matchInfo?.vault_id || undefined });
@@ -83,9 +86,7 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClo
               <div className="space-y-4 font-mono text-sm">
                 <div className="flex justify-between items-end gap-4">
                   <span className="text-gray-400 text-sm uppercase tracking-wide">Initial stake</span>
-                  <span className="text-white text-lg tabular-nums">
-                    {BN(matchInfo?.fighter_stake || 10).toFixed(2)}
-                  </span>
+                  <span className="text-white text-lg tabular-nums">{fighterStake.toFixed(2)}</span>
                 </div>
                 <div className="bg-black/40 p-4 border border-gray-700 rounded text-center">
                   <div className="text-xs text-gray-500 uppercase tracking-widest mb-1">Total reward</div>
@@ -94,7 +95,7 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClo
                 <div className="flex justify-between items-end gap-4">
                   <span className="text-gray-400 text-sm uppercase tracking-wide">Your reward</span>
                   <span className="text-green-400 text-xl font-bold tabular-nums">
-                    {fighterNet.minus(matchInfo?.fighter_stake || 10).toFixed(2)}
+                    {fighterNet.minus(fighterStake).toFixed(2)}
                   </span>
                 </div>
               </div>

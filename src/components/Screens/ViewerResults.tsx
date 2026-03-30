@@ -20,19 +20,27 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
   const { data: selectedRoom } = useMatchInfo(matchId || undefined);
   const gameState = useAppSelector((state) => state.game.gameState);
 
-  const totalPool = BN(selectedRoom?.lose_bets_total);
+  const totalPool = !isFighterWin ? BN(selectedRoom?.win_bets_total) : BN(selectedRoom?.lose_bets_total);
   const fighterReward = isFighterWin ? BN(totalPool).multipliedBy(0.2).toNumber() : 0;
   const userBet = gameState.userBetAmount || 0;
 
   const viewerGross = useMemo(() => {
     if (!selectedRoom) return BN(0);
-    const a = BN(userBet).dividedBy(selectedRoom.win_bets_total);
-    const result = BN(userBet).plus(a).multipliedBy(0.8).multipliedBy(selectedRoom.lose_bets_total);
-    return result;
-  }, [selectedRoom, userBet]);
-  const viewerNet = useMemo(() => {
-    return viewerGross.multipliedBy(0.98);
-  }, [viewerGross]);
+
+    if (isFighterWin) {
+      const a = BN(userBet).dividedBy(selectedRoom.win_bets_total);
+      const result = a.multipliedBy(0.8).multipliedBy(selectedRoom.lose_bets_total);
+      return result;
+    } else {
+      const a = BN(userBet).dividedBy(selectedRoom.lose_bets_total);
+      const result = a.multipliedBy(selectedRoom.win_bets_total);
+      return result;
+    }
+  }, [isFighterWin, selectedRoom, userBet]);
+
+  const viewerNet = (() => {
+    return BN(userBet).plus(viewerGross).multipliedBy(0.98);
+  })();
 
   const pnl = Number(viewerNet.minus(userBet).toFixed(4));
 
@@ -73,7 +81,7 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
               <span className="text-white text-lg">{totalPool.toString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Fighter reward (10%)</span>
+              <span className="text-gray-400">Fighter reward (20%)</span>
               <span className="text-yellow-400 text-xl font-bold">{fighterReward.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
