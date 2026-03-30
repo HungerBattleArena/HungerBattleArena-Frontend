@@ -20,7 +20,7 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
   const { data: selectedRoom } = useMatchInfo(matchId || undefined);
   const gameState = useAppSelector((state) => state.game.gameState);
 
-  const totalPool = !isFighterWin ? BN(selectedRoom?.win_bets_total) : BN(selectedRoom?.lose_bets_total);
+  const totalPool = selectedRoom?.total_pool;
   const fighterReward = isFighterWin ? BN(totalPool).multipliedBy(0.2).toNumber() : 0;
   const userBet = gameState.userBetAmount || 0;
 
@@ -39,7 +39,7 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
   }, [isFighterWin, selectedRoom, userBet]);
 
   const viewerNet = (() => {
-    return BN(userBet).plus(viewerGross).multipliedBy(0.98);
+    return BN(userBet).plus(viewerGross.multipliedBy(0.98));
   })();
 
   const pnl = Number(viewerNet.minus(userBet).toFixed(4));
@@ -78,7 +78,7 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
           <div className="space-y-4 font-mono text-sm">
             <div className="flex justify-between">
               <span className="text-gray-400">TOTAL POOL</span>
-              <span className="text-white text-lg">{totalPool.toString()}</span>
+              <span className="text-white text-lg">{totalPool}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Fighter reward (20%)</span>
@@ -112,7 +112,7 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
                 {pnl.toLocaleString()}
               </span>
             </div>
-            {pnl > 0 && (
+            {pnl > 0 && isVictory && (
               <button className="btn-cyber px-10 py-3 text-lg font-bold" onClick={handleClaim}>
                 Claim
               </button>

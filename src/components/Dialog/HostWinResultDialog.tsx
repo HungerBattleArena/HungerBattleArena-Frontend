@@ -24,8 +24,10 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClo
   }, [matchInfo]);
 
   const fighterNet = useMemo(() => {
-    return BN(fighterStake).plus(fighterGross.multipliedBy(0.95));
+    return BN(fighterStake).plus(fighterGross.multipliedBy(0.98));
   }, [fighterGross, fighterStake]);
+
+  const pnl = fighterNet.minus(fighterStake);
 
   const handleClaimReward = async () => {
     await claimFighterReward({ matchId: matchInfo?.match_id, vaultId: matchInfo?.vault_id || undefined });
@@ -94,9 +96,7 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClo
                 </div>
                 <div className="flex justify-between items-end gap-4">
                   <span className="text-gray-400 text-sm uppercase tracking-wide">Your reward</span>
-                  <span className="text-green-400 text-xl font-bold tabular-nums">
-                    {fighterNet.minus(fighterStake).toFixed(2)}
-                  </span>
+                  <span className="text-green-400 text-xl font-bold tabular-nums">{pnl.toFixed(2)}</span>
                 </div>
               </div>
             </div>
