@@ -36,15 +36,13 @@ const HostWinResultDialog: React.FC<HostWinResultDialogProps> = ({ isOpen, onClo
 
   const handleEndMatch = useCallback(async () => {
     await endMatch({ isWin: true, matchId: matchInfo?.match_id || undefined });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [endMatch, matchInfo?.match_id]);
 
   useEffect(() => {
     if (isOpen) {
       handleEndMatch();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [handleEndMatch, isOpen]);
 
   if (!isOpen) return null;
 
