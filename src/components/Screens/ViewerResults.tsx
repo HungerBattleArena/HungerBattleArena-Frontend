@@ -42,7 +42,7 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
     return BN(userBet).plus(viewerGross.multipliedBy(0.98));
   })();
 
-  const pnl = Number(viewerNet.minus(userBet).toFixed(4));
+  const pnl = isVictory ? Number(viewerNet.minus(userBet).toFixed(4)) : -userBet;
 
   const handleClaim = async () => {
     try {
@@ -104,7 +104,7 @@ export default function ViewerResults({ isVictory, isFighterWin, isOpen }: Viewe
             </div>
             <div className="bg-black/40 p-4 border border-gray-700 rounded text-center">
               <div className="text-xs text-gray-500 uppercase tracking-widest mb-1">Total reward</div>
-              <div className="text-5xl font-black text-white">{viewerNet.toFixed(4) ?? '0'}</div>
+              <div className="text-5xl font-black text-white">{isVictory ? (viewerGross.toFixed(4) ?? '0') : '0'}</div>
             </div>
             <div className="flex justify-between items-end">
               <span className="text-gray-400 text-sm">PNL</span>
